@@ -1,0 +1,14 @@
+<%- include("../partical/header", { title: "Bắt đầu làm bài" }) %>
+
+<h2>Bắt đầu làm bài: <%= subject.name %></h2>
+<p>Nhấn nút để hệ thống random đề theo cấu hình mặc định.</p>
+
+<form method="post" action="/exam/generate">
+  <input type="hidden" name="subjectId" value="<%= String(subject._id) %>" />
+  <button type="submit">Generate đề</button>
+</form>
+
+<%- include("../partical/footer") %>
+
+
+

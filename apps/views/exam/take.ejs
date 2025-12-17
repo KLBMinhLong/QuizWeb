@@ -1,0 +1,41 @@
+<%- include("../partical/header", { title: "Làm bài" }) %>
+
+<h2>Làm bài</h2>
+<p>Thời gian: <%= durationMinutes %> phút (MVP)</p>
+
+<% if (!questions || questions.length === 0) { %>
+  <p>Chưa đủ câu hỏi trong ngân hàng cho môn này.</p>
+<% } else { %>
+  <form method="post" action="/exam/submit">
+    <input type="hidden" name="subjectId" value="<%= subjectId %>" />
+
+    <% questions.forEach(function(q, idx){ %>
+      <div class="question">
+        <div><b>Câu <%= idx + 1 %>:</b> <%= q.content %> (<%= q.difficulty %>)</div>
+
+        <% if (Array.isArray(q.answers)) { %>
+          <% q.answers.forEach(function(a){ %>
+            <div>
+              <label>
+                <input type="radio" name="answers[<%= q._id %>]" value="<%= a.id %>" />
+                <%= a.text %>
+              </label>
+              <!-- MVP: để demo chấm điểm, gửi luôn correct index qua hidden (sẽ bỏ ở phase 2) -->
+              <input type="hidden" name="correct[<%= q._id %>]" value="0" />
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div>Loại câu hỏi này sẽ làm tiếp.</div>
+        <% } %>
+      </div>
+      <hr/>
+    <% }) %>
+
+    <button type="submit">Nộp bài</button>
+  </form>
+<% } %>
+
+<%- include("../partical/footer") %>
+
+
+

@@ -1,0 +1,28 @@
+<%- include("../partical/header", { title: "Đăng ký" }) %>
+
+<h2>Đăng ký</h2>
+
+<% if (error) { %>
+  <div class="error"><%= error %></div>
+<% } %>
+
+<form method="post" action="/auth/register">
+  <div class="field">
+    <label>Username</label>
+    <input name="username" />
+  </div>
+  <div class="field">
+    <label>Email</label>
+    <input name="email" />
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <input type="password" name="password" />
+  </div>
+  <button type="submit">Tạo tài khoản</button>
+</form>
+
+<%- include("../partical/footer") %>
+
+
+

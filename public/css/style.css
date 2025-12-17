@@ -1,0 +1,38 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.nav a {
+  margin-right: 12px;
+}
+
+.field {
+  margin: 8px 0;
+}
+
+.error {
+  background: #ffe3e3;
+  border: 1px solid #ffb3b3;
+  padding: 8px;
+  margin: 8px 0;
+}
+
+.question {
+  padding: 8px 0;
+}
+
+.footer {
+  color: #666;
+  font-size: 12px;
+}
+
+
+

@@ -1,0 +1,20 @@
+<%- include("../partical/header", { title: "Môn học" }) %>
+
+<h2>Danh sách môn học</h2>
+
+<% if (!subjects || subjects.length === 0) { %>
+  <p>Chưa có môn học. Vào <a href="/admin/subjects">Admin</a> để tạo môn.</p>
+<% } else { %>
+  <ul>
+    <% subjects.forEach(function(s){ %>
+      <li>
+        <a href="/subjects/<%= s.slug %>"><%= s.name %></a>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<%- include("../partical/footer") %>
+
+
+

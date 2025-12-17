@@ -1,0 +1,40 @@
+<%- include("../partical/header", { title: "Admin - Subjects" }) %>
+
+<h2>Quản lý môn học</h2>
+
+<% if (error) { %>
+  <div class="error"><%= error %></div>
+<% } %>
+
+<h3>Tạo môn học</h3>
+<form method="post" action="/admin/subjects/create">
+  <div class="field">
+    <label>Name</label>
+    <input name="name" />
+  </div>
+  <div class="field">
+    <label>Slug</label>
+    <input name="slug" placeholder="toan-cao-cap-1" />
+  </div>
+  <div class="field">
+    <label>Description</label>
+    <input name="description" />
+  </div>
+  <button type="submit">Tạo</button>
+</form>
+
+<h3>Danh sách</h3>
+<% if (!subjects || subjects.length === 0) { %>
+  <p>Chưa có môn nào.</p>
+<% } else { %>
+  <ul>
+    <% subjects.forEach(function(s){ %>
+      <li><%= s.name %> — <code><%= s.slug %></code></li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<%- include("../partical/footer") %>
+
+
+

@@ -1,0 +1,21 @@
+<%- include("../partical/header", { title: subject.name }) %>
+
+<h2><%= subject.name %></h2>
+<p><%= subject.description %></p>
+
+<h3>Cấu hình đề (mặc định)</h3>
+<ul>
+  <li>Dễ: <%= subject.examConfig?.easyCount %></li>
+  <li>Vừa: <%= subject.examConfig?.mediumCount %></li>
+  <li>Khó: <%= subject.examConfig?.hardCount %></li>
+  <li>Thời gian (phút): <%= subject.examConfig?.durationMinutes %></li>
+</ul>
+
+<form method="get" action="/exam/start/<%= subject.slug %>">
+  <button type="submit">Bắt đầu làm bài</button>
+</form>
+
+<%- include("../partical/footer") %>
+
+
+
