@@ -5,6 +5,11 @@ var DatabaseConnection = require(global.__basedir + "/apps/Database/Database");
 var config = require(global.__basedir + "/Config/Setting.json");
 var UserRepository = require(global.__basedir + "/apps/Repository/UserRepository");
 
+// Ưu tiên lấy JWT secret từ biến môi trường 
+const JWT_SECRET = process.env.JWT_SECRET || config.auth.jwtSecret;
+const JWT_EXPIRES_IN =
+  process.env.JWT_EXPIRES_IN || config.auth.jwtExpiresIn || "7d";
+
 class AuthService {
   constructor() {
     this.client = DatabaseConnection.getMongoClient();
@@ -48,8 +53,8 @@ class AuthService {
 
       const token = jwt.sign(
         { userId: String(user._id), role: user.role, username: user.username },
-        config.auth.jwtSecret,
-        { expiresIn: config.auth.jwtExpiresIn || "7d" }
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
       );
       return { ok: true, token };
     } finally {

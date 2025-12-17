@@ -13,18 +13,18 @@ router.get("/", async function (req, res) {
 router.post(
   "/create",
   body("name").notEmpty(),
-  body("slug").notEmpty(),
   async function (req, res) {
     const errors = validationResult(req);
     const service = new SubjectService();
     const subjects = await service.getAllSubjects();
     if (!errors.isEmpty()) {
-      return res.status(400).render("admin/subjects.ejs", { subjects, error: "Thiếu name/slug" });
+      return res
+        .status(400)
+        .render("admin/subjects.ejs", { subjects, error: "Thiếu tên môn học" });
     }
 
     const result = await service.createSubject({
       name: req.body.name,
-      slug: req.body.slug,
       description: req.body.description || "",
     });
     if (!result.ok) {
