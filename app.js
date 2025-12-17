@@ -1,3 +1,4 @@
+require("dotenv").config();
 global.__basedir = __dirname;
 var bodyParser = require("body-parser");
 var express = require("express");
