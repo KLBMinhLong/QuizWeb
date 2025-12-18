@@ -1,6 +1,6 @@
 # QuizWeb - OnThiTracNghiem
 
-Web ôn thi trắc nghiệm (MVP) dùng Node.js + Express + EJS, code theo pattern đơn giản như `Lab3`:
+Web ôn thi trắc nghiệm (MVP) dùng Node.js + Express + EJS:
 
 `app.js` → `apps/controllers` → `apps/Services` → `apps/Repository` → `apps/Entity` → EJS views.
 

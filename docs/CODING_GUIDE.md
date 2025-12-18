@@ -79,9 +79,9 @@ Route chỉ nên **điều hướng và gọi controller**; mọi logic để tr
 
 ---
 
-## 4. Chuẩn code cho Auth (theo US-01-AUTH + Identity style)
+## 4. Chuẩn code cho Auth (theo US-10/US-11 + Identity style)
 
-- **Collections chính** (xem chi tiết trong `docs/user-stories/US-01-AUTH.md`):
+- **Collections chính** (xem chi tiết trong `docs/user-stories/US-10-AUTH-IDENTITY-CORE.md`):
   - `users`, `roles`, `userRoles`, `userClaims`, `roleClaims`, `userLogins`, `userTokens`.
 
 - **Đăng ký (`POST /auth/register`)**
@@ -147,7 +147,7 @@ router.get("/admin", requireAuth, requireAdmin, function (req, res) {
 
 ---
 
-## 6. Error handling (MVP)
+## 6. Error handling (đơn giản nhưng rõ ràng)
 
 - Trong **controller**, luôn bọc logic async trong `try/catch` đơn giản:
 
@@ -162,8 +162,8 @@ router.get("/something", async function (req, res) {
 });
 ```
 
-- Phase 1 (MVP): chỉ cần log lỗi + trả 500 đơn giản hoặc render trang lỗi.
-- Phase 2: có thể thêm **middleware error handler** chung để xử lý đẹp hơn.
+- Giai đoạn đầu: chỉ cần log lỗi + trả 500 đơn giản hoặc render trang lỗi.
+- Khi hệ thống lớn hơn: có thể thêm **middleware error handler** chung để xử lý đẹp hơn.
 
 ---
 

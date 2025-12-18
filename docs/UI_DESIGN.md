@@ -244,4 +244,114 @@ Khi code các view trong `apps/views`:
 
 Mục tiêu: **dù sau này bạn mở rộng chức năng hay làm UI phức tạp hơn, màu sắc / layout / breadcrumb / nút vẫn thống nhất theo file này**.
 
+---
+
+## 8. Comments (bình luận) – style gợi ý
+
+Áp dụng cho section “Bình luận” trên trang chi tiết môn (`/subjects/:slug`):
+
+- Comment section là một card giống các card khác.
+- Avatar có thể là chữ cái đầu (A, B, C) trong vòng tròn nền `--color-primary-soft`.
+- Form gồm textarea + nút submit (primary).
+
+### HTML gợi ý (EJS)
+
+```html
+<section class="comments" id="comments">
+  <h3 class="comments__title">Bình luận</h3>
+
+  <form class="comment-form" method="post" action="/subjects/<%= subject.slug %>/comments">
+    <textarea name="content" class="comment-form__input" rows="3" placeholder="Viết bình luận..."></textarea>
+    <div class="comment-form__actions">
+      <button class="btn btn-primary" type="submit">Gửi bình luận</button>
+    </div>
+  </form>
+
+  <div class="comment-list">
+    <% comments.forEach(function(c){ %>
+      <div class="comment-item">
+        <div class="comment-item__avatar"><%= (c.usernameSnapshot || "?").slice(0,1).toUpperCase() %></div>
+        <div class="comment-item__body">
+          <div class="comment-item__meta">
+            <span class="comment-item__user"><%= c.usernameSnapshot %></span>
+            <span class="comment-item__time"><%= c.createdAt %></span>
+          </div>
+          <div class="comment-item__content"><%= c.content %></div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</section>
+```
+
+### CSS gợi ý
+
+```css
+.comments {
+  margin-top: 32px;
+  background: var(--color-bg-card);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.comment-form__input {
+  width: 100%;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 16px;
+  padding: 14px 16px;
+  outline: none;
+  resize: vertical;
+}
+
+.comment-form__input:focus {
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+}
+
+.comment-form__actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.comment-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.comment-item__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.comment-item__meta {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.comment-item__user {
+  color: var(--color-text-main);
+  font-weight: 600;
+}
+
+.comment-item__content {
+  margin-top: 6px;
+  color: var(--color-text-main);
+  line-height: 1.6;
+}
+```
+
 

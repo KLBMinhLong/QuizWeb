@@ -4,7 +4,7 @@
 
 - Password luôn bcrypt hash
 - JWT secret không hardcode khi deploy (đưa vào env hoặc Setting.json riêng)
-- Cookie token: `httpOnly` (phase 2 thêm `secure` + `sameSite`)
+- Cookie token: `httpOnly` (khuyến nghị thêm `secure` + `sameSite` khi chạy HTTPS/production)
 - Admin routes bảo vệ bằng role
 
 ## 2. Data integrity

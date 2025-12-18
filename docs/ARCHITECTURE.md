@@ -9,7 +9,7 @@ Xây dựng web ôn thi trắc nghiệm cho các môn đại học. Hệ thống
 - Node.js + Express
 - View: EJS
 - DB: MongoDB (mongodb driver) — giống `Lab3`
-- Auth: JWT + bcrypt (token lưu cookie httpOnly ở MVP)
+- Auth: JWT + bcrypt (token lưu cookie `httpOnly`)
 - Import: multer + xlsx (giai đoạn sau)
 
 ## 3. Kiến trúc thư mục
@@ -31,18 +31,18 @@ Xây dựng web ôn thi trắc nghiệm cho các môn đại học. Hệ thống
 3. Service gọi repository để thao tác DB
 4. Controller trả `res.render(view, model)`
 
-## 5. Module MVP
+## 5. Module chính
 
-- Auth: register/login/logout + role
+- Auth: register/login/logout + role/roles (Identity-style)
 - Subjects: list/detail + cấu hình đề mặc định
 - Questions: ngân hàng câu hỏi theo môn (admin CRUD)
-- Exams: generate đề theo độ khó + submit + (giai đoạn sau) lưu attempt/history
+- Exams: generate đề theo độ khó + submit + lưu attempt/history (khi triển khai phần lịch sử)
 
 ## 6. Nguyên tắc giữ đơn giản
 
 - Không over-engineer
 - Tách lớp đúng vai trò
-- Config để trong `Setting.json` (sau này mới thêm `.env`)
+- Cấu hình ưu tiên qua biến môi trường / `.env`, fallback về `Config/Setting.json`
 
 
 
