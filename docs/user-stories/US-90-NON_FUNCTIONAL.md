@@ -14,8 +14,8 @@
 
 ## 3. Logging & error
 
-- MVP: log console
-- Phase 2: thêm logger (winston/pino)
+- Giai đoạn đầu: log console đơn giản
+- Khi hệ thống ổn định hơn: có thể thêm logger (winston/pino) để ghi file, phân cấp level
 
 ## 4. Performance
 
