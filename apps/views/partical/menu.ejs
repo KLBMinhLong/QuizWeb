@@ -1,6 +1,20 @@
 <div class="nav">
   <a href="/">Home</a>
   <a href="/subjects">Môn học</a>
-  <a href="/auth/login">Đăng nhập</a>
-  <a href="/auth/register">Đăng ký</a>
-  <a href="/admin">Admin</a>
+  
+  <% if (typeof user !== 'undefined' && user) { %>
+    <!-- Đã đăng nhập -->
+    <span style="color: var(--color-text-muted); margin-right: 8px;">
+      Xin chào, <strong><%= user.username %></strong>
+    </span>
+    
+    <% if (user.roles && user.roles.includes('admin')) { %>
+      <a href="/admin">Admin</a>
+    <% } %>
+    
+    <a href="/auth/logout">Đăng xuất</a>
+  <% } else { %>
+    <!-- Chưa đăng nhập -->
+    <a href="/auth/login">Đăng nhập</a>
+    <a href="/auth/register">Đăng ký</a>
+  <% } %>

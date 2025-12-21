@@ -1,12 +1,13 @@
 var express = require("express");
 var router = express.Router();
 var { body, validationResult } = require("express-validator");
+var { optionalAuth } = require(global.__basedir + "/apps/Util/VerifyToken");
 
 var AuthService = require(global.__basedir + "/apps/Services/AuthService");
 
-router.get("/login", function (req, res) {
+router.get("/login", optionalAuth, function (req, res) {
   const success = req.query.registered === 'true' ? 'Đăng ký thành công! Vui lòng đăng nhập.' : null;
-  res.render("auth/login.ejs", { error: null, success });
+  res.render("auth/login.ejs", { error: null, success, user: req.user || null });
 });
 
 router.post(
@@ -18,27 +19,27 @@ router.post(
   async function (req, res) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).render("auth/login.ejs", { error: "Thiếu dữ liệu đăng nhập", success: null });
+      return res.status(400).render("auth/login.ejs", { error: "Thiếu dữ liệu đăng nhập", success: null, user: null });
     }
 
     try {
       const service = new AuthService();
       const result = await service.login(req.body.username, req.body.password);
       if (!result.ok) {
-        return res.status(401).render("auth/login.ejs", { error: result.message, success: null });
+        return res.status(401).render("auth/login.ejs", { error: result.message, success: null, user: null });
       }
       // MVP: lưu token trong cookie
       res.cookie("token", result.token, { httpOnly: true });
       return res.redirect("/");
     } catch (e) {
       console.error("Login error:", e);
-      return res.status(500).render("auth/login.ejs", { error: "Lỗi server", success: null });
+      return res.status(500).render("auth/login.ejs", { error: "Lỗi server", success: null, user: null });
     }
   }
 );
 
-router.get("/register", function (req, res) {
-  res.render("auth/register.ejs", { error: null, success: null });
+router.get("/register", optionalAuth, function (req, res) {
+  res.render("auth/register.ejs", { error: null, success: null, user: req.user || null });
 });
 
 router.post(
@@ -61,19 +62,19 @@ router.post(
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const errorMsg = errors.array().map(e => e.msg).join(", ");
-      return res.status(400).render("auth/register.ejs", { error: errorMsg || "Dữ liệu không hợp lệ", success: null });
+      return res.status(400).render("auth/register.ejs", { error: errorMsg || "Dữ liệu không hợp lệ", success: null, user: null });
     }
 
     try {
       const service = new AuthService();
       const result = await service.register(req.body.username, req.body.email, req.body.password);
       if (!result.ok) {
-        return res.status(400).render("auth/register.ejs", { error: result.message, success: null });
+        return res.status(400).render("auth/register.ejs", { error: result.message, success: null, user: null });
       }
       return res.redirect("/auth/login?registered=true");
     } catch (e) {
       console.error("Register error:", e);
-      return res.status(500).render("auth/register.ejs", { error: "Lỗi server", success: null });
+      return res.status(500).render("auth/register.ejs", { error: "Lỗi server", success: null, user: null });
     }
   }
 );

@@ -7,7 +7,7 @@ var SubjectService = require(global.__basedir + "/apps/Services/SubjectService")
 router.get("/", async function (req, res) {
   const service = new SubjectService();
   const subjects = await service.getAllSubjects();
-  res.render("admin/subjects.ejs", { subjects, error: null });
+  res.render("admin/subjects.ejs", { subjects, error: null, user: req.user });
 });
 
 router.post(
@@ -20,7 +20,7 @@ router.post(
     if (!errors.isEmpty()) {
       return res
         .status(400)
-        .render("admin/subjects.ejs", { subjects, error: "Thiếu tên môn học" });
+        .render("admin/subjects.ejs", { subjects, error: "Thiếu tên môn học", user: req.user });
     }
 
     const result = await service.createSubject({
@@ -28,7 +28,7 @@ router.post(
       description: req.body.description || "",
     });
     if (!result.ok) {
-      return res.status(400).render("admin/subjects.ejs", { subjects, error: result.message });
+      return res.status(400).render("admin/subjects.ejs", { subjects, error: result.message, user: req.user });
     }
     return res.redirect("/admin/subjects");
   }
