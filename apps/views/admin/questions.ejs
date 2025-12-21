@@ -1,9 +1,22 @@
 <%- include("../partical/header", { title: "Admin - Questions" }) %>
 
-<h2>Quản lý câu hỏi</h2>
-<p><%= message %></p>
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="/" class="breadcrumb__item">Trang chủ</a>
+  <span class="breadcrumb__separator">›</span>
+  <a href="/admin" class="breadcrumb__item">Quản trị</a>
+  <span class="breadcrumb__separator">›</span>
+  <span class="breadcrumb__item breadcrumb__item--current"
+    >Quản lý câu hỏi</span
+  >
+</nav>
+
+<div class="admin-header">
+  <h1 class="admin-header__title">Quản lý câu hỏi</h1>
+</div>
+
+<div class="card mt-xl">
+  <p class="card__content"><%= message %></p>
+</div>
 
 <%- include("../partical/footer") %>
-
-
-

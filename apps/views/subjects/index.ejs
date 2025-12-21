@@ -1,20 +1,42 @@
 <%- include("../partical/header", { title: "Môn học" }) %>
 
-<h2>Danh sách môn học</h2>
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="/" class="breadcrumb__item">Trang chủ</a>
+  <span class="breadcrumb__separator">›</span>
+  <span class="breadcrumb__item breadcrumb__item--current">Chủ đề</span>
+</nav>
+
+<h1>Danh sách môn học</h1>
 
 <% if (!subjects || subjects.length === 0) { %>
-  <p>Chưa có môn học. Vào <a href="/admin/subjects">Admin</a> để tạo môn.</p>
+<div class="card">
+  <p>
+    Chưa có môn học. Vào
+    <a
+      href="/admin/subjects"
+      style="color: var(--color-primary); font-weight: 600"
+      >Admin</a
+    >
+    để tạo môn.
+  </p>
+</div>
 <% } else { %>
-  <ul>
-    <% subjects.forEach(function(s){ %>
-      <li>
-        <a href="/subjects/<%= s.slug %>"><%= s.name %></a>
-      </li>
-    <% }) %>
-  </ul>
-<% } %>
-
-<%- include("../partical/footer") %>
-
-
-
+<div class="subject-grid">
+  <% subjects.forEach(function(s){ %>
+  <a href="/subjects/<%= s.slug %>" class="subject-card">
+    <h3 class="subject-card__title"><%= s.name %></h3>
+    <p class="subject-card__description">
+      <%= s.description || 'Chưa có mô tả' %>
+    </p>
+    <div class="subject-card__meta">
+      <span class="subject-card__questions">
+        <%= ((s.examConfig?.easyCount || 0) + (s.examConfig?.mediumCount || 0) +
+        (s.examConfig?.hardCount || 0)) %> câu hỏi
+      </span>
+      <span><%= s.examConfig?.durationMinutes || 0 %> phút</span>
+    </div>
+  </a>
+  <% }) %>
+</div>
+<% } %> <%- include("../partical/footer") %>
