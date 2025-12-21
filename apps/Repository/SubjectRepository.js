@@ -10,7 +10,9 @@ class SubjectRepository {
   }
 
   async getActiveSubjects() {
-    const cursor = await this.collection().find({ isActive: true }).sort({ name: 1 });
+    const cursor = await this.collection()
+      .find({ isActive: true })
+      .sort({ name: 1 });
     return await cursor.toArray();
   }
 
@@ -30,9 +32,24 @@ class SubjectRepository {
   async insertSubject(subject) {
     return await this.collection().insertOne(subject);
   }
+
+  async updateSubject(id, updates) {
+    return await this.collection().updateOne(
+      { _id: new ObjectId(String(id)) },
+      { $set: updates }
+    );
+  }
+
+  async deleteSubject(id) {
+    return await this.collection().deleteOne({ _id: new ObjectId(String(id)) });
+  }
+
+  async toggleActive(id, isActive) {
+    return await this.collection().updateOne(
+      { _id: new ObjectId(String(id)) },
+      { $set: { isActive, updatedAt: new Date() } }
+    );
+  }
 }
 
 module.exports = SubjectRepository;
-
-
-
