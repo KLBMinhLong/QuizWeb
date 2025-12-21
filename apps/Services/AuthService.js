@@ -7,6 +7,8 @@ var config = require(global.__basedir + "/Config/Setting.json");
 var UserRepository = require(global.__basedir + "/apps/Repository/UserRepository");
 var RoleRepository = require(global.__basedir + "/apps/Repository/RoleRepository");
 var UserRoleRepository = require(global.__basedir + "/apps/Repository/UserRoleRepository");
+var RoleClaimRepository = require(global.__basedir + "/apps/Repository/RoleClaimRepository");
+var UserClaimRepository = require(global.__basedir + "/apps/Repository/UserClaimRepository");
 
 // Ưu tiên lấy JWT secret từ biến môi trường
 const JWT_SECRET = process.env.JWT_SECRET || config.auth.jwtSecret;
@@ -20,6 +22,8 @@ class AuthService {
     this.userRepo = new UserRepository(this.db);
     this.roleRepo = new RoleRepository(this.db);
     this.userRoleRepo = new UserRoleRepository(this.db);
+    this.roleClaimRepo = new RoleClaimRepository(this.db);
+    this.userClaimRepo = new UserClaimRepository(this.db);
   }
 
   /**
@@ -56,6 +60,55 @@ class AuthService {
       if (role) roles.push(role);
     }
     return roles;
+  }
+
+  /**
+   * Lấy tất cả claims của user (từ roles + user claims riêng)
+   */
+  async getUserClaims(userId) {
+    const claims = [];
+    const claimSet = new Set(); // Tránh trùng lặp
+
+    // 1. Lấy claims từ roles
+    const roles = await this.getUserRoles(userId);
+    for (const role of roles) {
+      const roleClaims = await this.roleClaimRepo.findByRoleId(role._id);
+      for (const claim of roleClaims) {
+        const key = `${claim.claimType}:${claim.claimValue}`;
+        if (!claimSet.has(key)) {
+          claimSet.add(key);
+          claims.push({
+            type: claim.claimType,
+            value: claim.claimValue,
+          });
+        }
+      }
+    }
+
+    // 2. Lấy claims riêng của user (override hoặc bổ sung)
+    const userClaims = await this.userClaimRepo.findByUserId(userId);
+    for (const claim of userClaims) {
+      const key = `${claim.claimType}:${claim.claimValue}`;
+      if (!claimSet.has(key)) {
+        claimSet.add(key);
+        claims.push({
+          type: claim.claimType,
+          value: claim.claimValue,
+        });
+      }
+    }
+
+    return claims;
+  }
+
+  /**
+   * Lấy tất cả permissions của user
+   */
+  async getUserPermissions(userId) {
+    const claims = await this.getUserClaims(userId);
+    return claims
+      .filter((c) => c.type === "permission")
+      .map((c) => c.value);
   }
 
   async register(username, email, password) {
@@ -124,18 +177,31 @@ class AuthService {
       // Nếu không có role nào, mặc định là "user" (backward compatible)
       const primaryRole = roleNames.length > 0 ? roleNames[0] : "user";
 
-      // Tạo JWT với thông tin user và roles
+      // Lấy permissions của user
+      const permissions = await this.getUserPermissions(user._id);
+
+      // Tạo JWT với thông tin user, roles và permissions
       const token = jwt.sign(
         {
           userId: String(user._id),
           username: user.username,
           role: primaryRole, // Role chính để backward compatible
-          roles: roleNames, // Tất cả roles để dùng sau này
+          roles: roleNames, // Tất cả roles
+          permissions, // Tất cả permissions (claims)
         },
         JWT_SECRET,
         { expiresIn: JWT_EXPIRES_IN }
       );
-      return { ok: true, token, user: { id: String(user._id), username: user.username, roles: roleNames } };
+      return { 
+        ok: true, 
+        token, 
+        user: { 
+          id: String(user._id), 
+          username: user.username, 
+          roles: roleNames,
+          permissions 
+        } 
+      };
     } finally {
       await this.client.close();
     }

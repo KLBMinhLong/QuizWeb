@@ -48,6 +48,8 @@ function requireAuth(req, res, next) {
     userId: decoded.userId,
     username: decoded.username,
     role: decoded.role,
+    roles: decoded.roles || [decoded.role], // Support multiple roles
+    permissions: decoded.permissions || [], // Support permissions
   };
 
   next();
@@ -65,12 +67,82 @@ function requireAdmin(req, res, next) {
     return res.status(401).redirect("/auth/login");
   }
 
-  // Kiểm tra role trong token (sẽ được mở rộng sau khi có UserRole)
-  if (req.user.role !== "admin") {
+  // Kiểm tra role trong token (hỗ trợ multiple roles)
+  const hasAdminRole = req.user.roles && req.user.roles.includes("admin");
+  if (!hasAdminRole && req.user.role !== "admin") {
     return res.status(403).send("Bạn không có quyền truy cập trang này");
   }
 
   next();
+}
+
+/**
+ * Middleware factory để yêu cầu role cụ thể
+ * @param {...string} allowedRoles - Các role được phép
+ * @returns {function} Express middleware
+ */
+function requireRole(...allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).redirect("/auth/login");
+    }
+
+    const userRoles = req.user.roles || [req.user.role];
+    const hasRole = allowedRoles.some((role) => userRoles.includes(role));
+
+    if (!hasRole) {
+      return res.status(403).send("Bạn không có quyền truy cập trang này");
+    }
+
+    next();
+  };
+}
+
+/**
+ * Middleware factory để yêu cầu permission cụ thể
+ * @param {...string} requiredPermissions - Các permission cần thiết
+ * @returns {function} Express middleware
+ */
+function requirePermission(...requiredPermissions) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).redirect("/auth/login");
+    }
+
+    const userPermissions = req.user.permissions || [];
+    const hasPermission = requiredPermissions.every((perm) => 
+      userPermissions.includes(perm)
+    );
+
+    if (!hasPermission) {
+      return res.status(403).send("Bạn không có quyền thực hiện thao tác này");
+    }
+
+    next();
+  };
+}
+
+/**
+ * Helper để kiểm tra user có permission không
+ * @param {object} user - req.user object
+ * @param {string} permission - Permission cần kiểm tra
+ * @returns {boolean}
+ */
+function hasPermission(user, permission) {
+  if (!user || !user.permissions) return false;
+  return user.permissions.includes(permission);
+}
+
+/**
+ * Helper để kiểm tra user có role không
+ * @param {object} user - req.user object
+ * @param {string} role - Role cần kiểm tra
+ * @returns {boolean}
+ */
+function hasRole(user, role) {
+  if (!user) return false;
+  const userRoles = user.roles || [user.role];
+  return userRoles.includes(role);
 }
 
 /**
@@ -90,6 +162,8 @@ function optionalAuth(req, res, next) {
         userId: decoded.userId,
         username: decoded.username,
         role: decoded.role,
+        roles: decoded.roles || [decoded.role],
+        permissions: decoded.permissions || [],
       };
     }
   }
@@ -101,6 +175,10 @@ module.exports = {
   verifyToken,
   requireAuth,
   requireAdmin,
+  requireRole,
+  requirePermission,
+  hasPermission,
+  hasRole,
   optionalAuth,
 };
 

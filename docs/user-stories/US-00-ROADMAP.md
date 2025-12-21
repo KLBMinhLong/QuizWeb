@@ -18,19 +18,21 @@ Chuẩn hoá thứ tự triển khai + tiêu chí “xong” để có thể **c
 > Tick khi hoàn thành. Mỗi US đều có Acceptance Criteria để tự check.
 
 - [x] **US-01** Foundation setup/config (dotenv/env + Mongo)
-- [ ] **US-02** UI System (theme, breadcrumb, card/button thống nhất)
-- [ ] **US-10** Auth Identity core (register/login/logout + roles many-to-many)
+- [x] **US-02** UI System (theme, breadcrumb, card/button thống nhất)
+- [x] **US-10** Auth Identity core (register/login/logout + roles many-to-many)
 - [ ] **US-11** Middleware guards (requireAuth/requireAdmin + header login state)
+- [ ] **US-12** Admin Roles (CRUD roles + role claims)
+- [ ] **US-13** Admin Users (CRUD users + assign roles + user claims)
 - [ ] **US-21** Admin Subjects (CRUD + examConfig + isActive)
+- [ ] **US-20** Subjects Public (danh sách môn học công khai + detail)
 - [ ] **US-22** Subject comments (bình luận theo môn, requireAuth khi post)
-- [ ] **US-31** Admin Questions CRUD (tạo/sửa/xoá + filter)
 - [ ] **US-30** Questions model/validation (chuẩn hoá schema answers + validate theo type)
+- [ ] **US-32** Admin Questions Import (import từ Excel/CSV)
+- [ ] **US-31** Admin Questions CRUD (tạo/sửa/xoá + filter)
 - [ ] **US-40** Exam generate & attempt snapshot (server-side đúng chuẩn)
 - [ ] **US-42** Exam submit & scoring (chấm server-side theo snapshot)
 - [ ] **US-41** Exam take UI (timer/UX đồng nhất UI system)
 - [ ] **US-43** Exam history (list/detail)
-- [ ] **US-12/US-13** Admin Roles/Users (phân quyền & quản lý user nâng cao)
-- [ ] **US-32** Import questions (nâng cấp)
 - [ ] **US-90** Non-functional (index, security hardening, logging nâng cao)
 
 ## 4. Tài liệu tham chiếu
