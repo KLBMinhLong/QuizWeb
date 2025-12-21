@@ -2,7 +2,7 @@
 
 ## 1. Actor
 
-- User
+- User (cần permission `exams.take`)
 
 ## 2. Mục tiêu
 
@@ -37,10 +37,29 @@
    - `finishedAt`, `score`, `userAnswers`
 6. Render `result.ejs`
 
-## 7. Acceptance criteria
+## 7. Phân quyền (Permissions)
+
+### Routes Protection
+- `POST /exam/submit` - Yêu cầu:
+  - `requireAuth` - Đăng nhập (optional, có thể cho phép guest)
+  - Permission `exams.take`
+
+### Permissions chi tiết
+- **Submit bài thi**: `exams.take`
+- **Xem kết quả**: `exams.read` hoặc `exams.take`
+
+### Roles có quyền
+- **Admin**: `exams.take` (có thể submit)
+- **Moderator**: `exams.take` (có thể submit)
+- **Teacher**: `exams.take` (có thể submit)
+- **User**: `exams.take` (có thể submit)
+- **Guest**: Không có quyền (có thể cho phép `exams.take` nếu muốn)
+
+## 8. Acceptance criteria
 
 - AC1: Submit chấm server-side theo snapshot
 - AC2: Không submit được attempt đã `finishedAt`
 - AC3: Result hiển thị điểm + số đúng/sai tối thiểu
+- AC4: User không có permission `exams.take` không thể submit bài
 
 

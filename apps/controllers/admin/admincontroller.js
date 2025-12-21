@@ -3,6 +3,8 @@ var router = express.Router();
 var { requireAuth, requireAdmin } = require(global.__basedir + "/apps/Util/VerifyToken");
 
 // Apply requireAuth và requireAdmin cho tất cả routes trong /admin
+// Lưu ý: Các controller con có thể thêm requirePermission cho fine-grained control
+// (xem US-12, US-13 để biết permissions chi tiết cho từng route)
 router.use(requireAuth);
 router.use(requireAdmin);
 

@@ -116,7 +116,10 @@
               type="button"
               class="btn btn-secondary"
               style="padding: 6px 12px; font-size: 14px;"
-              onclick="editRole('<%= role._id %>', '<%= role.name %>', '<%= (role.description || '').replace(/'/g, "\\'") %>')"
+              data-role-id="<%= role._id %>"
+              data-role-name="<%= (role.name || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;') %>"
+              data-role-description="<%= (role.description || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;') %>"
+              onclick="editRole(this.dataset.roleId, this.dataset.roleName, this.dataset.roleDescription)"
             >
               Sửa
             </button>

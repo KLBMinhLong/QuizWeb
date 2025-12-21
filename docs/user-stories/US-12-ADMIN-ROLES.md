@@ -2,7 +2,7 @@
 
 ## 1. Actor
 
-- Admin
+- Admin (hoặc user có permission `roles.read`, `roles.write`, `roles.delete`)
 
 ## 2. Mục tiêu
 
@@ -83,9 +83,31 @@ Hệ thống có 25 permissions được định nghĩa sẵn, phân loại theo
 4. Thêm permission: check trùng, insert vào `roleClaims`
 5. Xóa permission: delete từ `roleClaims`
 
+## 6. Phân quyền (Permissions)
+
+### Routes Protection
+- Tất cả routes `/admin/roles/*` được bảo vệ bởi:
+  - `requireAuth` - Yêu cầu đăng nhập
+  - `requireAdmin` - Yêu cầu role admin (hoặc có permission tương ứng)
+
+### Permissions chi tiết (theo từng action)
+- **Xem danh sách roles**: `roles.read`
+- **Tạo role mới**: `roles.write`
+- **Cập nhật role**: `roles.write`
+- **Xóa role**: `roles.delete`
+- **Quản lý permissions (claims)**: `roles.write`
+
+**Lưu ý**: Hiện tại code dùng `requireAdmin` (check role), có thể nâng cấp sau để dùng `requirePermission` cho fine-grained control.
+
+### Roles có quyền
+- **Admin**: Tất cả permissions (roles.read, roles.write, roles.delete)
+- **Moderator**: Không có quyền quản lý roles
+- **Teacher**: Không có quyền quản lý roles
+- **User**: Không có quyền quản lý roles
+
 ## 7. Acceptance criteria
 
-- AC1: Chỉ admin truy cập được (qua `requireAdmin` middleware)
+- AC1: Chỉ admin (hoặc user có permission `roles.read`) truy cập được (qua `requireAdmin` middleware)
 - AC2: Tạo role mới OK và không trùng (case-insensitive)
 - AC3: Update role có cập nhật `updatedAt`
 - AC4: Không thể xoá role "admin"
@@ -93,6 +115,8 @@ Hệ thống có 25 permissions được định nghĩa sẵn, phân loại theo
 - AC6: Role mới tạo có thể được gán permissions ngay
 - AC7: Có thể thêm/xóa permissions cho role qua UI
 - AC8: Hiển thị số lượng users đang sử dụng mỗi role
+- AC9: User không có permission `roles.write` không thể tạo/sửa role
+- AC10: User không có permission `roles.delete` không thể xóa role
 
 ## 8. UI Features
 

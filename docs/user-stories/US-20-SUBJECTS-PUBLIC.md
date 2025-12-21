@@ -46,14 +46,37 @@ UI phải theo `docs/UI_DESIGN.md` (card, button, breadcrumb).
 2. Server lấy subject, hiển thị confirm
 3. User bấm “Generate đề” (POST /exam/generate)
 
-## 6. Acceptance criteria
+## 6. Phân quyền (Permissions)
+
+### Routes Protection
+- `GET /subjects` - Public (không cần đăng nhập, nhưng cần permission `subjects.read`)
+- `GET /subjects/:slug` - Public (không cần đăng nhập, nhưng cần permission `subjects.read`)
+- `GET /exam/start/:subjectSlug` - Public (không cần đăng nhập, nhưng cần permission `exams.read`)
+
+### Permissions chi tiết
+- **Xem danh sách subjects**: `subjects.read`
+- **Xem chi tiết subject**: `subjects.read`
+- **Bắt đầu làm bài**: `exams.read` (hoặc `exams.take`)
+
+### Roles có quyền
+- **Admin**: Tất cả permissions (subjects.read, exams.read)
+- **Moderator**: `subjects.read`, `exams.read`
+- **Teacher**: `subjects.read`, `exams.read`
+- **User**: `subjects.read`, `exams.read`, `exams.take`
+- **Guest**: Không có quyền (có thể cho phép `subjects.read` nếu muốn)
+
+**Lưu ý**: Hiện tại code dùng `optionalAuth`, có thể nâng cấp sau để check permission cụ thể.
+
+## 7. Acceptance criteria
 
 - AC1: `/subjects` chỉ hiển thị môn `isActive=true`
 - AC2: `/subjects/:slug` 404 nếu không tồn tại
 - AC3: Detail có breadcrumb đúng: `Trang chủ > Môn học > <Tên môn>`
 - AC4: Start page hiển thị đúng `subject._id` để generate
+- AC5: User không có permission `subjects.read` không thể xem danh sách môn học
+- AC6: User không có permission `exams.read` không thể bắt đầu làm bài
 
-## 7. Files liên quan
+## 8. Files liên quan
 
 - `apps/controllers/subjectcontroller.js`
 - `apps/controllers/examcontroller.js` (start)

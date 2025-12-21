@@ -1,11 +1,13 @@
 var express = require("express");
 var router = express.Router();
 var { body, validationResult } = require("express-validator");
+var { requirePermission } = require(global.__basedir + "/apps/Util/VerifyToken");
 
 var RoleService = require(global.__basedir + "/apps/Services/RoleService");
 
 // GET /admin/roles - Danh sách roles
-router.get("/", async function (req, res) {
+// Permission: roles.read (theo US-12)
+router.get("/", requirePermission("roles.read"), async function (req, res) {
   try {
     const service = new RoleService();
     const roles = await service.getAllRoles();
@@ -23,8 +25,10 @@ router.get("/", async function (req, res) {
 });
 
 // POST /admin/roles/create - Tạo role mới
+// Permission: roles.write (theo US-12)
 router.post(
   "/create",
+  requirePermission("roles.write"),
   [
     body("name")
       .notEmpty().withMessage("Tên role không được để trống")
@@ -78,8 +82,10 @@ router.post(
 );
 
 // POST /admin/roles/:id/update - Cập nhật role
+// Permission: roles.write (theo US-12)
 router.post(
   "/:id/update",
+  requirePermission("roles.write"),
   [
     body("name")
       .notEmpty().withMessage("Tên role không được để trống")
@@ -133,7 +139,8 @@ router.post(
 );
 
 // POST /admin/roles/:id/delete - Xoá role
-router.post("/:id/delete", async function (req, res) {
+// Permission: roles.delete (theo US-12)
+router.post("/:id/delete", requirePermission("roles.delete"), async function (req, res) {
   const service = new RoleService();
   
   try {
@@ -163,7 +170,8 @@ router.post("/:id/delete", async function (req, res) {
 });
 
 // GET /admin/roles/:id/claims - Xem claims của role (AJAX hoặc render)
-router.get("/:id/claims", async function (req, res) {
+// Permission: roles.read (theo US-12 - cần đọc để quản lý permissions)
+router.get("/:id/claims", requirePermission("roles.read"), async function (req, res) {
   try {
     const service = new RoleService();
     const role = await service.getRoleById(req.params.id);
@@ -200,8 +208,10 @@ router.get("/:id/claims", async function (req, res) {
 });
 
 // POST /admin/roles/:id/claims/add - Thêm claim cho role
+// Permission: roles.write (theo US-12)
 router.post(
   "/:id/claims/add",
+  requirePermission("roles.write"),
   [
     body("claimType").notEmpty().withMessage("Claim type không được để trống"),
     body("claimValue").notEmpty().withMessage("Claim value không được để trống"),
@@ -236,7 +246,8 @@ router.post(
 );
 
 // POST /admin/roles/:id/claims/:claimId/remove - Xóa claim khỏi role
-router.post("/:id/claims/:claimId/remove", async function (req, res) {
+// Permission: roles.write (theo US-12)
+router.post("/:id/claims/:claimId/remove", requirePermission("roles.write"), async function (req, res) {
   try {
     const service = new RoleService();
     const result = await service.removeClaimFromRole(req.params.claimId);

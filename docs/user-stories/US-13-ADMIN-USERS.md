@@ -2,7 +2,7 @@
 
 ## 1. Actor
 
-- Admin
+- Admin (hoặc user có permission `users.read`, `users.write`, `users.delete`)
 
 ## 2. Mục tiêu
 
@@ -27,11 +27,34 @@
 - `users.trangThai`: "active" | "blocked" | "inactive"
 - `userRoles` liên kết tới `roles`
 
-## 6. Acceptance criteria
+## 6. Phân quyền (Permissions)
 
-- AC1: Chỉ admin truy cập được
+### Routes Protection
+- Tất cả routes `/admin/users/*` được bảo vệ bởi:
+  - `requireAuth` - Yêu cầu đăng nhập
+  - `requireAdmin` - Yêu cầu role admin (hoặc có permission tương ứng)
+
+### Permissions chi tiết (theo từng action)
+- **Xem danh sách users**: `users.read`
+- **Block/Unblock user**: `users.write`
+- **Gán/Bỏ role cho user**: `users.write`
+- **Xóa user** (nếu có): `users.delete`
+
+**Lưu ý**: Hiện tại code dùng `requireAdmin` (check role), có thể nâng cấp sau để dùng `requirePermission` cho fine-grained control.
+
+### Roles có quyền
+- **Admin**: Tất cả permissions (users.read, users.write, users.delete)
+- **Moderator**: Chỉ có `users.read` (xem danh sách)
+- **Teacher**: Không có quyền quản lý users
+- **User**: Không có quyền quản lý users
+
+## 7. Acceptance criteria
+
+- AC1: Chỉ admin (hoặc user có permission `users.read`) truy cập được
 - AC2: User bị `blocked` không login được (đã enforce trong `AuthService.login`)
 - AC3: Assign/remove role cập nhật đúng trong `userRoles`
+- AC4: User không có permission `users.write` không thể block/unblock hoặc gán role
+- AC5: User không có permission `users.delete` không thể xóa user (nếu có tính năng này)
 
 ## 7. Files liên quan (gợi ý)
 

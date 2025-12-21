@@ -1,11 +1,13 @@
 var express = require("express");
 var router = express.Router();
 var { body, validationResult } = require("express-validator");
+var { requirePermission } = require(global.__basedir + "/apps/Util/VerifyToken");
 
 var UserService = require(global.__basedir + "/apps/Services/UserService");
 
 // GET /admin/users - Danh sách users với filter và search
-router.get("/", async function (req, res) {
+// Permission: users.read (theo US-13)
+router.get("/", requirePermission("users.read"), async function (req, res) {
   try {
     const service = new UserService();
     const filters = {
@@ -37,7 +39,8 @@ router.get("/", async function (req, res) {
 });
 
 // POST /admin/users/:id/block - Block user
-router.post("/:id/block", async function (req, res) {
+// Permission: users.write (theo US-13)
+router.post("/:id/block", requirePermission("users.write"), async function (req, res) {
   const service = new UserService();
   
   try {
@@ -73,7 +76,8 @@ router.post("/:id/block", async function (req, res) {
 });
 
 // POST /admin/users/:id/unblock - Unblock user
-router.post("/:id/unblock", async function (req, res) {
+// Permission: users.write (theo US-13)
+router.post("/:id/unblock", requirePermission("users.write"), async function (req, res) {
   const service = new UserService();
   
   try {
@@ -109,8 +113,10 @@ router.post("/:id/unblock", async function (req, res) {
 });
 
 // POST /admin/users/:id/roles/add - Gán role cho user
+// Permission: users.write (theo US-13)
 router.post(
   "/:id/roles/add",
+  requirePermission("users.write"),
   [body("roleId").notEmpty().withMessage("Role ID không được để trống")],
   async function (req, res) {
     const errors = validationResult(req);
@@ -163,8 +169,9 @@ router.post(
   }
 );
 
-// POST /admin/users/:id/roles/remove - Bỏ role khỏi user
-router.post("/:id/roles/:roleId/remove", async function (req, res) {
+// POST /admin/users/:id/roles/:roleId/remove - Bỏ role khỏi user
+// Permission: users.write (theo US-13)
+router.post("/:id/roles/:roleId/remove", requirePermission("users.write"), async function (req, res) {
   const service = new UserService();
   
   try {

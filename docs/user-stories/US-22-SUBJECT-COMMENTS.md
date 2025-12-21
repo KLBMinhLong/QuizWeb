@@ -2,9 +2,9 @@
 
 ## 1. Actor
 
-- Guest (đọc bình luận)
-- User (đăng bình luận)
-- Admin (moderate: xoá/ẩn bình luận — tuỳ chọn)
+- Guest (đọc bình luận) - Không cần đăng nhập
+- User (đăng bình luận) - Cần permission `comments.write`
+- Admin/Moderator (moderate: xoá/ẩn bình luận) - Cần permission `comments.moderate`
 
 ## 2. Mục tiêu
 
@@ -82,15 +82,43 @@ UI theo `docs/UI_DESIGN.md`:
 
 - Admin có thể ẩn/xoá comment spam bằng status `hidden/deleted`
 
-## 8. Acceptance criteria
+## 8. Phân quyền (Permissions)
+
+### Routes Protection
+- `GET /subjects/:slug` - Public (không cần đăng nhập)
+- `POST /subjects/:slug/comments` - Yêu cầu:
+  - `requireAuth` - Đăng nhập
+  - Permission `comments.write`
+- `POST /subjects/:slug/comments/:id/delete` - Yêu cầu:
+  - `requireAuth` - Đăng nhập
+  - Permission `comments.moderate` HOẶC là owner của comment
+- `POST /subjects/:slug/comments/:id/hide` - Yêu cầu:
+  - `requireAuth` - Đăng nhập
+  - Permission `comments.moderate`
+
+### Permissions chi tiết
+- **Xem comments**: Không cần permission (public)
+- **Viết comment**: `comments.write`
+- **Moderate (xóa/ẩn)**: `comments.moderate`
+
+### Roles có quyền
+- **Admin**: `comments.moderate` (có thể xóa/ẩn comments)
+- **Moderator**: `comments.moderate` (có thể xóa/ẩn comments)
+- **Teacher**: `comments.write` (chỉ viết, không moderate)
+- **User**: `comments.write` (chỉ viết, không moderate)
+- **Guest**: Không có quyền viết, chỉ xem
+
+## 9. Acceptance criteria
 
 - AC1: Guest xem được comments (read-only)
 - AC2: User chưa login post comment → redirect `/auth/login`
-- AC3: Comment hợp lệ được lưu và hiển thị ngay
-- AC4: Comment quá dài/empty bị reject với message rõ ràng
-- AC5: Chỉ lấy comment theo đúng subjectId, sort đúng
+- AC3: User không có permission `comments.write` không thể post comment
+- AC4: Comment hợp lệ được lưu và hiển thị ngay
+- AC5: Comment quá dài/empty bị reject với message rõ ràng
+- AC6: Chỉ lấy comment theo đúng subjectId, sort đúng
+- AC7: Chỉ user có permission `comments.moderate` hoặc owner mới xóa được comment
 
-## 9. Files liên quan (gợi ý)
+## 10. Files liên quan (gợi ý)
 
 - `apps/controllers/subjectcontroller.js` (mở rộng thêm POST comment)
 - `apps/Services/SubjectCommentService.js` (khuyến nghị tạo)

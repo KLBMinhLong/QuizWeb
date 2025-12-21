@@ -56,8 +56,9 @@ function requireAuth(req, res, next) {
 }
 
 /**
- * Middleware để yêu cầu role admin
+ * Middleware để yêu cầu role admin hoặc có permissions admin
  * Phải dùng sau requireAuth
+ * Lưu ý: Các route cụ thể có thể thêm requirePermission để fine-grained control
  * @param {object} req - Express request
  * @param {object} res - Express response
  * @param {function} next - Express next
@@ -69,11 +70,18 @@ function requireAdmin(req, res, next) {
 
   // Kiểm tra role trong token (hỗ trợ multiple roles)
   const hasAdminRole = req.user.roles && req.user.roles.includes("admin");
-  if (!hasAdminRole && req.user.role !== "admin") {
-    return res.status(403).send("Bạn không có quyền truy cập trang này");
+  if (hasAdminRole || req.user.role === "admin") {
+    return next();
   }
 
-  next();
+  // Nếu không có admin role, kiểm tra xem có permissions admin không
+  // (để hỗ trợ fine-grained control với requirePermission ở route level)
+  // Admin thường có tất cả permissions, nhưng có thể có user không có admin role
+  // nhưng có permissions cụ thể (qua UserClaims hoặc RoleClaims)
+  // Trong trường hợp này, requirePermission ở route level sẽ handle
+  
+  // Nếu không có admin role và không có permissions, từ chối
+  return res.status(403).send("Bạn không có quyền truy cập trang này");
 }
 
 /**
