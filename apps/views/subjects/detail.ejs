@@ -1,21 +1,84 @@
 <%- include("../partical/header", { title: subject.name }) %>
 
-<h2><%= subject.name %></h2>
-<p><%= subject.description %></p>
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="/" class="breadcrumb__item">Trang chủ</a>
+  <span class="breadcrumb__separator">›</span>
+  <a href="/subjects" class="breadcrumb__item">Chủ đề</a>
+  <span class="breadcrumb__separator">›</span>
+  <span class="breadcrumb__item breadcrumb__item--current"
+    ><%= subject.name %></span
+  >
+</nav>
 
-<h3>Cấu hình đề (mặc định)</h3>
-<ul>
-  <li>Dễ: <%= subject.examConfig?.easyCount %></li>
-  <li>Vừa: <%= subject.examConfig?.mediumCount %></li>
-  <li>Khó: <%= subject.examConfig?.hardCount %></li>
-  <li>Thời gian (phút): <%= subject.examConfig?.durationMinutes %></li>
-</ul>
+<!-- Subject Detail Layout -->
+<div class="subject-detail">
+  <!-- Left Column: Main Info -->
+  <div class="subject-detail__main">
+    <div class="subject-header">
+      <h1 class="subject-header__title"><%= subject.name %></h1>
+      <p class="subject-header__description"><%= subject.description %></p>
 
-<form method="get" action="/exam/start/<%= subject.slug %>">
-  <button type="submit">Bắt đầu làm bài</button>
-</form>
+      <div class="subject-meta">
+        <div class="subject-meta__item">
+          <span class="subject-meta__label">Thời gian:</span>
+          <span><%= subject.examConfig?.durationMinutes || 0 %> phút</span>
+        </div>
+        <div class="subject-meta__item">
+          <span class="subject-meta__label">Tổng câu hỏi:</span>
+          <span
+            ><%= (subject.examConfig?.easyCount || 0) +
+            (subject.examConfig?.mediumCount || 0) +
+            (subject.examConfig?.hardCount || 0) %> câu</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Question Distribution & Action -->
+  <div class="subject-detail__sidebar">
+    <div class="question-distribution">
+      <h3 class="question-distribution__title">Phân bố câu hỏi</h3>
+
+      <div class="question-distribution__grid">
+        <div class="question-stat question-stat--easy">
+          <div class="question-stat__number">
+            <%= subject.examConfig?.easyCount || 0 %>
+          </div>
+          <div class="question-stat__label">Dễ</div>
+        </div>
+        <div class="question-stat question-stat--medium">
+          <div class="question-stat__number">
+            <%= subject.examConfig?.mediumCount || 0 %>
+          </div>
+          <div class="question-stat__label">Trung bình</div>
+        </div>
+        <div class="question-stat question-stat--hard">
+          <div class="question-stat__number">
+            <%= subject.examConfig?.hardCount || 0 %>
+          </div>
+          <div class="question-stat__label">Khó</div>
+        </div>
+        <div class="question-stat question-stat--total">
+          <div class="question-stat__number">
+            <%= (subject.examConfig?.easyCount || 0) +
+            (subject.examConfig?.mediumCount || 0) +
+            (subject.examConfig?.hardCount || 0) %>
+          </div>
+          <div class="question-stat__label">Tổng</div>
+        </div>
+      </div>
+
+      <div class="question-distribution__actions">
+        <form method="get" action="/exam/start/<%= subject.slug %>">
+          <button type="submit" class="btn btn-primary" style="width: 100%">
+            Bắt đầu luyện thi
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <%- include("../partical/footer") %>
-
-
-

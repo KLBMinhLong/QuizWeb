@@ -1,14 +1,39 @@
 <%- include("partical/header", { title: "OnThiTracNghiem" }) %>
 
-<h1>OnThiTracNghiem</h1>
-<p>Web ôn thi trắc nghiệm (MVP) — Express + EJS — pattern.</p>
+<div
+  class="admin-header"
+  style="text-align: center; margin-top: var(--spacing-3xl)"
+>
+  <h1 class="admin-header__title" style="font-size: 48px">OnThiTracNghiem</h1>
+  <p
+    style="
+      font-size: 18px;
+      color: var(--color-text-muted);
+      margin-top: var(--spacing-md);
+    "
+  >
+    Web ôn thi trắc nghiệm - Nơi luyện tập và nâng cao kiến thức
+  </p>
+</div>
 
-<ul>
-  <li><a href="/subjects">Xem danh sách môn học</a></li>
-  <li><a href="/admin">Admin dashboard (MVP)</a></li>
-</ul>
+<div class="subject-grid" style="margin-top: var(--spacing-3xl)">
+  <a
+    href="/subjects"
+    class="card"
+    style="text-decoration: none; display: block"
+  >
+    <h3 class="card__title">Danh sách môn học</h3>
+    <p class="card__content" style="color: var(--color-text-muted)">
+      Khám phá các môn học và bắt đầu luyện tập ngay
+    </p>
+  </a>
+
+  <a href="/admin" class="card" style="text-decoration: none; display: block">
+    <h3 class="card__title">Quản trị hệ thống</h3>
+    <p class="card__content" style="color: var(--color-text-muted)">
+      Quản lý môn học và câu hỏi
+    </p>
+  </a>
+</div>
 
 <%- include("partical/footer") %>
-
-
-

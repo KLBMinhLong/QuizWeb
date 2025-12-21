@@ -1,12 +1,38 @@
 <%- include("../partical/header", { title: "Admin" }) %>
 
-<h2>Admin Dashboard (MVP)</h2>
-<ul>
-  <li><a href="/admin/subjects">Quản lý môn học</a></li>
-  <li><a href="/admin/questions">Quản lý câu hỏi</a></li>
-</ul>
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="/" class="breadcrumb__item">Trang chủ</a>
+  <span class="breadcrumb__separator">›</span>
+  <span class="breadcrumb__item breadcrumb__item--current">Quản trị</span>
+</nav>
+
+<div class="admin-header">
+  <h1 class="admin-header__title">Quản trị hệ thống</h1>
+</div>
+
+<div class="subject-grid">
+  <a
+    href="/admin/subjects"
+    class="card"
+    style="text-decoration: none; display: block"
+  >
+    <h3 class="card__title">Quản lý môn học</h3>
+    <p class="card__content" style="color: var(--color-text-muted)">
+      Tạo, chỉnh sửa và xoá các môn học
+    </p>
+  </a>
+
+  <a
+    href="/admin/questions"
+    class="card"
+    style="text-decoration: none; display: block"
+  >
+    <h3 class="card__title">Quản lý câu hỏi</h3>
+    <p class="card__content" style="color: var(--color-text-muted)">
+      Thêm và quản lý câu hỏi cho các môn học
+    </p>
+  </a>
+</div>
 
 <%- include("../partical/footer") %>
-
-
-

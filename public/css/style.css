@@ -1,17 +1,20 @@
+/* Legacy styles - Được bổ sung bởi theme.css */
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
   margin: 0;
   padding: 0;
 }
 
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 16px;
-}
-
 .nav a {
   margin-right: 12px;
+  text-decoration: none;
+  color: var(--color-text-main);
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.nav a:hover {
+  color: var(--color-primary);
 }
 
 .field {
@@ -21,18 +24,23 @@ body {
 .error {
   background: #ffe3e3;
   border: 1px solid #ffb3b3;
-  padding: 8px;
-  margin: 8px 0;
+  padding: 12px 16px;
+  margin: 12px 0;
+  border-radius: var(--radius-sm);
+  color: #c00;
+  font-size: 14px;
 }
 
 .question {
-  padding: 8px 0;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .footer {
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 12px;
+  text-align: center;
+  margin-top: var(--spacing-3xl);
+  padding-top: var(--spacing-xl);
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
-
-
-

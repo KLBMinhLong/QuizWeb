@@ -1,14 +1,40 @@
 <%- include("../partical/header", { title: "Bắt đầu làm bài" }) %>
 
-<h2>Bắt đầu làm bài: <%= subject.name %></h2>
-<p>Nhấn nút để hệ thống random đề theo cấu hình mặc định.</p>
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="/" class="breadcrumb__item">Trang chủ</a>
+  <span class="breadcrumb__separator">›</span>
+  <a href="/subjects" class="breadcrumb__item">Chủ đề</a>
+  <span class="breadcrumb__separator">›</span>
+  <a href="/subjects/<%= subject.slug %>" class="breadcrumb__item"
+    ><%= subject.name %></a
+  >
+  <span class="breadcrumb__separator">›</span>
+  <span class="breadcrumb__item breadcrumb__item--current">Bắt đầu</span>
+</nav>
 
-<form method="post" action="/exam/generate">
-  <input type="hidden" name="subjectId" value="<%= String(subject._id) %>" />
-  <button type="submit">Generate đề</button>
-</form>
+<div class="admin-header">
+  <h1 class="admin-header__title">Bắt đầu làm bài: <%= subject.name %></h1>
+</div>
+
+<div
+  class="card mt-xl"
+  style="max-width: 600px; margin-left: auto; margin-right: auto"
+>
+  <h3 class="card__title">Tạo đề thi</h3>
+  <p
+    class="card__content"
+    style="color: var(--color-text-muted); margin-bottom: var(--spacing-lg)"
+  >
+    Hệ thống sẽ tự động tạo đề thi theo cấu hình mặc định của môn học.
+  </p>
+
+  <form method="post" action="/exam/generate">
+    <input type="hidden" name="subjectId" value="<%= String(subject._id) %>" />
+    <button type="submit" class="btn btn-primary" style="width: 100%">
+      Tạo đề và bắt đầu
+    </button>
+  </form>
+</div>
 
 <%- include("../partical/footer") %>
-
-
-
