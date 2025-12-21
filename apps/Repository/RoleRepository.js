@@ -33,7 +33,7 @@ class RoleRepository {
   async updateRole(id, updates) {
     return await this.collection().updateOne(
       { _id: new ObjectId(String(id)) },
-      { $set: updates }
+      { $set: { ...updates, updatedAt: new Date() } }
     );
   }
 

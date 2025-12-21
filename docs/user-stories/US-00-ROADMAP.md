@@ -21,7 +21,7 @@ Chuẩn hoá thứ tự triển khai + tiêu chí “xong” để có thể **c
 - [x] **US-02** UI System (theme, breadcrumb, card/button thống nhất)
 - [x] **US-10** Auth Identity core (register/login/logout + roles many-to-many)
 - [x] **US-11** Middleware guards (requireAuth/requireAdmin + header login state)
-- [ ] **US-12** Admin Roles (CRUD roles + role claims)
+- [x] **US-12** Admin Roles (CRUD roles + role claims)
 - [ ] **US-13** Admin Users (CRUD users + assign roles + user claims)
 - [ ] **US-21** Admin Subjects (CRUD + examConfig + isActive)
 - [ ] **US-20** Subjects Public (danh sách môn học công khai + detail)

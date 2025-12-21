@@ -1,0 +1,442 @@
+<%- include("../partical/header", { title: "Admin - Roles", user: typeof user !== 'undefined' ? user : null }) %>
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="/" class="breadcrumb__item">Trang chủ</a>
+  <span class="breadcrumb__separator">›</span>
+  <a href="/admin" class="breadcrumb__item">Quản trị</a>
+  <span class="breadcrumb__separator">›</span>
+  <span class="breadcrumb__item breadcrumb__item--current">Quản lý Roles</span>
+</nav>
+
+<div class="admin-header">
+  <h1 class="admin-header__title">Quản lý Roles</h1>
+</div>
+
+<% if (error) { %>
+<div class="alert alert-error">
+  <%= error %>
+</div>
+<% } %>
+
+<% if (success) { %>
+<div class="alert alert-success">
+  <% if (success === 'created') { %>
+    ✓ Đã tạo role thành công!
+  <% } else if (success === 'updated') { %>
+    ✓ Đã cập nhật role thành công!
+  <% } else if (success === 'deleted') { %>
+    ✓ Đã xoá role thành công!
+  <% } else { %>
+    <%= success %>
+  <% } %>
+</div>
+<% } %>
+
+<div class="card mt-xl">
+  <h3 class="card__title">Tạo role mới</h3>
+  <form method="post" action="/admin/roles/create">
+    <div class="form-group">
+      <label class="form-label">Tên role</label>
+      <input
+        name="name"
+        class="form-input"
+        placeholder="Ví dụ: editor, reviewer"
+        required
+        pattern="[a-zA-Z0-9_]+"
+        title="Chỉ chứa chữ, số và dấu gạch dưới"
+      />
+      <small style="color: var(--color-text-muted); font-size: 12px; margin-top: 4px; display: block;">
+        Chỉ chứa chữ, số và dấu gạch dưới (2-50 ký tự)
+      </small>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mô tả</label>
+      <textarea
+        name="description"
+        class="form-textarea"
+        placeholder="Mô tả về quyền của role này..."
+        rows="3"
+      ></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Tạo role</button>
+  </form>
+</div>
+
+<div class="card mt-xl">
+  <h3 class="card__title">Danh sách roles</h3>
+  <% if (!roles || roles.length === 0) { %>
+  <p class="card__content" style="color: var(--color-text-muted)">
+    Chưa có role nào.
+  </p>
+  <% } else { %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Tên role</th>
+        <th>Mô tả</th>
+        <th>Số users</th>
+        <th>Ngày tạo</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% roles.forEach(function(role){ %>
+      <tr>
+        <td style="font-weight: 600">
+          <code style="background: var(--color-primary-soft); padding: 4px 8px; border-radius: 4px;">
+            <%= role.name %>
+          </code>
+          <% if (role.normalizedName === 'ADMIN') { %>
+            <span style="color: var(--color-hard); font-size: 12px; margin-left: 8px;">(Protected)</span>
+          <% } %>
+        </td>
+        <td style="color: var(--color-text-muted)">
+          <%= role.description || '-' %>
+        </td>
+        <td>
+          <span style="font-weight: 600; color: var(--color-primary)">
+            <%= role.userCount || 0 %>
+          </span>
+        </td>
+        <td style="color: var(--color-text-muted); font-size: 14px;">
+          <%= role.createdAt ? new Date(role.createdAt).toLocaleDateString('vi-VN') : '-' %>
+        </td>
+        <td>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button 
+              type="button"
+              class="btn btn-primary"
+              style="padding: 6px 12px; font-size: 14px;"
+              onclick="managePermissions('<%= role._id %>', '<%= role.name %>')"
+            >
+              Permissions
+            </button>
+            <button 
+              type="button"
+              class="btn btn-secondary"
+              style="padding: 6px 12px; font-size: 14px;"
+              onclick="editRole('<%= role._id %>', '<%= role.name %>', '<%= (role.description || '').replace(/'/g, "\\'") %>')"
+            >
+              Sửa
+            </button>
+            <% if (role.normalizedName !== 'ADMIN' && (role.userCount || 0) === 0) { %>
+            <form method="post" action="/admin/roles/<%= role._id %>/delete" style="display: inline;" 
+                  onsubmit="return confirm('Bạn có chắc muốn xoá role này?')">
+              <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 14px;">
+                Xoá
+              </button>
+            </form>
+            <% } else { %>
+            <button 
+              type="button"
+              class="btn btn-secondary"
+              style="padding: 6px 12px; font-size: 14px; opacity: 0.5; cursor: not-allowed;"
+              disabled
+              title="<% if (role.normalizedName === 'ADMIN') { %>Không thể xoá role admin<% } else { %>Không thể xoá role đang được sử dụng<% } %>"
+            >
+              Xoá
+            </button>
+            <% } %>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
+
+<!-- Modal Edit Role -->
+<div id="editModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div class="card" style="max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+    <h3 class="card__title">Sửa role</h3>
+    <form method="post" id="editForm" action="">
+      <input type="hidden" name="roleId" id="editRoleId" />
+      <div class="form-group">
+        <label class="form-label">Tên role</label>
+        <input
+          name="name"
+          id="editRoleName"
+          class="form-input"
+          required
+          pattern="[a-zA-Z0-9_]+"
+          title="Chỉ chứa chữ, số và dấu gạch dưới"
+        />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mô tả</label>
+        <textarea
+          name="description"
+          id="editRoleDescription"
+          class="form-textarea"
+          rows="3"
+        ></textarea>
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: var(--spacing-lg);">
+        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Manage Permissions -->
+<div id="permissionsModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1001; align-items: center; justify-content: center;">
+  <div class="card" style="max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+      <h3 class="card__title" style="margin: 0;">Quản lý Permissions: <span id="permissionsRoleName"></span></h3>
+      <button type="button" class="btn btn-secondary" onclick="closePermissionsModal()" style="padding: 6px 12px;">✕</button>
+    </div>
+    
+    <div id="permissionsLoading" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-muted);">
+      Đang tải...
+    </div>
+    
+    <div id="permissionsContent" style="display: none;">
+      <!-- Current Permissions -->
+      <div style="margin-bottom: var(--spacing-xl);">
+        <h4 style="margin-bottom: var(--spacing-md); color: var(--color-text-main);">Permissions hiện tại</h4>
+        <div id="currentPermissions" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px;">
+          <p style="color: var(--color-text-muted); width: 100%;">Chưa có permission nào</p>
+        </div>
+      </div>
+      
+      <!-- Add Permission -->
+      <div style="margin-bottom: var(--spacing-xl);">
+        <h4 style="margin-bottom: var(--spacing-md); color: var(--color-text-main);">Thêm permission</h4>
+        <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px;">
+          <select id="permissionSelect" class="form-input">
+            <option value="">-- Chọn permission --</option>
+          </select>
+          <button type="button" class="btn btn-primary" onclick="addPermission()" style="white-space: nowrap;">
+            Thêm
+          </button>
+        </div>
+      </div>
+      
+      <!-- Available Permissions by Category -->
+      <div>
+        <h4 style="margin-bottom: var(--spacing-md); color: var(--color-text-main);">Danh sách permissions</h4>
+        <div id="availablePermissions" style="display: flex; flex-direction: column; gap: var(--spacing-lg);">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function editRole(id, name, description) {
+  document.getElementById('editRoleId').value = id;
+  document.getElementById('editRoleName').value = name;
+  document.getElementById('editRoleDescription').value = description || '';
+  document.getElementById('editForm').action = '/admin/roles/' + id + '/update';
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+}
+
+// Close modal khi click outside
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeEditModal();
+  }
+});
+
+// ===== Permissions Management =====
+let currentRoleId = null;
+let currentClaims = [];
+let availablePermissions = [];
+
+function managePermissions(roleId, roleName) {
+  currentRoleId = roleId;
+  document.getElementById('permissionsRoleName').textContent = roleName;
+  document.getElementById('permissionsModal').style.display = 'flex';
+  document.getElementById('permissionsLoading').style.display = 'block';
+  document.getElementById('permissionsContent').style.display = 'none';
+  
+  // Load permissions
+  fetch(`/admin/roles/${roleId}/claims`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        currentClaims = data.claims || [];
+        availablePermissions = data.availablePermissions || [];
+        renderPermissions(data);
+      } else {
+        alert('Lỗi: ' + data.message);
+        closePermissionsModal();
+      }
+    })
+    .catch(err => {
+      console.error('Error loading permissions:', err);
+      alert('Lỗi khi tải permissions');
+      closePermissionsModal();
+    });
+}
+
+function renderPermissions(data) {
+  document.getElementById('permissionsLoading').style.display = 'none';
+  document.getElementById('permissionsContent').style.display = 'block';
+  
+  // Render current permissions
+  const currentPermsDiv = document.getElementById('currentPermissions');
+  if (currentClaims.length === 0) {
+    currentPermsDiv.innerHTML = '<p style="color: var(--color-text-muted); width: 100%;">Chưa có permission nào</p>';
+  } else {
+    currentPermsDiv.innerHTML = currentClaims.map(claim => {
+      const perm = availablePermissions.find(p => p.value === claim.claimValue);
+      return `
+        <span style="
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--color-primary-soft);
+          color: var(--color-text-main);
+          padding: 6px 12px;
+          border-radius: var(--radius-sm);
+          font-size: 14px;
+        ">
+          ${perm ? perm.label : claim.claimValue}
+          <button 
+            type="button"
+            onclick="removePermission('${claim._id}')"
+            style="
+              background: none;
+              border: none;
+              color: var(--color-hard);
+              cursor: pointer;
+              padding: 0;
+              margin-left: 4px;
+              font-size: 16px;
+              line-height: 1;
+            "
+            title="Xóa permission"
+          >✕</button>
+        </span>
+      `;
+    }).join('');
+  }
+  
+  // Render permission select
+  const select = document.getElementById('permissionSelect');
+  const currentValues = currentClaims.map(c => c.claimValue);
+  const available = availablePermissions.filter(p => !currentValues.includes(p.value));
+  
+  select.innerHTML = '<option value="">-- Chọn permission --</option>' +
+    available.map(p => `<option value="${p.value}">${p.label} (${p.value})</option>`).join('');
+  
+  // Render available permissions by category
+  const availableDiv = document.getElementById('availablePermissions');
+  const byCategory = {};
+  availablePermissions.forEach(perm => {
+    if (!byCategory[perm.category]) {
+      byCategory[perm.category] = [];
+    }
+    byCategory[perm.category].push(perm);
+  });
+  
+  availableDiv.innerHTML = Object.keys(byCategory).map(category => {
+    const perms = byCategory[category];
+    const hasPerm = perms.some(p => currentValues.includes(p.value));
+    return `
+      <div style="border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-sm); padding: var(--spacing-md);">
+        <h5 style="margin: 0 0 var(--spacing-sm) 0; color: var(--color-text-main); font-size: 16px;">
+          ${category}
+        </h5>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          ${perms.map(perm => {
+            const isActive = currentValues.includes(perm.value);
+            return `
+              <span style="
+                display: inline-block;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 13px;
+                background: ${isActive ? 'var(--color-primary-soft)' : 'transparent'};
+                color: ${isActive ? 'var(--color-primary-dark)' : 'var(--color-text-muted)'};
+                border: 1px solid ${isActive ? 'var(--color-primary)' : 'rgba(0,0,0,0.1)'};
+              ">
+                ${perm.label}
+              </span>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function addPermission() {
+  const select = document.getElementById('permissionSelect');
+  const permissionValue = select.value;
+  
+  if (!permissionValue) {
+    alert('Vui lòng chọn permission');
+    return;
+  }
+  
+  fetch(`/admin/roles/${currentRoleId}/claims/add`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: `claimType=permission&claimValue=${encodeURIComponent(permissionValue)}`
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        // Reload permissions
+        managePermissions(currentRoleId, document.getElementById('permissionsRoleName').textContent);
+      } else {
+        alert('Lỗi: ' + data.message);
+      }
+    })
+    .catch(err => {
+      console.error('Error adding permission:', err);
+      alert('Lỗi khi thêm permission');
+    });
+}
+
+function removePermission(claimId) {
+  if (!confirm('Bạn có chắc muốn xóa permission này?')) {
+    return;
+  }
+  
+  fetch(`/admin/roles/${currentRoleId}/claims/${claimId}/remove`, {
+    method: 'POST',
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        // Reload permissions
+        managePermissions(currentRoleId, document.getElementById('permissionsRoleName').textContent);
+      } else {
+        alert('Lỗi: ' + data.message);
+      }
+    })
+    .catch(err => {
+      console.error('Error removing permission:', err);
+      alert('Lỗi khi xóa permission');
+    });
+}
+
+function closePermissionsModal() {
+  document.getElementById('permissionsModal').style.display = 'none';
+  currentRoleId = null;
+  currentClaims = [];
+}
+
+// Close permissions modal when clicking outside
+document.getElementById('permissionsModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closePermissionsModal();
+  }
+});
+</script>
+
+<%- include("../partical/footer") %>
+
