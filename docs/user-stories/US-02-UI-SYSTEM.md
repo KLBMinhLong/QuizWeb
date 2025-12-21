@@ -27,9 +27,9 @@
 
 - Luôn đặt breadcrumb phía trên H1
 - Pattern:
-  - Trang list: `Trang chủ > Chủ đề`
-  - Trang detail môn: `Trang chủ > Chủ đề > <Tên môn>`
-  - Trang exam: `Trang chủ > Chủ đề > <Tên môn> > Làm bài`
+  - Trang list: `Trang chủ > Môn học`
+  - Trang detail môn: `Trang chủ > Môn học > <Tên môn>`
+  - Trang exam: `Trang chủ > Môn học > <Tên môn> > Làm bài`
   - Admin: `Trang chủ > Quản trị > <Màn hình>`
 
 ## 6. Acceptance criteria

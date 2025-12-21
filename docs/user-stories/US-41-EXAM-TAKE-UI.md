@@ -15,7 +15,7 @@
 - `apps/views/exam/take.ejs`
 
 UI theo `docs/UI_DESIGN.md`:
-- Breadcrumb: `Trang chủ > Chủ đề > <Tên môn> > Làm bài`
+- Breadcrumb: `Trang chủ > Môn học > <Tên môn> > Làm bài`
 - Card/badge difficulty + button thống nhất
 
 ## 4. Acceptance criteria

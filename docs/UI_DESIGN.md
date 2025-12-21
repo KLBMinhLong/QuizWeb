@@ -46,7 +46,7 @@ Tham chiếu từ UI mẫu (tông xanh lá, card mềm, shadow nhẹ) nhưng đ�
 
 - Breadcrumb luôn hiển thị ở đầu trang, phía trên tiêu đề lớn.
 - Ví dụ cho trang chi tiết môn:
-  - `Trang chủ > Chủ đề > Lịch sử Việt Nam`
+  - `Trang chủ > Môn học > Lịch sử Việt Nam`
 - Mỗi item:
   - Item trước là **link** (`a`), item cuối là **text** (không click).
 
@@ -56,7 +56,7 @@ Tham chiếu từ UI mẫu (tông xanh lá, card mềm, shadow nhẹ) nhưng đ�
 <nav class="breadcrumb">
   <a href="/" class="breadcrumb__item">Trang chủ</a>
   <span class="breadcrumb__separator">›</span>
-  <a href="/subjects" class="breadcrumb__item">Chủ đề</a>
+  <a href="/subjects" class="breadcrumb__item">Môn học</a>
   <span class="breadcrumb__separator">›</span>
   <span class="breadcrumb__item breadcrumb__item--current"><%= subject.name %></span>
 </nav>

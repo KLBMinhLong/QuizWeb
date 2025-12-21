@@ -19,7 +19,7 @@
 UI theo `docs/UI_DESIGN.md`:
 - Section comment là một card (nền trắng, bo góc, shadow nhẹ)
 - Form input + button theo style chung
-- Breadcrumb vẫn giữ: `Trang chủ > Chủ đề > <Tên môn>`
+- Breadcrumb vẫn giữ: `Trang chủ > Môn học > <Tên môn>`
 
 ## 4. Routes
 

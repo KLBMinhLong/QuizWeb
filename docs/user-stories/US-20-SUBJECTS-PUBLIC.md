@@ -50,7 +50,7 @@ UI phải theo `docs/UI_DESIGN.md` (card, button, breadcrumb).
 
 - AC1: `/subjects` chỉ hiển thị môn `isActive=true`
 - AC2: `/subjects/:slug` 404 nếu không tồn tại
-- AC3: Detail có breadcrumb đúng: `Trang chủ > Chủ đề > <Tên môn>`
+- AC3: Detail có breadcrumb đúng: `Trang chủ > Môn học > <Tên môn>`
 - AC4: Start page hiển thị đúng `subject._id` để generate
 
 ## 7. Files liên quan
