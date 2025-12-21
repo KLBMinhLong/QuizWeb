@@ -13,6 +13,7 @@ router.get("/", function (req, res) {
 router.use("/subjects", require(__dirname + "/subjectmanagecontroller"));
 router.use("/questions", require(__dirname + "/questionmanagecontroller"));
 router.use("/roles", require(__dirname + "/rolemanagecontroller"));
+router.use("/users", require(__dirname + "/usermanagecontroller"));
 
 module.exports = router;
 

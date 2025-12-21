@@ -1,0 +1,252 @@
+<%- include("../partical/header", { title: "Admin - Users", user: typeof user !== 'undefined' ? user : null }) %>
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="/" class="breadcrumb__item">Trang chủ</a>
+  <span class="breadcrumb__separator">›</span>
+  <a href="/admin" class="breadcrumb__item">Quản trị</a>
+  <span class="breadcrumb__separator">›</span>
+  <span class="breadcrumb__item breadcrumb__item--current">Quản lý Users</span>
+</nav>
+
+<div class="admin-header">
+  <h1 class="admin-header__title">Quản lý Users</h1>
+</div>
+
+<% if (error) { %>
+<div class="alert alert-error">
+  <%= error %>
+</div>
+<% } %>
+
+<% if (success) { %>
+<div class="alert alert-success">
+  <% if (success === 'blocked') { %>
+    ✓ Đã block user thành công!
+  <% } else if (success === 'unblocked') { %>
+    ✓ Đã unblock user thành công!
+  <% } else if (success === 'role_added') { %>
+    ✓ Đã gán role cho user thành công!
+  <% } else if (success === 'role_removed') { %>
+    ✓ Đã bỏ role khỏi user thành công!
+  <% } else { %>
+    <%= success %>
+  <% } %>
+</div>
+<% } %>
+
+<!-- Filter và Search -->
+<div class="card mt-xl">
+  <h3 class="card__title">Lọc và tìm kiếm</h3>
+  <form method="get" action="/admin/users" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+    <div class="form-group" style="flex: 1; min-width: 200px;">
+      <label class="form-label">Tìm kiếm</label>
+      <input
+        type="text"
+        name="search"
+        class="form-input"
+        placeholder="Username, email, tên..."
+        value="<%= filters.search || '' %>"
+      />
+    </div>
+    <div class="form-group" style="min-width: 150px;">
+      <label class="form-label">Trạng thái</label>
+      <select name="trangThai" class="form-input">
+        <option value="all" <%= filters.trangThai === 'all' ? 'selected' : '' %>>Tất cả</option>
+        <option value="active" <%= filters.trangThai === 'active' ? 'selected' : '' %>>Active</option>
+        <option value="blocked" <%= filters.trangThai === 'blocked' ? 'selected' : '' %>>Blocked</option>
+        <option value="inactive" <%= filters.trangThai === 'inactive' ? 'selected' : '' %>>Inactive</option>
+      </select>
+    </div>
+    <div>
+      <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+      <a href="/admin/users" class="btn btn-secondary" style="margin-left: 8px;">Reset</a>
+    </div>
+  </form>
+</div>
+
+<!-- Danh sách users -->
+<div class="card mt-xl">
+  <h3 class="card__title">Danh sách users (<%= users.length %>)</h3>
+  <% if (!users || users.length === 0) { %>
+  <p class="card__content" style="color: var(--color-text-muted)">
+    Không tìm thấy user nào.
+  </p>
+  <% } else { %>
+  <div style="overflow-x: auto;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Họ tên</th>
+          <th>Roles</th>
+          <th>Trạng thái</th>
+          <th>Ngày tạo</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(function(u){ %>
+        <tr>
+          <td style="font-weight: 600">
+            <code style="background: var(--color-primary-soft); padding: 4px 8px; border-radius: 4px;">
+              <%= u.username %>
+            </code>
+          </td>
+          <td style="color: var(--color-text-muted)">
+            <%= u.email %>
+          </td>
+          <td>
+            <%= u.fullName || '-' %>
+          </td>
+          <td>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+              <% if (!u.roles || u.roles.length === 0) { %>
+                <span style="color: var(--color-text-muted); font-size: 13px;">Chưa có role</span>
+              <% } else { %>
+                <% u.roles.forEach(function(role){ %>
+                <span style="
+                  display: inline-block;
+                  background: var(--color-primary-soft);
+                  color: var(--color-text-main);
+                  padding: 3px 8px;
+                  border-radius: 4px;
+                  font-size: 12px;
+                  font-weight: 500;
+                ">
+                  <%= role.name %>
+                  <form method="post" action="/admin/users/<%= u._id %>/roles/<%= role._id %>/remove" style="display: inline;" 
+                        onsubmit="return confirm('Bạn có chắc muốn bỏ role này?')">
+                    <button type="submit" style="
+                      background: none;
+                      border: none;
+                      color: var(--color-hard);
+                      cursor: pointer;
+                      margin-left: 4px;
+                      padding: 0;
+                      font-size: 14px;
+                    " title="Bỏ role">✕</button>
+                  </form>
+                </span>
+                <% }) %>
+              <% } %>
+            </div>
+            <button 
+              type="button"
+              class="btn btn-secondary"
+              style="padding: 4px 8px; font-size: 12px; margin-top: 4px;"
+              onclick="showAssignRoleModal('<%= u._id %>', '<%= u.username %>')"
+            >
+              + Gán role
+            </button>
+          </td>
+          <td>
+            <% if (u.trangThai === 'active') { %>
+              <span style="
+                display: inline-block;
+                background: var(--color-easy);
+                color: white;
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+              ">Active</span>
+            <% } else if (u.trangThai === 'blocked') { %>
+              <span style="
+                display: inline-block;
+                background: var(--color-hard);
+                color: white;
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+              ">Blocked</span>
+            <% } else { %>
+              <span style="
+                display: inline-block;
+                background: var(--color-text-muted);
+                color: white;
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+              ">Inactive</span>
+            <% } %>
+          </td>
+          <td style="color: var(--color-text-muted); font-size: 14px;">
+            <%= u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : '-' %>
+          </td>
+          <td>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <% if (u.trangThai === 'blocked') { %>
+              <form method="post" action="/admin/users/<%= u._id %>/unblock" style="display: inline;">
+                <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 14px;">
+                  Unblock
+                </button>
+              </form>
+              <% } else { %>
+              <form method="post" action="/admin/users/<%= u._id %>/block" style="display: inline;"
+                    onsubmit="return confirm('Bạn có chắc muốn block user này?')">
+                <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 14px;">
+                  Block
+                </button>
+              </form>
+              <% } %>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<!-- Modal Assign Role -->
+<div id="assignRoleModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div class="card" style="max-width: 500px; width: 90%;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+      <h3 class="card__title" style="margin: 0;">Gán role cho: <span id="assignRoleUserName"></span></h3>
+      <button type="button" class="btn btn-secondary" onclick="closeAssignRoleModal()" style="padding: 6px 12px;">✕</button>
+    </div>
+    <form method="post" id="assignRoleForm" action="">
+      <div class="form-group">
+        <label class="form-label">Chọn role</label>
+        <select name="roleId" id="assignRoleSelect" class="form-input" required>
+          <option value="">-- Chọn role --</option>
+          <% allRoles.forEach(function(role){ %>
+          <option value="<%= role._id %>"><%= role.name %> - <%= role.description || 'Không có mô tả' %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: var(--spacing-lg);">
+        <button type="submit" class="btn btn-primary">Gán role</button>
+        <button type="button" class="btn btn-secondary" onclick="closeAssignRoleModal()">Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function showAssignRoleModal(userId, username) {
+  document.getElementById('assignRoleUserName').textContent = username;
+  document.getElementById('assignRoleForm').action = '/admin/users/' + userId + '/roles/add';
+  document.getElementById('assignRoleSelect').value = '';
+  document.getElementById('assignRoleModal').style.display = 'flex';
+}
+
+function closeAssignRoleModal() {
+  document.getElementById('assignRoleModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.getElementById('assignRoleModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeAssignRoleModal();
+  }
+});
+</script>
+
+<%- include("../partical/footer") %>
+

@@ -23,7 +23,7 @@ UI theo `docs/UI_DESIGN.md` (card, button, breadcrumb admin).
 - `POST /admin/subjects/create`
 - `POST /admin/subjects/:id/update` (cần thêm)
 - `POST /admin/subjects/:id/toggle-active` (cần thêm)
-- (optional) `POST /admin/subjects/:id/delete`
+- `POST /admin/subjects/:id/delete`
 
 ## 5. Main flows
 

@@ -1,11 +1,11 @@
 # US-12 Admin Roles - Changelog
 
 **Ngày hoàn thành**: 21/12/2025  
-**Trạng thái**: ✅ Hoàn thành
+**Trạng thái**: ✅ Hoàn thành (đã bổ sung Claims Management)
 
 ## Tóm tắt
 
-Đã implement đầy đủ CRUD cho Roles management với UI đẹp, validation đầy đủ và bảo vệ role admin.
+Đã implement đầy đủ CRUD cho Roles management với UI đẹp, validation đầy đủ, bảo vệ role admin, **và quản lý Claims/Permissions cho từng role**.
 
 ---
 
@@ -15,12 +15,18 @@
 
 **File**: `apps/Services/RoleService.js`
 
-**Chức năng**:
+**Chức năng CRUD Roles**:
 - ✅ `getAllRoles()` - Lấy tất cả roles kèm số lượng users
 - ✅ `getRoleById(id)` - Lấy role theo ID kèm claims và user count
 - ✅ `createRole(roleData)` - Tạo role mới với validation
 - ✅ `updateRole(id, roleData)` - Cập nhật role với validation
 - ✅ `deleteRole(id)` - Xoá role với kiểm tra an toàn
+
+**Chức năng Claims Management** (Bổ sung):
+- ✅ `getAvailablePermissions()` - Static method trả về danh sách permissions có sẵn
+- ✅ `addClaimToRole(roleId, claimType, claimValue)` - Thêm permission cho role
+- ✅ `removeClaimFromRole(claimId)` - Xóa permission khỏi role
+- ✅ `getRoleClaims(roleId)` - Lấy tất cả permissions của role
 
 **Business Logic**:
 - ✅ Case-insensitive check (qua normalizedName)
@@ -32,11 +38,16 @@
 
 **File**: `apps/controllers/admin/rolemanagecontroller.js`
 
-**Routes**:
+**Routes CRUD Roles**:
 - ✅ `GET /admin/roles` - Danh sách roles
 - ✅ `POST /admin/roles/create` - Tạo role mới
 - ✅ `POST /admin/roles/:id/update` - Cập nhật role
 - ✅ `POST /admin/roles/:id/delete` - Xoá role
+
+**Routes Claims Management** (Bổ sung):
+- ✅ `GET /admin/roles/:id/claims` - Xem claims của role (JSON API)
+- ✅ `POST /admin/roles/:id/claims/add` - Thêm permission cho role
+- ✅ `POST /admin/roles/:id/claims/:claimId/remove` - Xóa permission khỏi role
 
 **Validation**:
 - ✅ Tên role: 2-50 ký tự, chỉ chữ/số/underscore
@@ -47,20 +58,29 @@
 
 **File**: `apps/views/admin/roles.ejs`
 
-**Features**:
+**Features CRUD Roles**:
 - ✅ Form tạo role mới
 - ✅ Bảng danh sách roles với:
   - Tên role (code style)
   - Mô tả
   - Số lượng users đang sử dụng
   - Ngày tạo
-  - Thao tác (Sửa/Xoá)
+  - Thao tác (Permissions/Sửa/Xoá)
 - ✅ Modal edit role (inline editing)
 - ✅ Success/Error alerts đẹp
 - ✅ Protected role indicator (admin)
 - ✅ Disable delete button cho:
   - Role admin
   - Role đang được sử dụng
+
+**Features Claims Management** (Bổ sung):
+- ✅ Button "Permissions" cho mỗi role
+- ✅ Modal quản lý permissions với:
+  - Hiển thị permissions hiện tại (có thể xóa)
+  - Dropdown để thêm permission mới
+  - Danh sách permissions theo category (Users, Roles, Subjects, Questions, Exams, Comments, System)
+  - Visual indicators (active/inactive permissions)
+  - AJAX để thêm/xóa không cần reload page
 
 **UI Highlights**:
 - Responsive design
@@ -88,6 +108,9 @@
 - ✅ Không cho xoá role đang được sử dụng
 - ✅ Hiển thị số lượng users cho mỗi role
 - ✅ UI/UX đẹp với modal edit
+- ✅ **Quản lý permissions đầy đủ** - Role mới có thể được gán permissions ngay
+- ✅ **25 permissions có sẵn** được phân loại theo category
+- ✅ **AJAX-based UI** - Thêm/xóa permissions không cần reload
 
 ---
 
