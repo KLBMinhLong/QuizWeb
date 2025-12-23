@@ -29,12 +29,104 @@
     Hệ thống sẽ tự động tạo đề thi theo cấu hình mặc định của môn học.
   </p>
 
+  <% if (subject.questionStats && subject.questionStats.total > 0) { %>
+  <!-- Hiển thị thông tin đề thi -->
+  <div
+    style="
+      background: var(--color-primary-soft);
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-lg);
+    "
+  >
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-sm);
+      "
+    >
+      <span style="font-weight: 600; color: var(--color-text-main)"
+        >Cấu hình đề:</span
+      >
+      <span style="color: var(--color-text-main)">
+        <%= (subject.examConfig?.easyCount || 0) +
+        (subject.examConfig?.mediumCount || 0) + (subject.examConfig?.hardCount
+        || 0) %> câu
+      </span>
+    </div>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-sm);
+        font-size: 14px;
+      "
+    >
+      <span style="color: var(--color-text-muted)"
+        >• <%= subject.examConfig?.easyCount || 0 %> câu dễ</span
+      >
+      <span style="color: var(--color-text-muted)"
+        >• <%= subject.examConfig?.mediumCount || 0 %> câu trung bình</span
+      >
+      <span style="color: var(--color-text-muted)"
+        >• <%= subject.examConfig?.hardCount || 0 %> câu khó</span
+      >
+    </div>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        padding-top: var(--spacing-sm);
+        border-top: 1px solid rgba(34, 197, 94, 0.2);
+      "
+    >
+      <span style="font-weight: 600; color: var(--color-text-main)"
+        >Thời gian:</span
+      >
+      <span style="color: var(--color-text-main)"
+        ><%= subject.examConfig?.durationMinutes || 0 %> phút</span
+      >
+    </div>
+  </div>
+
   <form method="post" action="/exam/generate">
     <input type="hidden" name="subjectId" value="<%= String(subject._id) %>" />
     <button type="submit" class="btn btn-primary" style="width: 100%">
       Tạo đề và bắt đầu
     </button>
   </form>
+  <% } else { %>
+  <div
+    style="
+      text-align: center;
+      padding: var(--spacing-xl);
+      color: var(--color-text-muted);
+    "
+  >
+    <p style="margin-bottom: var(--spacing-md); font-size: 16px">
+      ⚠️ Môn học này chưa có câu hỏi nào.
+    </p>
+    <p style="font-size: 14px">Không thể tạo đề thi.</p>
+    <% if (user && user.role === 'admin') { %>
+    <a
+      href="/admin/questions"
+      class="btn btn-primary"
+      style="margin-top: var(--spacing-lg); display: inline-block"
+    >
+      Thêm câu hỏi
+    </a>
+    <% } else { %>
+    <a
+      href="/subjects"
+      class="btn btn-secondary"
+      style="margin-top: var(--spacing-lg); display: inline-block"
+    >
+      Quay lại danh sách môn học
+    </a>
+    <% } %>
+  </div>
+  <% } %>
 </div>
 
 <%- include("../partical/footer") %>

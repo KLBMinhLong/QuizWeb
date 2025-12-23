@@ -23,9 +23,9 @@ Chuẩn hoá thứ tự triển khai + tiêu chí “xong” để có thể **c
 - [x] **US-11** Middleware guards (requireAuth/requireAdmin + header login state)
 - [x] **US-12** Admin Roles (CRUD roles + role claims)
 - [x] **US-13** Admin Users (CRUD users + assign roles + user claims)
-- [ ] **US-21** Admin Subjects (CRUD + examConfig + isActive)
-- [ ] **US-20** Subjects Public (danh sách môn học công khai + detail)
-- [ ] **US-22** Subject comments (bình luận theo môn, requireAuth khi post)
+- [x] **US-21** Admin Subjects (CRUD + examConfig + isActive)
+- [x] **US-20** Subjects Public (danh sách môn học công khai + detail)
+- [x] **US-22** Subject comments (bình luận theo môn, requireAuth khi post)
 - [ ] **US-30** Questions model/validation (chuẩn hoá schema answers + validate theo type)
 - [ ] **US-32** Admin Questions Import (import từ Excel/CSV)
 - [ ] **US-31** Admin Questions CRUD (tạo/sửa/xoá + filter)
@@ -41,5 +41,3 @@ Chuẩn hoá thứ tự triển khai + tiêu chí “xong” để có thể **c
 - Data model: `docs/DATA_MODEL.md`
 - Coding rules: `docs/CODING_GUIDE.md`
 - UI rules: `docs/UI_DESIGN.md`
-
-

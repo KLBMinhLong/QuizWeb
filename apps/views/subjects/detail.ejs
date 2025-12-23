@@ -26,11 +26,15 @@
         </div>
         <div class="subject-meta__item">
           <span class="subject-meta__label">Tổng câu hỏi:</span>
-          <span
-            ><%= (subject.examConfig?.easyCount || 0) +
-            (subject.examConfig?.mediumCount || 0) +
-            (subject.examConfig?.hardCount || 0) %> câu</span
-          >
+          <span><%= subject.questionStats?.total || 0 %> câu</span>
+        </div>
+        <div class="subject-meta__item">
+          <span class="subject-meta__label">Cấu hình đề:</span>
+          <span>
+            <%= subject.examConfig?.easyCount || 0 %> dễ, <%=
+            subject.examConfig?.mediumCount || 0 %> TB, <%=
+            subject.examConfig?.hardCount || 0 %> khó
+          </span>
         </div>
       </div>
     </div>
@@ -44,32 +48,31 @@
       <div class="question-distribution__grid">
         <div class="question-stat question-stat--easy">
           <div class="question-stat__number">
-            <%= subject.examConfig?.easyCount || 0 %>
+            <%= subject.questionStats?.easy || 0 %>
           </div>
           <div class="question-stat__label">Dễ</div>
         </div>
         <div class="question-stat question-stat--medium">
           <div class="question-stat__number">
-            <%= subject.examConfig?.mediumCount || 0 %>
+            <%= subject.questionStats?.medium || 0 %>
           </div>
           <div class="question-stat__label">Trung bình</div>
         </div>
         <div class="question-stat question-stat--hard">
           <div class="question-stat__number">
-            <%= subject.examConfig?.hardCount || 0 %>
+            <%= subject.questionStats?.hard || 0 %>
           </div>
           <div class="question-stat__label">Khó</div>
         </div>
         <div class="question-stat question-stat--total">
           <div class="question-stat__number">
-            <%= (subject.examConfig?.easyCount || 0) +
-            (subject.examConfig?.mediumCount || 0) +
-            (subject.examConfig?.hardCount || 0) %>
+            <%= subject.questionStats?.total || 0 %>
           </div>
           <div class="question-stat__label">Tổng</div>
         </div>
       </div>
 
+      <% if (subject.questionStats && subject.questionStats.total > 0) { %>
       <div class="question-distribution__actions">
         <form method="get" action="/exam/start/<%= subject.slug %>">
           <button type="submit" class="btn btn-primary" style="width: 100%">
@@ -77,8 +80,142 @@
           </button>
         </form>
       </div>
+      <% } else { %>
+      <div
+        style="
+          text-align: center;
+          padding: var(--spacing-lg);
+          color: var(--color-text-muted);
+          font-size: 14px;
+        "
+      >
+        <p style="margin-bottom: var(--spacing-md)">
+          Môn học này chưa có câu hỏi.
+        </p>
+        <% if (user && user.role === 'admin') { %>
+        <a
+          href="/admin/questions"
+          style="
+            color: var(--color-primary);
+            font-weight: 600;
+            text-decoration: none;
+          "
+        >
+          Thêm câu hỏi
+        </a>
+        <% } %>
+      </div>
+      <% } %>
     </div>
   </div>
 </div>
+
+<!-- Comments Section -->
+<section class="comments" id="comments" style="margin-top: var(--spacing-3xl)">
+  <h3 class="comments__title">Bình luận</h3>
+
+  <% if (error) { %>
+  <div class="error" style="margin-bottom: var(--spacing-lg)"><%= error %></div>
+  <% } %> <% if (user) { %>
+  <!-- Comment Form -->
+  <form
+    class="comment-form"
+    method="post"
+    action="/subjects/<%= subject.slug %>/comments"
+  >
+    <textarea
+      name="content"
+      class="comment-form__input"
+      rows="3"
+      placeholder="Viết bình luận của bạn..."
+      required
+      maxlength="1000"
+    ></textarea>
+    <div class="comment-form__actions">
+      <button class="btn btn-primary" type="submit">Gửi bình luận</button>
+    </div>
+  </form>
+  <% } else { %>
+  <div
+    style="
+      background: var(--color-primary-soft);
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-xl);
+    "
+  >
+    <p style="color: var(--color-text-main); margin: 0">
+      Bạn cần
+      <a
+        href="/auth/login"
+        style="
+          color: var(--color-primary);
+          font-weight: 600;
+          text-decoration: none;
+        "
+        >đăng nhập</a
+      >
+      để viết bình luận.
+    </p>
+  </div>
+  <% } %>
+
+  <!-- Comment List -->
+  <div class="comment-list">
+    <% if (!comments || comments.length === 0) { %>
+    <p
+      style="
+        color: var(--color-text-muted);
+        text-align: center;
+        padding: var(--spacing-xl);
+      "
+    >
+      Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
+    </p>
+    <% } else { %> <% comments.forEach(function(c){ %>
+    <div class="comment-item">
+      <div class="comment-item__avatar">
+        <%= (c.usernameSnapshot || "?").slice(0,1).toUpperCase() %>
+      </div>
+      <div class="comment-item__body">
+        <div class="comment-item__meta">
+          <span class="comment-item__user"><%= c.usernameSnapshot %></span>
+          <span class="comment-item__time">
+            <%= new Date(c.createdAt).toLocaleDateString('vi-VN', { year:
+            'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:
+            '2-digit' }) %>
+          </span>
+        </div>
+        <div class="comment-item__content"><%= c.content %></div>
+        <% if (user && (String(user._id) === String(c.userId) || user.role ===
+        'admin' || user.role === 'moderator')) { %>
+        <div style="margin-top: var(--spacing-sm)">
+          <form
+            method="post"
+            action="/subjects/<%= subject.slug %>/comments/<%= String(c._id) %>/delete"
+            style="display: inline"
+            onsubmit="return confirm('Bạn có chắc muốn xóa bình luận này?')"
+          >
+            <button
+              type="submit"
+              style="
+                background: none;
+                border: none;
+                color: var(--color-hard);
+                cursor: pointer;
+                font-size: 12px;
+                padding: 0;
+              "
+            >
+              Xóa
+            </button>
+          </form>
+        </div>
+        <% } %>
+      </div>
+    </div>
+    <% }) %> <% } %>
+  </div>
+</section>
 
 <%- include("../partical/footer") %>
