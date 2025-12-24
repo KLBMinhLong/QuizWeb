@@ -1,0 +1,320 @@
+<%- include("../partical/header", { title: "Admin - Import Câu hỏi" }) %>
+
+<style>
+/* Loading Overlay */
+.import-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.import-loading-overlay.active {
+  display: flex;
+}
+
+.import-loading-content {
+  background: white;
+  padding: 2rem 3rem;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.import-loading-spinner {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1.5rem;
+  position: relative;
+}
+
+.import-loading-spinner::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 4px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.import-loading-text {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.import-loading-subtext {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.import-loading-progress {
+  margin-top: 1rem;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.import-loading-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+  width: 0%;
+  animation: progress 2s ease-in-out infinite;
+  background-size: 200% 100%;
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+    background-position: 0% 50%;
+  }
+  50% {
+    width: 70%;
+    background-position: 100% 50%;
+  }
+  100% {
+    width: 100%;
+    background-position: 0% 50%;
+  }
+}
+
+/* Fun animations */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.import-loading-icon {
+  font-size: 3rem;
+  animation: bounce 2s infinite;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+/* Fun floating animation for icon */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotate(-5deg);
+  }
+  75% {
+    transform: translateY(-5px) rotate(5deg);
+  }
+}
+
+.import-loading-icon {
+  animation: float 3s ease-in-out infinite;
+}
+</style>
+
+<!-- Loading Overlay -->
+<div id="importLoadingOverlay" class="import-loading-overlay">
+  <div class="import-loading-content">
+    <div class="import-loading-icon">📚</div>
+    <div class="import-loading-spinner"></div>
+    <div class="import-loading-text">Đang import câu hỏi...</div>
+    <div class="import-loading-subtext" id="loadingStatus">
+      Đang xử lý file của bạn, vui lòng đợi trong giây lát
+    </div>
+    <div class="import-loading-progress">
+      <div class="import-loading-progress-bar"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Show loading overlay when form is submitted
+document.addEventListener("DOMContentLoaded", function() {
+  const form = document.querySelector("form[action='/admin/questions/import']");
+  const overlay = document.getElementById("importLoadingOverlay");
+  const statusText = document.getElementById("loadingStatus");
+  
+  const messages = [
+    { text: "Đang đọc file...", icon: "📖" },
+    { text: "Đang kiểm tra dữ liệu...", icon: "🔍" },
+    { text: "Đang validate câu hỏi...", icon: "✓" },
+    { text: "Đang lưu vào database...", icon: "💾" },
+    { text: "Sắp hoàn tất...", icon: "✨" }
+  ];
+  
+  const funFacts = [
+    "💡 Mẹo: Bạn có thể import hàng trăm câu hỏi cùng lúc!",
+    "📚 Câu hỏi được lưu vào ngân hàng đề thi an toàn",
+    "⚡ Hệ thống tự động kiểm tra và validate dữ liệu",
+    "🎯 Mỗi câu hỏi được phân loại theo độ khó và loại",
+    "🚀 Import nhanh chóng và hiệu quả!"
+  ];
+  
+  let messageIndex = 0;
+  let factIndex = 0;
+  
+  if (form && overlay) {
+    form.addEventListener("submit", function(e) {
+      overlay.classList.add("active");
+      const iconElement = document.querySelector(".import-loading-icon");
+      
+      // Change status message and icon every 1.5 seconds
+      const messageInterval = setInterval(function() {
+        if (messageIndex < messages.length) {
+          const msg = messages[messageIndex];
+          statusText.textContent = msg.text;
+          if (iconElement) {
+            iconElement.textContent = msg.icon;
+          }
+          messageIndex++;
+        } else {
+          // Show fun facts after processing messages
+          const fact = funFacts[factIndex % funFacts.length];
+          statusText.textContent = fact;
+          if (iconElement) {
+            iconElement.textContent = fact.split(" ")[0]; // Get emoji from fact
+          }
+          factIndex++;
+        }
+      }, 1500);
+      
+      // Clean up interval when page unloads (in case of redirect)
+      window.addEventListener("beforeunload", function() {
+        clearInterval(messageInterval);
+      });
+    });
+  }
+});
+</script>
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="/" class="breadcrumb__item">Trang chủ</a>
+  <span class="breadcrumb__separator">›</span>
+  <a href="/admin" class="breadcrumb__item">Quản trị</a>
+  <span class="breadcrumb__separator">›</span>
+  <a href="/admin/questions" class="breadcrumb__item">Quản lý câu hỏi</a>
+  <span class="breadcrumb__separator">›</span>
+  <span class="breadcrumb__item breadcrumb__item--current">Import câu hỏi</span>
+</nav>
+
+<div class="admin-header">
+  <h1 class="admin-header__title">Import câu hỏi từ file</h1>
+</div>
+
+<!-- Success/Error Messages -->
+<% if (success) { %>
+  <div class="alert alert-success"><%= success %></div>
+<% } %>
+
+<% if (error) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<!-- Import Form -->
+<div class="card mt-xl">
+  <h2 class="card__title">Import câu hỏi từ file</h2>
+  <div class="card__content">
+    <form method="post" action="/admin/questions/import" enctype="multipart/form-data">
+      <div class="form-group">
+        <label class="form-label">Chọn file Excel (.xlsx, .xls) hoặc CSV (.csv):</label>
+        <input type="file" name="file" id="file" accept=".xlsx,.xls,.csv" required class="form-input" />
+      </div>
+      <button type="submit" class="btn btn-primary">Import</button>
+      <a href="/admin/questions" class="btn" style="margin-left: 0.5rem;">Hủy</a>
+    </form>
+  </div>
+</div>
+
+<!-- Hướng dẫn -->
+<div class="card mt-xl">
+  <h3 class="card__title">Định dạng file</h3>
+  <div class="card__content">
+    <p>File Excel phải có sheet tên <strong>"Questions"</strong> (hoặc sheet đầu tiên) với các cột:</p>
+    <ul style="line-height: 1.8; margin-left: 1.5rem;">
+      <li><strong>subjectSlug</strong>: Slug của môn học (ví dụ: "toan-hoc")</li>
+      <li><strong>difficulty</strong>: Độ khó (easy, medium, hard)</li>
+      <li><strong>type</strong>: Loại câu hỏi (single_choice, multiple_choice, true_false, fill_in_blank, matching)</li>
+      <li><strong>content</strong>: Nội dung câu hỏi</li>
+      <li><strong>answersJson</strong>: JSON string của đáp án (xem ví dụ bên dưới)</li>
+      <li><strong>mediaUrl</strong> (tùy chọn): URL hình ảnh/video</li>
+    </ul>
+    
+    <h4 style="margin-top: 1rem; margin-bottom: 0.5rem;">Ví dụ answersJson:</h4>
+    <div style="background-color: #f5f5f5; padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.9rem; overflow-x: auto;">
+      <div style="margin-bottom: 0.5rem;"><strong>single_choice/multiple_choice:</strong></div>
+      <div>[{"text":"Đáp án A","isCorrect":true},{"text":"Đáp án B","isCorrect":false}]</div>
+      <div style="margin-top: 1rem; margin-bottom: 0.5rem;"><strong>true_false:</strong></div>
+      <div>[{"value":true,"isCorrect":true},{"value":false,"isCorrect":false}]</div>
+      <div style="margin-top: 1rem; margin-bottom: 0.5rem;"><strong>fill_in_blank:</strong></div>
+      <div>{"accepted":["đáp án 1","đáp án 2"]}</div>
+      <div style="margin-top: 1rem; margin-bottom: 0.5rem;"><strong>matching:</strong></div>
+      <div>{"pairs":[{"left":"A","right":"1"},{"left":"B","right":"2"}]}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Import Errors Details -->
+<% if (importErrors && importErrors.length > 0) { %>
+  <div class="card mt-xl" style="background-color: #fff3cd; border-color: #ffeaa7;">
+    <h3 class="card__title">Chi tiết lỗi:</h3>
+    <div class="card__content">
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Dòng</th>
+              <th>Lỗi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% importErrors.forEach(function(err) { %>
+              <tr>
+                <td><strong><%= err.row %></strong></td>
+                <td><%= err.message %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<%- include("../partical/footer") %>
+

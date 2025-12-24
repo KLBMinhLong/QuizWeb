@@ -5,6 +5,7 @@ var ObjectId = require("mongodb").ObjectId;
 var XLSX = require("xlsx");
 var fs = require("fs");
 var path = require("path");
+var crypto = require("crypto");
 
 class QuestionService {
   constructor() {
@@ -329,15 +330,155 @@ class QuestionService {
     }
   }
 
+  async getQuestionById(id) {
+    await this.client.connect();
+    try {
+      return await this.questionRepo.getById(id);
+    } finally {
+      await this.client.close();
+    }
+  }
+
+  async deleteQuestion(id) {
+    await this.client.connect();
+    try {
+      const deleted = await this.questionRepo.delete(id);
+      if (!deleted) {
+        return { ok: false, message: "Không tìm thấy câu hỏi để xóa" };
+      }
+      return { ok: true };
+    } finally {
+      await this.client.close();
+    }
+  }
+
+  async getQuestions(filters = {}) {
+    await this.client.connect();
+    try {
+      const query = {};
+      
+      if (filters.subjectId) {
+        query.subjectId = new ObjectId(String(filters.subjectId));
+      }
+      if (filters.difficulty) {
+        query.difficulty = filters.difficulty;
+      }
+      if (filters.type) {
+        query.type = filters.type;
+      }
+      if (filters.keyword) {
+        query.content = { $regex: filters.keyword, $options: "i" };
+      }
+      
+      const questions = await this.questionRepo.getAll(query);
+      
+      // Populate subject name nếu cần (tối ưu: chỉ query 1 lần)
+      if (questions.length > 0) {
+        const subjectIds = [...new Set(questions.map(q => String(q.subjectId)))];
+        const subjectsMap = {};
+        
+        // Query tất cả subjects một lần
+        if (subjectIds.length > 0) {
+          const subjectDocs = await this.subjectRepo.collection().find({
+            _id: { $in: subjectIds.map(id => new ObjectId(id)) }
+          }).toArray();
+          
+          subjectDocs.forEach(s => {
+            subjectsMap[String(s._id)] = s;
+          });
+        }
+        
+        // Attach subject info to questions
+        questions.forEach(q => {
+          q.subject = subjectsMap[String(q.subjectId)] || null;
+        });
+      }
+      
+      return questions;
+    } finally {
+      await this.client.close();
+    }
+  }
+
+  /**
+   * Check xem file đã được import chưa (dựa vào hash)
+   * @param {string} fileHash - Hash của file
+   * @returns {boolean}
+   */
+  async isFileImported(fileHash) {
+    await this.client.connect();
+    try {
+      const importedFiles = this.db.collection("importedFiles");
+      const existing = await importedFiles.findOne({ fileHash: fileHash });
+      return !!existing;
+    } finally {
+      await this.client.close();
+    }
+  }
+
+  /**
+   * Lưu thông tin file đã import
+   * @param {string} fileHash - Hash của file
+   * @param {string} fileName - Tên file gốc
+   * @param {string} savedPath - Đường dẫn file đã lưu
+   * @param {number} successCount - Số câu hỏi import thành công
+   * @param {number} failedCount - Số câu hỏi import thất bại
+   */
+  async saveImportedFileInfo(fileHash, fileName, savedPath, successCount, failedCount) {
+    await this.client.connect();
+    try {
+      const importedFiles = this.db.collection("importedFiles");
+      await importedFiles.insertOne({
+        fileHash: fileHash,
+        fileName: fileName,
+        savedPath: savedPath,
+        successCount: successCount,
+        failedCount: failedCount,
+        importedAt: new Date(),
+        importedBy: null, // Có thể lưu userId nếu có
+      });
+    } finally {
+      await this.client.close();
+    }
+  }
+
+  /**
+   * Tính hash của file
+   * @param {string} filePath - Đường dẫn đến file
+   * @returns {string} - Hash SHA256 của file
+   */
+  static calculateFileHash(filePath) {
+    const fileBuffer = fs.readFileSync(filePath);
+    const hashSum = crypto.createHash("sha256");
+    hashSum.update(fileBuffer);
+    return hashSum.digest("hex");
+  }
+
   /**
    * Import questions từ Excel/CSV file
    * @param {string} filePath - Đường dẫn đến file Excel/CSV
    * @param {string} originalName - Tên file gốc (để lấy extension)
-   * @returns {{ ok: boolean, message?: string, result?: { success: number, failed: number, errors: Array } }}
+   * @param {string} fileHash - Hash của file (để check duplicate)
+   * @returns {{ ok: boolean, message?: string, result?: { success: number, failed: number, errors: Array }, isDuplicate?: boolean }}
    */
-  async importQuestions(filePath, originalName = null) {
+  async importQuestions(filePath, originalName = null, fileHash = null) {
     await this.client.connect();
     try {
+      // Tính hash nếu chưa có
+      if (!fileHash) {
+        fileHash = QuestionService.calculateFileHash(filePath);
+      }
+
+      // Check duplicate
+      const isDuplicate = await this.isFileImported(fileHash);
+      if (isDuplicate) {
+        return {
+          ok: false,
+          message: "File này đã được import trước đó. Vui lòng chọn file khác.",
+          isDuplicate: true,
+        };
+      }
+
       const results = {
         success: 0,
         failed: 0,
@@ -458,8 +599,11 @@ class QuestionService {
         }
       }
 
+      console.log("Import completed - Success:", results.success, "Failed:", results.failed);
+      
       return {
         ok: true,
+        fileHash: fileHash,
         result: {
           success: results.success,
           failed: results.failed,

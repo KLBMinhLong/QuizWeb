@@ -6,102 +6,146 @@
   <span class="breadcrumb__separator">›</span>
   <a href="/admin" class="breadcrumb__item">Quản trị</a>
   <span class="breadcrumb__separator">›</span>
-  <span class="breadcrumb__item breadcrumb__item--current"
-    >Quản lý câu hỏi</span
-  >
+  <span class="breadcrumb__item breadcrumb__item--current">Quản lý câu hỏi</span>
 </nav>
 
 <div class="admin-header">
   <h1 class="admin-header__title">Quản lý câu hỏi</h1>
 </div>
 
-<!-- Success/Error Messages -->
-<% if (success) { %>
-  <div class="card mt-xl" style="background-color: #d4edda; border-color: #c3e6cb; color: #155724;">
-    <p class="card__content"><%= success %></p>
-  </div>
-<% } %>
-
 <% if (error) { %>
-  <div class="card mt-xl" style="background-color: #f8d7da; border-color: #f5c6cb; color: #721c24;">
-    <p class="card__content"><%= error %></p>
-  </div>
+<div class="alert alert-error"><%= error %></div>
+<% } %> 
+<% if (success) { %>
+<div class="alert alert-success"><%= success %></div>
 <% } %>
 
-<% if (message && !success && !error) { %>
-  <div class="card mt-xl">
-    <p class="card__content"><%= message %></p>
-  </div>
-<% } %>
-
-<!-- Import Form -->
+<!-- Actions -->
 <div class="card mt-xl">
-  <h2 class="card__title">Import câu hỏi từ file</h2>
-  <div class="card__content">
-    <form method="post" action="/admin/questions/import" enctype="multipart/form-data">
-      <div style="margin-bottom: 1rem;">
-        <label for="file" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">
-          Chọn file Excel (.xlsx, .xls) hoặc CSV (.csv):
-        </label>
-        <input type="file" name="file" id="file" accept=".xlsx,.xls,.csv" required style="width: 100%; padding: 0.5rem;" />
-      </div>
-      <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem; cursor: pointer;">
-        Import
-      </button>
-    </form>
-    
-    <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd;">
-      <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Định dạng file:</h3>
-      <p style="color: #666; line-height: 1.6;">
-        File Excel phải có sheet tên <strong>"Questions"</strong> (hoặc sheet đầu tiên) với các cột:
-      </p>
-      <ul style="color: #666; line-height: 1.8; margin-left: 1.5rem;">
-        <li><strong>subjectSlug</strong>: Slug của môn học (ví dụ: "toan-hoc")</li>
-        <li><strong>difficulty</strong>: Độ khó (easy, medium, hard)</li>
-        <li><strong>type</strong>: Loại câu hỏi (single_choice, multiple_choice, true_false, fill_in_blank, matching)</li>
-        <li><strong>content</strong>: Nội dung câu hỏi</li>
-        <li><strong>answersJson</strong>: JSON string của đáp án (xem ví dụ bên dưới)</li>
-        <li><strong>mediaUrl</strong> (tùy chọn): URL hình ảnh/video</li>
-      </ul>
-      
-      <h4 style="margin-top: 1rem; margin-bottom: 0.5rem;">Ví dụ answersJson:</h4>
-      <div style="background-color: #f5f5f5; padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.9rem; overflow-x: auto;">
-        <div style="margin-bottom: 0.5rem;"><strong>single_choice/multiple_choice:</strong></div>
-        <div>[{"text":"Đáp án A","isCorrect":true},{"text":"Đáp án B","isCorrect":false}]</div>
-        <div style="margin-top: 1rem; margin-bottom: 0.5rem;"><strong>true_false:</strong></div>
-        <div>[{"value":true,"isCorrect":true},{"value":false,"isCorrect":false}]</div>
-        <div style="margin-top: 1rem; margin-bottom: 0.5rem;"><strong>fill_in_blank:</strong></div>
-        <div>{"accepted":["đáp án 1","đáp án 2"]}</div>
-        <div style="margin-top: 1rem; margin-bottom: 0.5rem;"><strong>matching:</strong></div>
-        <div>{"pairs":[{"left":"A","right":"1"},{"left":"B","right":"2"}]}</div>
-      </div>
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <a href="/admin/questions/create" class="btn btn-primary">Tạo câu hỏi mới</a>
+      <a href="/admin/questions/import" class="btn" style="margin-left: 0.5rem;">Import từ file</a>
     </div>
   </div>
 </div>
 
-<!-- Import Errors Details -->
-<% if (importErrors && importErrors.length > 0) { %>
-  <div class="card mt-xl" style="background-color: #fff3cd; border-color: #ffeaa7;">
-    <h3 class="card__title">Chi tiết lỗi:</h3>
-    <div class="card__content">
-      <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr style="border-bottom: 2px solid #ddd;">
-            <th style="padding: 0.5rem; text-align: left;">Dòng</th>
-            <th style="padding: 0.5rem; text-align: left;">Lỗi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% importErrors.forEach(function(err) { %>
-            <tr style="border-bottom: 1px solid #eee;">
-              <td style="padding: 0.5rem;"><strong><%= err.row %></strong></td>
-              <td style="padding: 0.5rem;"><%= err.message %></td>
-            </tr>
+<!-- Filter Form -->
+<div class="card mt-xl">
+  <h3 class="card__title">Lọc câu hỏi</h3>
+  <form method="get" action="/admin/questions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+    <div class="form-group">
+      <label class="form-label">Môn học</label>
+      <select name="subjectId" class="form-input">
+        <option value="">Tất cả môn học</option>
+        <% if (subjects && subjects.length > 0) { %>
+          <% subjects.forEach(function(s) { %>
+            <option value="<%= s._id %>" <%= filters && filters.subjectId === String(s._id) ? "selected" : "" %>><%= s.name %></option>
           <% }) %>
-        </tbody>
-      </table>
+        <% } %>
+      </select>
     </div>
+    
+    <div class="form-group">
+      <label class="form-label">Độ khó</label>
+      <select name="difficulty" class="form-input">
+        <option value="">Tất cả</option>
+        <option value="easy" <%= filters && filters.difficulty === "easy" ? "selected" : "" %>>Dễ</option>
+        <option value="medium" <%= filters && filters.difficulty === "medium" ? "selected" : "" %>>Trung bình</option>
+        <option value="hard" <%= filters && filters.difficulty === "hard" ? "selected" : "" %>>Khó</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Loại câu hỏi</label>
+      <select name="type" class="form-input">
+        <option value="">Tất cả</option>
+        <option value="single_choice" <%= filters && filters.type === "single_choice" ? "selected" : "" %>>Trắc nghiệm một lựa chọn</option>
+        <option value="multiple_choice" <%= filters && filters.type === "multiple_choice" ? "selected" : "" %>>Trắc nghiệm nhiều lựa chọn</option>
+        <option value="true_false" <%= filters && filters.type === "true_false" ? "selected" : "" %>>Đúng/Sai</option>
+        <option value="fill_in_blank" <%= filters && filters.type === "fill_in_blank" ? "selected" : "" %>>Điền từ</option>
+        <option value="matching" <%= filters && filters.type === "matching" ? "selected" : "" %>>Nối cặp</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Tìm kiếm</label>
+      <input type="text" name="keyword" value="<%= filters && filters.keyword ? filters.keyword : '' %>" placeholder="Tìm trong nội dung..." class="form-input" />
+    </div>
+    
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Lọc</button>
+      <a href="/admin/questions" class="btn" style="width: 100%; margin-top: 0.5rem;">Xóa bộ lọc</a>
+    </div>
+  </form>
+</div>
+
+<!-- Questions List -->
+<div class="card mt-xl">
+  <h3 class="card__title">Danh sách câu hỏi (<%= questions ? questions.length : 0 %>)</h3>
+  <% if (!questions || questions.length === 0) { %>
+  <p class="card__content" style="color: var(--color-text-muted)">
+    Chưa có câu hỏi nào.
+  </p>
+  <% } else { %>
+  <div style="overflow-x: auto">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nội dung</th>
+          <th>Môn học</th>
+          <th>Độ khó</th>
+          <th>Loại</th>
+          <th style="text-align: center">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% questions.forEach(function(q){ %>
+        <tr>
+          <td style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <%= q.content %>
+          </td>
+          <td>
+            <% if (q.subject) { %>
+              <span style="font-weight: 600"><%= q.subject.name %></span>
+            <% } else { %>
+              <span style="color: #999;">N/A</span>
+            <% } %>
+          </td>
+          <td>
+            <% 
+              const difficultyLabels = { easy: "Dễ", medium: "Trung bình", hard: "Khó" };
+              const difficultyColors = { easy: "#16a34a", medium: "#ea580c", hard: "#dc2626" };
+              const difficultyBg = { easy: "#dcfce7", medium: "#fff7ed", hard: "#fee2e2" };
+            %>
+            <span style="background: <%= difficultyBg[q.difficulty] || '#f3f4f6' %>; color: <%= difficultyColors[q.difficulty] || '#6b7280' %>; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+              <%= difficultyLabels[q.difficulty] || q.difficulty %>
+            </span>
+          </td>
+          <td>
+            <% 
+              const typeLabels = {
+                single_choice: "Trắc nghiệm 1 lựa chọn",
+                multiple_choice: "Trắc nghiệm nhiều lựa chọn",
+                true_false: "Đúng/Sai",
+                fill_in_blank: "Điền từ",
+                matching: "Nối cặp"
+              };
+            %>
+            <span style="font-size: 13px;"><%= typeLabels[q.type] || q.type %></span>
+          </td>
+          <td style="text-align: center">
+            <a href="/admin/questions/<%= q._id %>/edit" class="btn" style="padding: 0.4rem 0.8rem; font-size: 13px;">Sửa</a>
+            <form method="post" action="/admin/questions/<%= q._id %>/delete" style="display: inline-block; margin-left: 0.5rem;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa câu hỏi này?');">
+              <button type="submit" class="btn" style="padding: 0.4rem 0.8rem; font-size: 13px; background: #fee2e2; color: #dc2626; border-color: #fecaca;">Xóa</button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
   </div>
-<% } %>
+  <% } %>
+</div>
 
 <%- include("../partical/footer") %>
