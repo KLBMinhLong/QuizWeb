@@ -5,5 +5,28 @@ yarn-error.log*
 .env
 .DS_Store
 
+# Uploads directory - chứa file tạm khi upload
+uploads/
+
+# Samples directory - file Excel/CSV mẫu (có thể regenerate bằng script)
+samples/
+
+# Logs
+*.log
+logs/
+
+# OS files
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
 
 

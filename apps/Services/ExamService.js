@@ -3,6 +3,7 @@ var ObjectId = require("mongodb").ObjectId;
 var DatabaseConnection = require(global.__basedir + "/apps/Database/Database");
 var SubjectRepository = require(global.__basedir + "/apps/Repository/SubjectRepository");
 var QuestionRepository = require(global.__basedir + "/apps/Repository/QuestionRepository");
+var QuestionService = require(global.__basedir + "/apps/Services/QuestionService");
 
 class ExamService {
   constructor() {
@@ -21,15 +22,14 @@ class ExamService {
       const cfg = subject.examConfig || { easyCount: 10, mediumCount: 5, hardCount: 5, durationMinutes: 30 };
       const questions = await this.questionRepo.sampleByDifficulty(String(subject._id), cfg);
 
-      // Không trả "đáp án đúng" theo đúng nguyên tắc (MVP: answers có isCorrect thì vẫn tồn tại trong DB,
-      // ở UI chỉ render text; chấm điểm sẽ làm tiếp khi có snapshot/attempt)
+      // Strip đáp án đúng khỏi answers trước khi gửi cho client (theo US-30)
       const publicQuestions = questions.map((q) => ({
         _id: String(q._id),
         type: q.type,
         difficulty: q.difficulty,
         content: q.content,
         mediaUrl: q.mediaUrl || null,
-        answers: Array.isArray(q.answers) ? q.answers.map((a, idx) => ({ id: idx, text: a.text })) : q.answers,
+        answers: QuestionService.stripCorrectAnswers(q.type, q.answers),
       }));
 
       return { ok: true, durationMinutes: cfg.durationMinutes, questions: publicQuestions };
