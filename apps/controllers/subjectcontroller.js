@@ -77,7 +77,7 @@ router.post(
 
       const result = await commentService.createComment(
         String(subject._id),
-        req.user._id,
+        req.user.userId,
         req.user.username,
         req.body.content
       );
@@ -108,7 +108,7 @@ router.post(
       const commentService = new SubjectCommentService();
       const result = await commentService.deleteComment(
         req.params.commentId,
-        req.user._id,
+        req.user.userId,
         req.user.role
       );
 

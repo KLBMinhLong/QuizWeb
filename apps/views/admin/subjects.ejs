@@ -16,21 +16,9 @@
 </div>
 
 <% if (error) { %>
-<div class="error"><%= error %></div>
+<div class="alert alert-error"><%= error %></div>
 <% } %> <% if (success) { %>
-<div
-  style="
-    background: #dcfce7;
-    border: 1px solid #22c55e;
-    padding: 12px 16px;
-    margin: 12px 0;
-    border-radius: var(--radius-sm);
-    color: #14532d;
-    font-size: 14px;
-  "
->
-  <%= success %>
-</div>
+<div class="alert alert-success"><%= success %></div>
 <% } %>
 
 <div class="card mt-xl">
@@ -309,43 +297,6 @@
   </div>
 </div>
 
-<script>
-  function showEditModal(id, name, description) {
-    document.getElementById("editForm").action =
-      "/admin/subjects/" + id + "/update";
-    document.getElementById("editName").value = name;
-    document.getElementById("editDescription").value = description;
-    document.getElementById("editModal").style.display = "flex";
-  }
-
-  function closeEditModal() {
-    document.getElementById("editModal").style.display = "none";
-  }
-
-  function showConfigModal(id, easy, medium, hard, duration) {
-    document.getElementById("configForm").action =
-      "/admin/subjects/" + id + "/update-config";
-    document.getElementById("configEasy").value = easy;
-    document.getElementById("configMedium").value = medium;
-    document.getElementById("configHard").value = hard;
-    document.getElementById("configDuration").value = duration;
-    document.getElementById("configModal").style.display = "flex";
-  }
-
-  function closeConfigModal() {
-    document.getElementById("configModal").style.display = "none";
-  }
-
-  // Click outside to close
-  document.getElementById("editModal").addEventListener("click", function (e) {
-    if (e.target === this) closeEditModal();
-  });
-
-  document
-    .getElementById("configModal")
-    .addEventListener("click", function (e) {
-      if (e.target === this) closeConfigModal();
-    });
-</script>
+<script src="/static/js/admin-subjects.js"></script>
 
 <%- include("../partical/footer") %>

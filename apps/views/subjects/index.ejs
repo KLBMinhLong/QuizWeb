@@ -10,15 +10,17 @@
 <h1>Danh sách môn học</h1>
 
 <% if (!subjects || subjects.length === 0) { %>
-<div class="card">
-  <p>
-    Chưa có môn học. Vào
+<div class="card" style="text-align: center; padding: var(--spacing-3xl)">
+  <div style="font-size: 48px; margin-bottom: var(--spacing-lg)">📚</div>
+  <h3 style="color: var(--color-text-muted); margin-bottom: var(--spacing-md)">Chưa có môn học</h3>
+  <p style="color: var(--color-text-muted); margin-top: var(--spacing-md)">
+    Vào
     <a
       href="/admin/subjects"
-      style="color: var(--color-primary); font-weight: 600"
+      style="color: var(--color-primary); font-weight: 600; text-decoration: none"
       >Admin</a
     >
-    để tạo môn.
+    để tạo môn học mới.
   </p>
 </div>
 <% } else { %>

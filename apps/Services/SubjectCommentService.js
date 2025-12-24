@@ -3,6 +3,8 @@ var SubjectCommentRepository = require(global.__basedir +
   "/apps/Repository/SubjectCommentRepository");
 var SubjectRepository = require(global.__basedir +
   "/apps/Repository/SubjectRepository");
+var UserRepository = require(global.__basedir +
+  "/apps/Repository/UserRepository");
 
 class SubjectCommentService {
   constructor() {
@@ -10,6 +12,7 @@ class SubjectCommentService {
     this.db = this.client.db(DatabaseConnection.getDatabaseName());
     this.commentRepo = new SubjectCommentRepository(this.db);
     this.subjectRepo = new SubjectRepository(this.db);
+    this.userRepo = new UserRepository(this.db);
   }
 
   async getCommentsBySubjectId(subjectId) {
@@ -24,6 +27,18 @@ class SubjectCommentService {
   async createComment(subjectId, userId, username, content) {
     await this.client.connect();
     try {
+      // Validate user exists and is active
+      const user = await this.userRepo.findById(userId);
+      if (!user) {
+        return { ok: false, message: "Không tìm thấy người dùng" };
+      }
+      if (user.trangThai !== "active") {
+        return {
+          ok: false,
+          message: "Tài khoản của bạn chưa được kích hoạt hoặc đã bị khóa",
+        };
+      }
+
       // Validate subject exists
       const subject = await this.subjectRepo.getById(subjectId);
       if (!subject) {
@@ -44,9 +59,10 @@ class SubjectCommentService {
       }
 
       // Create comment
+      var ObjectId = require("mongodb").ObjectId;
       const doc = {
         subjectId: subject._id,
-        userId,
+        userId: new ObjectId(String(userId)),
         usernameSnapshot: username,
         content: trimmedContent,
         status: "visible",
@@ -70,7 +86,11 @@ class SubjectCommentService {
       }
 
       // Check permission: owner or moderator
-      const isOwner = String(comment.userId) === String(userId);
+      // Compare ObjectIds properly
+      var ObjectId = require("mongodb").ObjectId;
+      const commentUserId = String(comment.userId);
+      const requestUserId = String(userId);
+      const isOwner = commentUserId === requestUserId;
       const isModerator = userRole === "admin" || userRole === "moderator";
 
       if (!isOwner && !isModerator) {
