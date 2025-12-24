@@ -30,9 +30,27 @@ class QuestionRepository {
     }
     return combined;
   }
+
+  async countByDifficulty(subjectId, difficulty) {
+    return await this.collection().countDocuments({
+      subjectId: new ObjectId(String(subjectId)),
+      difficulty,
+    });
+  }
+
+  async getQuestionStats(subjectId) {
+    const [easy, medium, hard] = await Promise.all([
+      this.countByDifficulty(subjectId, "easy"),
+      this.countByDifficulty(subjectId, "medium"),
+      this.countByDifficulty(subjectId, "hard"),
+    ]);
+    return {
+      easy,
+      medium,
+      hard,
+      total: easy + medium + hard,
+    };
+  }
 }
 
 module.exports = QuestionRepository;
-
-
-

@@ -1,6 +1,8 @@
 var DatabaseConnection = require(global.__basedir + "/apps/Database/Database");
 var SubjectRepository = require(global.__basedir +
   "/apps/Repository/SubjectRepository");
+var QuestionRepository = require(global.__basedir +
+  "/apps/Repository/QuestionRepository");
 var slugify = require("slugify");
 
 class SubjectService {
@@ -8,6 +10,7 @@ class SubjectService {
     this.client = DatabaseConnection.getMongoClient();
     this.db = this.client.db(DatabaseConnection.getDatabaseName());
     this.subjectRepo = new SubjectRepository(this.db);
+    this.questionRepo = new QuestionRepository(this.db);
   }
 
   async getActiveSubjects() {
@@ -32,6 +35,25 @@ class SubjectService {
     await this.client.connect();
     try {
       return await this.subjectRepo.getBySlug(slug);
+    } finally {
+      await this.client.close();
+    }
+  }
+
+  async getBySlugWithStats(slug) {
+    await this.client.connect();
+    try {
+      const subject = await this.subjectRepo.getBySlug(slug);
+      if (!subject) return null;
+
+      const questionStats = await this.questionRepo.getQuestionStats(
+        String(subject._id)
+      );
+
+      return {
+        ...subject,
+        questionStats,
+      };
     } finally {
       await this.client.close();
     }
