@@ -1,41 +1,62 @@
 <%- include("../partical/header", { title: "Làm bài" }) %>
 
-<h2>Làm bài</h2>
-<p>Thời gian: <%= durationMinutes %> phút (MVP)</p>
+<div class="page-header">
+  <h1 class="page-title">Làm bài</h1>
+  <p class="page-subtitle">Thời gian: <%= durationMinutes %> phút</p>
+</div>
 
-<% if (!questions || questions.length === 0) { %>
-  <p>Chưa đủ câu hỏi trong ngân hàng cho môn này.</p>
+<% if (hasShortage) { %>
+<div
+  class="alert-warning"
+  style="
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    background: #fff7e6;
+    border: 1px solid #ffcc80;
+    color: #8a6d3b;
+  "
+>
+  Ngân hàng câu hỏi hiện không đủ theo cấu hình đề. Hệ thống đã lấy tối đa số
+  câu có thể cho mỗi độ khó.
+</div>
+<% } %> <% if (!questions || questions.length === 0) { %>
+<p>Chưa đủ câu hỏi trong ngân hàng cho môn này.</p>
 <% } else { %>
-  <form method="post" action="/exam/submit">
-    <input type="hidden" name="subjectId" value="<%= subjectId %>" />
+<form method="post" action="/exam/submit" class="card">
+  <input type="hidden" name="subjectId" value="<%= subjectId %>" />
+  <input type="hidden" name="attemptId" value="<%= attemptId %>" />
 
-    <% questions.forEach(function(q, idx){ %>
-      <div class="question">
-        <div><b>Câu <%= idx + 1 %>:</b> <%= q.content %> (<%= q.difficulty %>)</div>
+  <% questions.forEach(function(q, idx){ %>
+  <div class="exam-question">
+    <div class="exam-question-header">
+      <span class="badge">Câu <%= idx + 1 %></span>
+      <span class="badge badge-secondary"><%= q.difficulty %></span>
+    </div>
+    <div class="exam-question-content"><%= q.content %></div>
 
-        <% if (Array.isArray(q.answers)) { %>
-          <% q.answers.forEach(function(a){ %>
-            <div>
-              <label>
-                <input type="radio" name="answers[<%= q._id %>]" value="<%= a.id %>" />
-                <%= a.text %>
-              </label>
-              <!-- MVP: để demo chấm điểm, gửi luôn correct index qua hidden (sẽ bỏ ở phase 2) -->
-              <input type="hidden" name="correct[<%= q._id %>]" value="0" />
-            </div>
-          <% }) %>
-        <% } else { %>
-          <div>Loại câu hỏi này sẽ làm tiếp.</div>
-        <% } %>
-      </div>
-      <hr/>
-    <% }) %>
+    <% if (Array.isArray(q.answers)) { %>
+    <div class="exam-question-options">
+      <% q.answers.forEach(function(a, answerIndex){ %>
+      <label class="exam-option">
+        <input
+          type="radio"
+          name="answers[<%= q._id %>]"
+          value="<%= answerIndex %>"
+        />
+        <span><%= a.text %></span>
+      </label>
+      <% }) %>
+    </div>
+    <% } else { %>
+    <div class="exam-question-note">
+      Loại câu hỏi này sẽ hỗ trợ ở phiên bản sau.
+    </div>
+    <% } %>
+  </div>
+  <hr />
+  <% }) %>
 
-    <button type="submit">Nộp bài</button>
-  </form>
-<% } %>
-
-<%- include("../partical/footer") %>
-
-
-
+  <button type="submit" class="btn btn-primary">Nộp bài</button>
+</form>
+<% } %> <%- include("../partical/footer") %>

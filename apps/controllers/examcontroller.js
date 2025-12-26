@@ -1,6 +1,7 @@
 var express = require("express");
 var router = express.Router();
-var { optionalAuth } = require(global.__basedir + "/apps/Util/VerifyToken");
+var { optionalAuth, hasPermission } = require(global.__basedir +
+  "/apps/Util/VerifyToken");
 
 var ExamService = require(global.__basedir + "/apps/Services/ExamService");
 var SubjectService = require(global.__basedir +
@@ -26,18 +27,35 @@ router.get("/start/:subjectSlug", optionalAuth, async function (req, res) {
   }
 });
 
-// Generate đề (MVP: chưa yêu cầu login bắt buộc; giai đoạn 2 sẽ enforce)
+// Generate đề (US-40: tạo attempt snapshot + check permission exams.read/exams.take)
 router.post("/generate", optionalAuth, async function (req, res) {
   try {
     const { subjectId } = req.body;
+
+    const user = req.user || null;
+
+    // Permission: cần exams.read hoặc exams.take (US-40)
+    const canRead = hasPermission(user, "exams.read");
+    const canTake = hasPermission(user, "exams.take");
+
+    if (!canRead && !canTake) {
+      if (!user) {
+        return res.status(401).redirect("/auth/login");
+      }
+      return res.status(403).send("Bạn không có quyền tạo đề thi");
+    }
+
     const service = new ExamService();
-    const exam = await service.generateExam(subjectId);
+    const exam = await service.generateExam(subjectId, user);
     if (!exam.ok) return res.status(400).send(exam.message);
     res.render("exam/take.ejs", {
       subjectId,
       questions: exam.questions,
       durationMinutes: exam.durationMinutes,
-      user: req.user || null,
+      attemptId: exam.attemptId,
+      hasShortage: exam.hasShortage,
+      shortages: exam.shortages,
+      user,
     });
   } catch (e) {
     res.status(500).send("Lỗi server");
