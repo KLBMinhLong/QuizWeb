@@ -223,6 +223,104 @@ class QuestionService {
   }
 
   /**
+   * So sánh đáp án user với đáp án đúng để chấm điểm
+   * @param {string} type - Loại câu hỏi
+   * @param {any} correctAnswers - Đáp án đúng từ snapshot
+   * @param {any} userAnswer - Đáp án của user (có thể là undefined nếu user không trả lời)
+   * @returns {boolean} - true nếu đúng, false nếu sai
+   */
+  static compareAnswer(type, correctAnswers, userAnswer) {
+    if (!correctAnswers) return false;
+    // Nếu user không trả lời (undefined/null), coi như sai
+    if (userAnswer === undefined || userAnswer === null) return false;
+
+    switch (type) {
+      case "single_choice":
+        // userAnswer là index (số hoặc string)
+        const index = Number(userAnswer);
+        if (isNaN(index) || !Array.isArray(correctAnswers) || index < 0 || index >= correctAnswers.length) {
+          return false;
+        }
+        return correctAnswers[index]?.isCorrect === true;
+
+      case "multiple_choice":
+        // userAnswer là array indices (string[] hoặc number[])
+        if (!Array.isArray(userAnswer)) return false;
+        if (!Array.isArray(correctAnswers)) return false;
+        
+        const userIndices = userAnswer.map((i) => Number(i)).filter((i) => !isNaN(i));
+        const correctIndices = correctAnswers
+          .map((a, idx) => (a.isCorrect === true ? idx : -1))
+          .filter((idx) => idx !== -1);
+        
+        // Phải chọn đúng tất cả đáp án đúng và không chọn thêm đáp án sai
+        if (userIndices.length !== correctIndices.length) return false;
+        return userIndices.every((idx) => correctIndices.includes(idx)) &&
+               correctIndices.every((idx) => userIndices.includes(idx));
+
+      case "true_false":
+        // userAnswer là boolean (true/false), có thể là string "true"/"false"
+        let booleanAnswer;
+        if (typeof userAnswer === "boolean") {
+          booleanAnswer = userAnswer;
+        } else if (typeof userAnswer === "string") {
+          // Convert string "true"/"false"/"1"/"0" thành boolean
+          if (userAnswer === "true" || userAnswer === "1") {
+            booleanAnswer = true;
+          } else if (userAnswer === "false" || userAnswer === "0") {
+            booleanAnswer = false;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+        if (!Array.isArray(correctAnswers)) return false;
+        const correctAnswer = correctAnswers.find((a) => a.isCorrect === true);
+        return correctAnswer && correctAnswer.value === booleanAnswer;
+
+      case "fill_in_blank":
+        // userAnswer là string, normalize và check trong accepted[]
+        if (typeof userAnswer !== "string") return false;
+        if (!correctAnswers.accepted || !Array.isArray(correctAnswers.accepted)) return false;
+        const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+        return correctAnswers.accepted.includes(normalizedUserAnswer);
+
+      case "matching":
+        // userAnswer là object map {left: right} hoặc array [{left, right}]
+        if (!correctAnswers.pairs || !Array.isArray(correctAnswers.pairs)) return false;
+        if (!userAnswer || typeof userAnswer !== "object") return false;
+        
+        // Convert userAnswer thành array nếu là object map
+        let userPairs = [];
+        if (Array.isArray(userAnswer)) {
+          userPairs = userAnswer;
+        } else {
+          // Convert object map {left1: right1, left2: right2} thành array
+          userPairs = Object.keys(userAnswer).map((left) => ({
+            left: left,
+            right: userAnswer[left],
+          }));
+        }
+        
+        // Phải có đúng số lượng cặp
+        if (userPairs.length !== correctAnswers.pairs.length) return false;
+        
+        // Check từng cặp phải khớp
+        for (const correctPair of correctAnswers.pairs) {
+          const userPair = userPairs.find((p) => p.left === correctPair.left);
+          if (!userPair || userPair.right !== correctPair.right) {
+            return false;
+          }
+        }
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Validate toàn bộ question object (cho create/update)
    * @param {object} question - Question object cần validate
    * @returns {{ ok: boolean, message?: string }}

@@ -1,29 +1,54 @@
 <%- include("../partical/header", { title: "Làm bài" }) %>
 
+<!-- Breadcrumb (US-41) -->
+<nav class="breadcrumb">
+  <a href="/" class="breadcrumb__item">Trang chủ</a>
+  <span class="breadcrumb__separator">›</span>
+  <a href="/subjects" class="breadcrumb__item">Môn học</a>
+  <span class="breadcrumb__separator">›</span>
+  <% if (subject && subject.slug) { %>
+  <a href="/subjects/<%= subject.slug %>" class="breadcrumb__item"><%= subject.name %></a>
+  <span class="breadcrumb__separator">›</span>
+  <% } %>
+  <span class="breadcrumb__item breadcrumb__item--current">Làm bài</span>
+</nav>
+
 <div class="page-header">
-  <h1 class="page-title">Làm bài</h1>
-  <p class="page-subtitle">Thời gian: <%= durationMinutes %> phút</p>
+  <h1 class="page-title">Làm bài<% if (subject && subject.name) { %>: <%= subject.name %><% } %></h1>
 </div>
 
 <% if (hasShortage) { %>
-<div
-  class="alert-warning"
-  style="
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 4px;
-    background: #fff7e6;
-    border: 1px solid #ffcc80;
-    color: #8a6d3b;
-  "
->
-  Ngân hàng câu hỏi hiện không đủ theo cấu hình đề. Hệ thống đã lấy tối đa số
-  câu có thể cho mỗi độ khó.
+<div class="alert alert-warning" style="margin-bottom: var(--spacing-xl);">
+  ⚠️ Ngân hàng câu hỏi hiện không đủ theo cấu hình đề. Hệ thống đã lấy tối đa số câu có thể cho mỗi độ khó.
 </div>
-<% } %> <% if (!questions || questions.length === 0) { %>
-<p>Chưa đủ câu hỏi trong ngân hàng cho môn này.</p>
+<% } %>
+
+<% if (!questions || questions.length === 0) { %>
+<div class="card">
+  <p>Chưa đủ câu hỏi trong ngân hàng cho môn này.</p>
+</div>
 <% } else { %>
-<form method="post" action="/exam/submit" class="card">
+
+<!-- Timer (US-41) -->
+<div id="exam-timer" class="exam-timer">
+  <div class="exam-timer-content">
+    <span class="exam-timer-label">⏱️ Thời gian còn lại:</span>
+    <span id="exam-timer-text" class="exam-timer-text">00:00</span>
+  </div>
+  <div id="exam-timer-warning" class="exam-timer-warning" style="display: none;">
+    Thời gian sắp hết! Hãy nộp bài sớm.
+  </div>
+</div>
+
+<form 
+  id="exam-form" 
+  method="post" 
+  action="/exam/submit" 
+  class="card"
+  data-duration-minutes="<%= durationMinutes %>"
+  data-attempt-id="<%= attemptId %>"
+  data-total-questions="<%= questions.length %>"
+>
   <input type="hidden" name="subjectId" value="<%= subjectId %>" />
   <input type="hidden" name="attemptId" value="<%= attemptId %>" />
 
@@ -32,6 +57,9 @@
     <div class="exam-question-header">
       <span class="badge">Câu <%= idx + 1 %></span>
       <span class="badge badge-secondary"><%= q.difficulty %></span>
+      <% if (q.type) { %>
+      <span class="badge badge-info" style="font-size: 12px;"><%= q.type %></span>
+      <% } %>
     </div>
     <div class="exam-question-content"><%= q.content %></div>
 
@@ -44,7 +72,7 @@
           name="answers[<%= q._id %>]"
           value="<%= answerIndex %>"
         />
-        <span><%= a.text %></span>
+        <span><%= a.text || a.value || a %></span>
       </label>
       <% }) %>
     </div>
@@ -54,9 +82,13 @@
     </div>
     <% } %>
   </div>
-  <hr />
   <% }) %>
 
-  <button type="submit" class="btn btn-primary">Nộp bài</button>
+  <div class="exam-actions">
+    <button type="submit" class="btn btn-primary">Nộp bài</button>
+  </div>
 </form>
-<% } %> <%- include("../partical/footer") %>
+<% } %>
+
+<script src="/static/js/exam-take.js"></script>
+<%- include("../partical/footer") %>

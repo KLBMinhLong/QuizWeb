@@ -29,9 +29,9 @@ Chuẩn hoá thứ tự triển khai + tiêu chí “xong” để có thể **c
 - [x] **US-30** Questions model/validation (chuẩn hoá schema answers + validate theo type)
 - [x] **US-32** Admin Questions Import (import từ Excel/CSV)
 - [x] **US-31** Admin Questions CRUD (tạo/sửa/xoá + filter)
-- [ ] **US-40** Exam generate & attempt snapshot (server-side đúng chuẩn)
-- [ ] **US-42** Exam submit & scoring (chấm server-side theo snapshot)
-- [ ] **US-41** Exam take UI (timer/UX đồng nhất UI system)
+- [x] **US-40** Exam generate & attempt snapshot (server-side đúng chuẩn)
+- [x] **US-42** Exam submit & scoring (chấm server-side theo snapshot)
+- [x] **US-41** Exam take UI (timer/UX đồng nhất UI system)
 - [ ] **US-43** Exam history (list/detail)
 - [ ] **US-90** Non-functional (index, security hardening, logging nâng cao)
 

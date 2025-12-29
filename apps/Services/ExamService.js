@@ -59,10 +59,10 @@ class ExamService {
         available.medium < requested.medium ||
         available.hard < requested.hard;
 
-      // Snapshot đầy đủ để chấm server-side
+      // Snapshot đầy đủ để chấm server-side (convert ObjectId thành string để dễ serialize/deserialize)
       const questionsSnapshot = questions.map((q) => ({
-        _id: q._id,
-        subjectId: q.subjectId,
+        _id: String(q._id),
+        subjectId: String(q.subjectId),
         difficulty: q.difficulty,
         type: q.type,
         content: q.content,
@@ -106,22 +106,79 @@ class ExamService {
     }
   }
 
-  async submitExam(payload) {
-    // MVP: chấm điểm cực đơn giản dựa trên payload `correctIndex` (để demo UI).
-    // Giai đoạn tiếp theo: lưu ExamAttempt + snapshot, và chấm điểm dựa trên snapshot/server.
-    const answers = payload.answers || {};
-    const correct = payload.correct || {};
+  async submitExam(payload, user) {
+    await this.client.connect();
+    try {
+      const { attemptId, answers } = payload;
 
-    let total = 0;
-    let correctCount = 0;
+      if (!attemptId) {
+        return { ok: false, message: "Thiếu attemptId" };
+      }
 
-    for (const qid of Object.keys(correct)) {
-      total += 1;
-      if (String(answers[qid]) === String(correct[qid])) correctCount += 1;
+      // Load attempt từ database
+      const attempt = await this.examAttemptRepo.getById(attemptId);
+      if (!attempt) {
+        return { ok: false, message: "Không tìm thấy attempt" };
+      }
+
+      // Check attempt chưa finished (AC2)
+      if (attempt.finishedAt) {
+        return { ok: false, message: "Bài thi đã được nộp rồi" };
+      }
+
+      // Verify user owns this attempt (nếu có userId)
+      if (attempt.userId && user && user.userId) {
+        if (String(attempt.userId) !== String(user.userId)) {
+          return { ok: false, message: "Bạn không có quyền nộp bài thi này" };
+        }
+      }
+
+      // Chấm điểm dựa trên questionsSnapshot (AC1)
+      const questionsSnapshot = attempt.questionsSnapshot || [];
+      const userAnswers = answers || {};
+
+      let correctCount = 0;
+      const questionResults = [];
+
+      for (const question of questionsSnapshot) {
+        const questionId = String(question._id);
+        const userAnswer = userAnswers[questionId];
+        const isCorrect = QuestionService.compareAnswer(
+          question.type,
+          question.answers,
+          userAnswer
+        );
+
+        if (isCorrect) {
+          correctCount++;
+        }
+
+        questionResults.push({
+          questionId,
+          isCorrect,
+        });
+      }
+
+      const totalQuestions = questionsSnapshot.length;
+      const score = totalQuestions === 0 ? 0 : Math.round((correctCount / totalQuestions) * 100);
+
+      // Update attempt với finishedAt, score, userAnswers (AC1)
+      await this.examAttemptRepo.updateAttempt(attemptId, {
+        finishedAt: new Date(),
+        score: score,
+        userAnswers: userAnswers,
+      });
+
+      return {
+        ok: true,
+        score,
+        total: totalQuestions,
+        correctCount,
+        questionResults, // Để hiển thị chi tiết nếu cần
+      };
+    } finally {
+      await this.client.close();
     }
-
-    const score = total === 0 ? 0 : Math.round((correctCount / total) * 100);
-    return { ok: true, score, total, correctCount };
   }
 }
 
