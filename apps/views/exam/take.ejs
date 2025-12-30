@@ -53,17 +53,46 @@
   <input type="hidden" name="attemptId" value="<%= attemptId %>" />
 
   <% questions.forEach(function(q, idx){ %>
-  <div class="exam-question">
+  <div class="exam-question" data-question-type="<%= q.type %>" data-question-id="<%= q._id %>">
     <div class="exam-question-header">
       <span class="badge">Câu <%= idx + 1 %></span>
-      <span class="badge badge-secondary"><%= q.difficulty %></span>
-      <% if (q.type) { %>
-      <span class="badge badge-info" style="font-size: 12px;"><%= q.type %></span>
-      <% } %>
     </div>
+
+    <!-- Hướng dẫn ngắn cho từng loại câu hỏi -->
+    <div class="exam-question-hint">
+      <% 
+        const hints = {
+          'single_choice': 'Chọn một đáp án đúng',
+          'multiple_choice': 'Chọn một hoặc nhiều đáp án đúng',
+          'true_false': 'Chọn Đúng hoặc Sai',
+          'fill_in_blank': 'Nhập đáp án vào ô trống',
+          'matching': 'Nối mỗi mục bên trái với mục tương ứng bên phải'
+        };
+        const hint = hints[q.type] || 'Trả lời câu hỏi';
+      %>
+      <span class="exam-question-hint-text">💡 <%= hint %></span>
+    </div>
+
     <div class="exam-question-content"><%= q.content %></div>
 
-    <% if (Array.isArray(q.answers)) { %>
+    <% if (q.mediaUrl) { %>
+    <div class="exam-question-media">
+      <% if (q.mediaUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) { %>
+      <img src="<%= q.mediaUrl %>" alt="Media" class="exam-media-image" />
+      <% } else if (q.mediaUrl.match(/\.(mp4|webm|ogg)$/i)) { %>
+      <video src="<%= q.mediaUrl %>" controls class="exam-media-video">
+        Trình duyệt của bạn không hỗ trợ video.
+      </video>
+      <% } else { %>
+      <div class="exam-media-link">
+        <a href="<%= q.mediaUrl %>" target="_blank">Mở media</a>
+      </div>
+      <% } %>
+    </div>
+    <% } %>
+
+    <!-- Single Choice -->
+    <% if (q.type === 'single_choice' && Array.isArray(q.answers)) { %>
     <div class="exam-question-options">
       <% q.answers.forEach(function(a, answerIndex){ %>
       <label class="exam-option">
@@ -71,16 +100,84 @@
           type="radio"
           name="answers[<%= q._id %>]"
           value="<%= answerIndex %>"
+          class="exam-answer-input"
         />
         <span><%= a.text || a.value || a %></span>
       </label>
       <% }) %>
     </div>
-    <% } else { %>
-    <div class="exam-question-note">
-      Loại câu hỏi này sẽ hỗ trợ ở phiên bản sau.
+    <% } %>
+
+    <!-- Multiple Choice -->
+    <% if (q.type === 'multiple_choice' && Array.isArray(q.answers)) { %>
+    <div class="exam-question-options">
+      <% q.answers.forEach(function(a, answerIndex){ %>
+      <label class="exam-option">
+        <input
+          type="checkbox"
+          name="answers[<%= q._id %>][]"
+          value="<%= answerIndex %>"
+          class="exam-answer-input exam-answer-checkbox"
+        />
+        <span><%= a.text || a.value || a %></span>
+      </label>
+      <% }) %>
     </div>
     <% } %>
+
+    <!-- True/False -->
+    <% if (q.type === 'true_false' && Array.isArray(q.answers)) { %>
+    <div class="exam-question-truefalse">
+      <% q.answers.forEach(function(a, answerIndex){ %>
+      <label class="exam-option exam-option-truefalse">
+        <input
+          type="radio"
+          name="answers[<%= q._id %>]"
+          value="<%= a.value === true ? 'true' : 'false' %>"
+          class="exam-answer-input"
+        />
+        <span class="exam-truefalse-label"><%= a.value === true ? '✅ Đúng' : '❌ Sai' %></span>
+      </label>
+      <% }) %>
+    </div>
+    <% } %>
+
+    <!-- Fill in Blank -->
+    <% if (q.type === 'fill_in_blank') { %>
+    <div class="exam-question-fillblank">
+      <input
+        type="text"
+        name="answers[<%= q._id %>]"
+        class="exam-answer-input exam-answer-text"
+        placeholder="<%= (q.answers && q.answers.placeholder) || 'Nhập đáp án của bạn' %>"
+      />
+    </div>
+    <% } %>
+
+    <!-- Matching -->
+    <% if (q.type === 'matching' && q.answers && q.answers.leftItems && q.answers.rightItems) { %>
+    <div class="exam-question-matching">
+      <div class="exam-matching-grid">
+        <% q.answers.leftItems.forEach(function(leftItem, leftIndex){ %>
+        <div class="exam-matching-row">
+          <div class="exam-matching-left">
+            <span class="exam-matching-number"><%= leftIndex + 1 %>.</span>
+            <span class="exam-matching-item"><%= leftItem %></span>
+          </div>
+          <div class="exam-matching-right">
+            <select name="answers[<%= q._id %>][<%= leftItem %>]" class="exam-answer-input exam-answer-select">
+              <option value="">-- Chọn đáp án --</option>
+              <% q.answers.rightItems.forEach(function(rightItem){ %>
+              <option value="<%= rightItem %>"><%= rightItem %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+
   </div>
   <% }) %>
 

@@ -504,13 +504,16 @@ class QuestionService {
    * @returns {boolean}
    */
   async isFileImported(fileHash) {
-    await this.client.connect();
+    // Tạo client riêng để không ảnh hưởng đến client chính
+    const checkClient = DatabaseConnection.getMongoClient();
+    await checkClient.connect();
     try {
-      const importedFiles = this.db.collection("importedFiles");
+      const checkDb = checkClient.db(DatabaseConnection.getDatabaseName());
+      const importedFiles = checkDb.collection("importedFiles");
       const existing = await importedFiles.findOne({ fileHash: fileHash });
       return !!existing;
     } finally {
-      await this.client.close();
+      await checkClient.close();
     }
   }
 
@@ -523,9 +526,12 @@ class QuestionService {
    * @param {number} failedCount - Số câu hỏi import thất bại
    */
   async saveImportedFileInfo(fileHash, fileName, savedPath, successCount, failedCount) {
-    await this.client.connect();
+    // Tạo client riêng để không ảnh hưởng đến client chính
+    const saveClient = DatabaseConnection.getMongoClient();
+    await saveClient.connect();
     try {
-      const importedFiles = this.db.collection("importedFiles");
+      const saveDb = saveClient.db(DatabaseConnection.getDatabaseName());
+      const importedFiles = saveDb.collection("importedFiles");
       await importedFiles.insertOne({
         fileHash: fileHash,
         fileName: fileName,
@@ -536,7 +542,7 @@ class QuestionService {
         importedBy: null, // Có thể lưu userId nếu có
       });
     } finally {
-      await this.client.close();
+      await saveClient.close();
     }
   }
 
@@ -649,7 +655,19 @@ class QuestionService {
           // Parse answers JSON
           let answers;
           try {
-            answers = typeof questionData.answersJson === "string" ? JSON.parse(questionData.answersJson) : questionData.answersJson;
+            let jsonStr = typeof questionData.answersJson === "string" ? questionData.answersJson : JSON.stringify(questionData.answersJson);
+            
+            // Fix: Nếu là matching type và JSON thiếu dấu đóng ngoặc ], thêm vào
+            if (questionData.type === "matching" && jsonStr.trim().startsWith("[") && !jsonStr.trim().endsWith("]")) {
+              jsonStr = jsonStr.trim() + "]";
+            }
+            
+            answers = JSON.parse(jsonStr);
+            
+            // Fix: Nếu là matching type và answers là array chứa object có pairs, extract object đó
+            if (questionData.type === "matching" && Array.isArray(answers) && answers.length > 0 && answers[0].pairs) {
+              answers = answers[0];
+            }
           } catch (e) {
             results.failed++;
             results.errors.push({ row: rowIndex, message: `answersJson không hợp lệ: ${e.message}` });
