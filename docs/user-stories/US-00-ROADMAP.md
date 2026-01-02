@@ -32,7 +32,7 @@ Chuẩn hoá thứ tự triển khai + tiêu chí “xong” để có thể **c
 - [x] **US-40** Exam generate & attempt snapshot (server-side đúng chuẩn)
 - [x] **US-42** Exam submit & scoring (chấm server-side theo snapshot)
 - [x] **US-41** Exam take UI (timer/UX đồng nhất UI system)
-- [ ] **US-43** Exam history (list/detail)
+- [x] **US-43** Exam history (list/detail)
 - [ ] **US-90** Non-functional (index, security hardening, logging nâng cao)
 
 ## 4. Tài liệu tham chiếu

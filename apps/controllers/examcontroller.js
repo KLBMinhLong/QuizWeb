@@ -1,6 +1,6 @@
 var express = require("express");
 var router = express.Router();
-var { optionalAuth, hasPermission } = require(global.__basedir +
+var { optionalAuth, requireAuth, hasPermission } = require(global.__basedir +
   "/apps/Util/VerifyToken");
 
 var ExamService = require(global.__basedir + "/apps/Services/ExamService");
@@ -88,6 +88,68 @@ router.post("/submit", optionalAuth, async function (req, res) {
     res.render("exam/result.ejs", { result, user: req.user || null });
   } catch (e) {
     console.error("Error submitting exam:", e);
+    res.status(500).send("Lỗi server");
+  }
+});
+
+// US-43: Lịch sử thi (requireAuth + permission exams.read)
+router.get("/history", requireAuth, async function (req, res) {
+  try {
+    const user = req.user;
+
+    // Permission: cần exams.read (US-43)
+    const canRead = hasPermission(user, "exams.read");
+    if (!canRead) {
+      return res.status(403).send("Bạn không có quyền xem lịch sử thi");
+    }
+
+    const service = new ExamService();
+    const result = await service.getAttemptHistory(user, {
+      limit: 50, // Optional pagination (AC3)
+    });
+
+    if (!result.ok) {
+      return res.status(400).send(result.message);
+    }
+
+    res.render("exam/history.ejs", {
+      attempts: result.attempts,
+      isAdminOrModerator: result.isAdminOrModerator,
+      user,
+    });
+  } catch (e) {
+    console.error("Error loading exam history:", e);
+    res.status(500).send("Lỗi server");
+  }
+});
+
+// US-43: Chi tiết attempt (requireAuth + permission exams.read)
+router.get("/attempt/:id", requireAuth, async function (req, res) {
+  try {
+    const user = req.user;
+    const attemptId = req.params.id;
+
+    // Permission: cần exams.read (US-43)
+    const canRead = hasPermission(user, "exams.read");
+    if (!canRead) {
+      return res.status(403).send("Bạn không có quyền xem chi tiết attempt");
+    }
+
+    const service = new ExamService();
+    const result = await service.getAttemptDetail(attemptId, user);
+
+    if (!result.ok) {
+      return res.status(400).send(result.message);
+    }
+
+    res.render("exam/attempt-detail.ejs", {
+      attempt: result.attempt,
+      subject: result.subject,
+      questionDetails: result.questionDetails,
+      user,
+    });
+  } catch (e) {
+    console.error("Error loading attempt detail:", e);
     res.status(500).send("Lỗi server");
   }
 });

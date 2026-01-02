@@ -46,6 +46,44 @@ class ExamAttemptRepository {
 
     return await this.getById(id);
   }
+
+  async getByUserId(userId, options = {}) {
+    const filter = { userId: new ObjectId(String(userId)) };
+
+    const query = this.collection().find(filter).sort({ startedAt: -1 }); // Mới nhất trước
+
+    if (options.limit) {
+      query.limit(options.limit);
+    }
+    if (options.skip) {
+      query.skip(options.skip);
+    }
+
+    return await query.toArray();
+  }
+
+  async getAllAttempts(options = {}) {
+    const query = this.collection().find({}).sort({ startedAt: -1 }); // Mới nhất trước
+
+    if (options.limit) {
+      query.limit(options.limit);
+    }
+    if (options.skip) {
+      query.skip(options.skip);
+    }
+
+    return await query.toArray();
+  }
+
+  async countByUserId(userId) {
+    return await this.collection().countDocuments({
+      userId: new ObjectId(String(userId)),
+    });
+  }
+
+  async countAll() {
+    return await this.collection().countDocuments({});
+  }
 }
 
 module.exports = ExamAttemptRepository;

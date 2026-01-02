@@ -7,6 +7,8 @@ var QuestionRepository = require(global.__basedir +
   "/apps/Repository/QuestionRepository");
 var ExamAttemptRepository = require(global.__basedir +
   "/apps/Repository/ExamAttemptRepository");
+var UserRepository = require(global.__basedir +
+  "/apps/Repository/UserRepository");
 var QuestionService = require(global.__basedir +
   "/apps/Services/QuestionService");
 
@@ -17,6 +19,7 @@ class ExamService {
     this.subjectRepo = new SubjectRepository(this.db);
     this.questionRepo = new QuestionRepository(this.db);
     this.examAttemptRepo = new ExamAttemptRepository(this.db);
+    this.userRepo = new UserRepository(this.db);
   }
 
   async generateExam(subjectId, user) {
@@ -160,7 +163,10 @@ class ExamService {
       }
 
       const totalQuestions = questionsSnapshot.length;
-      const score = totalQuestions === 0 ? 0 : Math.round((correctCount / totalQuestions) * 100);
+      const score =
+        totalQuestions === 0
+          ? 0
+          : Math.round((correctCount / totalQuestions) * 100);
 
       // Update attempt với finishedAt, score, userAnswers (AC1)
       await this.examAttemptRepo.updateAttempt(attemptId, {
@@ -175,6 +181,120 @@ class ExamService {
         total: totalQuestions,
         correctCount,
         questionResults, // Để hiển thị chi tiết nếu cần
+      };
+    } finally {
+      await this.client.close();
+    }
+  }
+
+  async getAttemptHistory(user, options = {}) {
+    await this.client.connect();
+    try {
+      // Check permission
+      if (!user) {
+        return { ok: false, message: "Yêu cầu đăng nhập" };
+      }
+
+      // Admin/Moderator có thể xem tất cả attempts (AC5)
+      const isAdminOrModerator =
+        user.role === "admin" || user.role === "moderator";
+
+      let attempts;
+      if (isAdminOrModerator) {
+        attempts = await this.examAttemptRepo.getAllAttempts(options);
+      } else {
+        // User thường chỉ xem attempts của mình (AC1)
+        attempts = await this.examAttemptRepo.getByUserId(user.userId, options);
+      }
+
+      // Enrich với subject info và user info (nếu là admin/moderator)
+      const enrichedAttempts = [];
+      for (const attempt of attempts) {
+        const subject = await this.subjectRepo.getById(attempt.subjectId);
+        const enrichedAttempt = {
+          ...attempt,
+          subject: subject || { name: "Môn học đã bị xóa", slug: "" },
+        };
+
+        // Nếu là admin/moderator, load thêm thông tin user
+        if (isAdminOrModerator && attempt.userId) {
+          const attemptUser = await this.userRepo.findById(attempt.userId);
+          enrichedAttempt.user = attemptUser
+            ? {
+                _id: attemptUser._id,
+                username: attemptUser.username,
+                fullName: attemptUser.fullName || attemptUser.username,
+              }
+            : {
+                username: "(Người dùng đã bị xóa)",
+                fullName: "(Người dùng đã bị xóa)",
+              };
+        }
+
+        enrichedAttempts.push(enrichedAttempt);
+      }
+
+      return { ok: true, attempts: enrichedAttempts, isAdminOrModerator };
+    } finally {
+      await this.client.close();
+    }
+  }
+
+  async getAttemptDetail(attemptId, user) {
+    await this.client.connect();
+    try {
+      // Check permission
+      if (!user) {
+        return { ok: false, message: "Yêu cầu đăng nhập" };
+      }
+
+      const attempt = await this.examAttemptRepo.getById(attemptId);
+      if (!attempt) {
+        return { ok: false, message: "Không tìm thấy attempt" };
+      }
+
+      // Check quyền xem (AC1: user chỉ xem được của mình, trừ admin/moderator)
+      const isAdminOrModerator =
+        user.role === "admin" || user.role === "moderator";
+      const isOwner =
+        attempt.userId && String(attempt.userId) === String(user.userId);
+
+      if (!isAdminOrModerator && !isOwner) {
+        return { ok: false, message: "Bạn không có quyền xem attempt này" };
+      }
+
+      // Load subject info
+      const subject = await this.subjectRepo.getById(attempt.subjectId);
+
+      // Tính chi tiết từng câu (AC2)
+      const questionsSnapshot = attempt.questionsSnapshot || [];
+      const userAnswers = attempt.userAnswers || {};
+      const questionDetails = [];
+
+      for (let i = 0; i < questionsSnapshot.length; i++) {
+        const question = questionsSnapshot[i];
+        const questionId = String(question._id);
+        const userAnswer = userAnswers[questionId];
+
+        const isCorrect = QuestionService.compareAnswer(
+          question.type,
+          question.answers,
+          userAnswer
+        );
+
+        questionDetails.push({
+          index: i + 1,
+          question,
+          userAnswer,
+          isCorrect,
+        });
+      }
+
+      return {
+        ok: true,
+        attempt,
+        subject: subject || { name: "Môn học đã bị xóa", slug: "" },
+        questionDetails,
       };
     } finally {
       await this.client.close();
