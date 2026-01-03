@@ -58,6 +58,9 @@ router.post("/generate", optionalAuth, async function (req, res) {
       subject: subject || { _id: subjectId, name: "Môn học", slug: "" },
       questions: exam.questions,
       durationMinutes: exam.durationMinutes,
+      remainingSeconds: exam.remainingSeconds, // Pass remaining seconds
+      userAnswers: exam.userAnswers || {}, // Pass previous answers
+      isResume: exam.isResume || false, // Flag needed for UI toast
       attemptId: exam.attemptId,
       hasShortage: exam.hasShortage,
       shortages: exam.shortages,
@@ -89,6 +92,25 @@ router.post("/submit", optionalAuth, async function (req, res) {
   } catch (e) {
     console.error("Error submitting exam:", e);
     res.status(500).send("Lỗi server");
+  }
+});
+
+// Save progress (Auto-save)
+router.post("/save-progress", optionalAuth, async function (req, res) {
+  try {
+    const user = req.user || null;
+    const { attemptId, answers } = req.body;
+
+    if (!hasPermission(user, "exams.take")) {
+      return res.status(403).json({ ok: false, message: "Unauthorized" });
+    }
+
+    const service = new ExamService();
+    const result = await service.saveProgress(attemptId, user, answers);
+    res.json(result);
+  } catch (e) {
+    console.error("Error saving progress:", e);
+    res.status(500).json({ ok: false, message: "Server error" });
   }
 });
 

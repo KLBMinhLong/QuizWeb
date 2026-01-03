@@ -28,6 +28,59 @@ class ExamService {
       const subject = await this.subjectRepo.getById(subjectId);
       if (!subject) return { ok: false, message: "Không tìm thấy môn học" };
 
+      // 1. Kiểm tra bài thi dang dở (Resume Logic)
+      if (user && user.userId) {
+        const activeAttempt = await this.examAttemptRepo.findActiveAttempt(
+          user.userId,
+          subjectId
+        );
+
+        if (activeAttempt) {
+          const now = new Date();
+          const startTime = new Date(activeAttempt.startedAt);
+          const durationMs = activeAttempt.durationMinutes * 60 * 1000;
+          const endTime = new Date(startTime.getTime() + durationMs);
+          const remainingMs = endTime.getTime() - now.getTime();
+
+          // Nếu đã hết giờ mà chưa finish -> Auto Submit (Close) và trả về thông báo hoặc tạo đề mới
+          // Ở đây ta chọn cách Auto Submit attempt cũ và tiếp tục tạo đề mới (clean state)
+          if (remainingMs <= 0) {
+            await this.submitExam(
+              {
+                attemptId: String(activeAttempt._id),
+                answers: activeAttempt.userAnswers || {},
+              },
+              user
+            );
+            // Sau khi close, flow sẽ chạy tiếp xuống dưới để tạo đề mới
+          } else {
+            // Còn thời gian -> RESUME
+            // Strip answers
+            const questions = activeAttempt.questionsSnapshot || [];
+            const publicQuestions = questions.map((q) => ({
+              _id: String(q._id),
+              type: q.type,
+              difficulty: q.difficulty,
+              content: q.content,
+              mediaUrl: q.mediaUrl || null,
+              answers: QuestionService.stripCorrectAnswers(q.type, q.answers),
+            }));
+
+            return {
+              ok: true,
+              isResume: true,
+              attemptId: String(activeAttempt._id),
+              questions: publicQuestions,
+              durationMinutes: activeAttempt.durationMinutes,
+              remainingSeconds: Math.floor(remainingMs / 1000),
+              userAnswers: activeAttempt.userAnswers || {},
+              hasShortage: false, // Attempt cũ đã tạo rồi thì ko check shortage nữa
+            };
+          }
+        }
+      }
+
+      // 2. Tạo đề mới (nếu không có bài dở hoặc bài dở đã close)
       const cfg = subject.examConfig || {
         easyCount: 10,
         mediumCount: 5,
@@ -41,7 +94,7 @@ class ExamService {
         cfg
       );
 
-      // Tính thiếu hụt theo từng độ khó để hiển thị cảnh báo (US-40)
+      // Tính thiếu hụt theo từng độ khó để hiển thị cảnh báo
       const requested = {
         easy: Number(cfg.easyCount) || 0,
         medium: Number(cfg.mediumCount) || 0,
@@ -62,7 +115,7 @@ class ExamService {
         available.medium < requested.medium ||
         available.hard < requested.hard;
 
-      // Snapshot đầy đủ để chấm server-side (convert ObjectId thành string để dễ serialize/deserialize)
+      // Snapshot đầy đủ để chấm server-side
       const questionsSnapshot = questions.map((q) => ({
         _id: String(q._id),
         subjectId: String(q.subjectId),
@@ -73,7 +126,7 @@ class ExamService {
         answers: q.answers,
       }));
 
-      // Strip đáp án đúng khỏi answers trước khi gửi cho client (theo US-30)
+      // Strip đáp án đúng
       const publicQuestions = questions.map((q) => ({
         _id: String(q._id),
         type: q.type,
@@ -83,7 +136,7 @@ class ExamService {
         answers: QuestionService.stripCorrectAnswers(q.type, q.answers),
       }));
 
-      // Tạo examAttempt snapshot (US-40)
+      // Tạo examAttempt snapshot
       const attemptData = {
         userId: user && user.userId ? user.userId : null,
         subjectId: subject._id,
@@ -98,11 +151,14 @@ class ExamService {
 
       return {
         ok: true,
+        isResume: false,
         durationMinutes: cfg.durationMinutes,
+        remainingSeconds: cfg.durationMinutes * 60,
         questions: publicQuestions,
         attemptId: String(attemptId),
         shortages,
         hasShortage,
+        userAnswers: {},
       };
     } finally {
       await this.client.close();
@@ -296,6 +352,34 @@ class ExamService {
         subject: subject || { name: "Môn học đã bị xóa", slug: "" },
         questionDetails,
       };
+    } finally {
+      await this.client.close();
+    }
+  }
+  async saveProgress(attemptId, user, answers) {
+    await this.client.connect();
+    try {
+      const attempt = await this.examAttemptRepo.getById(attemptId);
+      if (!attempt) return { ok: false, message: "Không tìm thấy attempt" };
+
+      if (attempt.finishedAt)
+        return { ok: false, message: "Bài thi đã kết thúc" };
+
+      // Verify owner
+      if (
+        user &&
+        user.userId &&
+        attempt.userId &&
+        String(attempt.userId) !== String(user.userId)
+      ) {
+        return { ok: false, message: "Không có quyền" };
+      }
+
+      await this.examAttemptRepo.updateAttempt(attemptId, {
+        userAnswers: answers,
+      });
+
+      return { ok: true };
     } finally {
       await this.client.close();
     }

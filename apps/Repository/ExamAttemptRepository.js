@@ -84,6 +84,15 @@ class ExamAttemptRepository {
   async countAll() {
     return await this.collection().countDocuments({});
   }
+
+  // Tìm bài thi đang làm dở (chưa finish)
+  async findActiveAttempt(userId, subjectId) {
+    return await this.collection().findOne({
+      userId: new ObjectId(String(userId)),
+      subjectId: new ObjectId(String(subjectId)),
+      finishedAt: null,
+    });
+  }
 }
 
 module.exports = ExamAttemptRepository;

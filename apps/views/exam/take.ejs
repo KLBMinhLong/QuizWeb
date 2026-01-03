@@ -23,6 +23,12 @@
 </div>
 <% } %>
 
+<% if (typeof isResume !== 'undefined' && isResume) { %>
+<div class="alert alert-info" style="margin-bottom: var(--spacing-xl);">
+  ℹ️ Bạn đang tiếp tục bài thi chưa hoàn thành.
+</div>
+<% } %>
+
 <% if (!questions || questions.length === 0) { %>
 <div class="card">
   <p>Chưa đủ câu hỏi trong ngân hàng cho môn này.</p>
@@ -33,7 +39,7 @@
 <div id="exam-timer" class="exam-timer">
   <div class="exam-timer-content">
     <span class="exam-timer-label">⏱️ Thời gian còn lại:</span>
-    <span id="exam-timer-text" class="exam-timer-text">00:00</span>
+    <span id="exam-timer-text" class="exam-timer-text">--:--</span>
   </div>
   <div id="exam-timer-warning" class="exam-timer-warning" style="display: none;">
     Thời gian sắp hết! Hãy nộp bài sớm.
@@ -46,13 +52,17 @@
   action="/exam/submit" 
   class="card"
   data-duration-minutes="<%= durationMinutes %>"
+  data-remaining-seconds="<%= typeof remainingSeconds !== 'undefined' ? remainingSeconds : (durationMinutes * 60) %>"
   data-attempt-id="<%= attemptId %>"
   data-total-questions="<%= questions.length %>"
 >
   <input type="hidden" name="subjectId" value="<%= subjectId %>" />
   <input type="hidden" name="attemptId" value="<%= attemptId %>" />
 
-  <% questions.forEach(function(q, idx){ %>
+  <% questions.forEach(function(q, idx){ 
+       // Get saved answer if any
+       const savedAns = userAnswers && userAnswers[q._id];
+  %>
   <div class="exam-question" data-question-type="<%= q.type %>" data-question-id="<%= q._id %>">
     <div class="exam-question-header">
       <span class="badge">Câu <%= idx + 1 %></span>
@@ -94,13 +104,16 @@
     <!-- Single Choice -->
     <% if (q.type === 'single_choice' && Array.isArray(q.answers)) { %>
     <div class="exam-question-options">
-      <% q.answers.forEach(function(a, answerIndex){ %>
+      <% q.answers.forEach(function(a, answerIndex){ 
+         const isChecked = savedAns == answerIndex;
+      %>
       <label class="exam-option">
         <input
           type="radio"
           name="answers[<%= q._id %>]"
           value="<%= answerIndex %>"
           class="exam-answer-input"
+          <%= isChecked ? 'checked' : '' %>
         />
         <span><%= a.text || a.value || a %></span>
       </label>
@@ -111,13 +124,16 @@
     <!-- Multiple Choice -->
     <% if (q.type === 'multiple_choice' && Array.isArray(q.answers)) { %>
     <div class="exam-question-options">
-      <% q.answers.forEach(function(a, answerIndex){ %>
+      <% q.answers.forEach(function(a, answerIndex){ 
+         const isChecked = savedAns && Array.isArray(savedAns) && savedAns.map(String).includes(String(answerIndex));
+      %>
       <label class="exam-option">
         <input
           type="checkbox"
           name="answers[<%= q._id %>][]"
           value="<%= answerIndex %>"
           class="exam-answer-input exam-answer-checkbox"
+          <%= isChecked ? 'checked' : '' %>
         />
         <span><%= a.text || a.value || a %></span>
       </label>
@@ -128,13 +144,17 @@
     <!-- True/False -->
     <% if (q.type === 'true_false' && Array.isArray(q.answers)) { %>
     <div class="exam-question-truefalse">
-      <% q.answers.forEach(function(a, answerIndex){ %>
+      <% q.answers.forEach(function(a, answerIndex){ 
+         const valStr = a.value === true ? 'true' : 'false';
+         const isChecked = String(savedAns) === valStr;
+      %>
       <label class="exam-option exam-option-truefalse">
         <input
           type="radio"
           name="answers[<%= q._id %>]"
-          value="<%= a.value === true ? 'true' : 'false' %>"
+          value="<%= valStr %>"
           class="exam-answer-input"
+          <%= isChecked ? 'checked' : '' %>
         />
         <span class="exam-truefalse-label"><%= a.value === true ? '✅ Đúng' : '❌ Sai' %></span>
       </label>
@@ -150,6 +170,7 @@
         name="answers[<%= q._id %>]"
         class="exam-answer-input exam-answer-text"
         placeholder="<%= (q.answers && q.answers.placeholder) || 'Nhập đáp án của bạn' %>"
+        value="<%= savedAns || '' %>"
       />
     </div>
     <% } %>
@@ -158,7 +179,9 @@
     <% if (q.type === 'matching' && q.answers && q.answers.leftItems && q.answers.rightItems) { %>
     <div class="exam-question-matching">
       <div class="exam-matching-grid">
-        <% q.answers.leftItems.forEach(function(leftItem, leftIndex){ %>
+        <% q.answers.leftItems.forEach(function(leftItem, leftIndex){ 
+           const selectedVal = savedAns ? savedAns[leftItem] : '';
+        %>
         <div class="exam-matching-row">
           <div class="exam-matching-left">
             <span class="exam-matching-number"><%= leftIndex + 1 %>.</span>
@@ -168,7 +191,7 @@
             <select name="answers[<%= q._id %>][<%= leftItem %>]" class="exam-answer-input exam-answer-select">
               <option value="">-- Chọn đáp án --</option>
               <% q.answers.rightItems.forEach(function(rightItem){ %>
-              <option value="<%= rightItem %>"><%= rightItem %></option>
+              <option value="<%= rightItem %>" <%= selectedVal === rightItem ? 'selected' : '' %>><%= rightItem %></option>
               <% }) %>
             </select>
           </div>
