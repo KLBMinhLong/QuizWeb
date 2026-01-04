@@ -322,6 +322,175 @@
         <% } %>
       </div>
     </div>
+    <% } else if (question.type === 'matching') { %>
+    <div style="margin-top: var(--spacing-md)">
+      <!-- Bảng hiển thị câu nối -->
+      <div
+        style="
+          display: grid;
+          gap: var(--spacing-sm);
+          margin-bottom: var(--spacing-md);
+        "
+      >
+        <% // Lấy userAnswer - có thể là object {left: right} hoặc array const
+        userPairs = {}; if (userAnswer && typeof userAnswer === 'object') { if
+        (Array.isArray(userAnswer)) { userAnswer.forEach(pair => { if (pair.left
+        && pair.right) { userPairs[pair.left] = pair.right; } }); } else {
+        Object.assign(userPairs, userAnswer); } } // Lấy correct pairs const
+        correctPairs = question.answers && question.answers.pairs ?
+        question.answers.pairs : []; %> <%
+        correctPairs.forEach(function(correctPair, idx) { const userRight =
+        userPairs[correctPair.left]; const isPairCorrect = userRight ===
+        correctPair.right; const hasUserAnswer = userRight !== undefined &&
+        userRight !== null; %>
+        <div
+          style="
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            border: 2px solid <%= isPairCorrect ? 'var(--color-success)' : (hasUserAnswer ? 'var(--color-danger)' : 'var(--color-border)') %>;
+            background: <%= isPairCorrect ? 'var(--color-success-soft)' : (hasUserAnswer ? '#ffe6e6' : 'transparent') %>;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: var(--spacing-md);
+              flex-wrap: wrap;
+            "
+          >
+            <!-- Left item -->
+            <div style="flex: 1; min-width: 200px">
+              <div
+                style="
+                  font-size: 14px;
+                  color: var(--color-text-muted);
+                  margin-bottom: 4px;
+                "
+              >
+                <strong>Nối từ:</strong>
+              </div>
+              <div style="font-weight: 600; color: var(--color-text-main)">
+                <%= correctPair.left %>
+              </div>
+            </div>
+
+            <!-- Arrow -->
+            <div style="font-size: 20px; color: var(--color-primary)">→</div>
+
+            <!-- Right items (user answer + correct answer) -->
+            <div style="flex: 2; min-width: 250px">
+              <!-- User's answer -->
+              <% if (hasUserAnswer) { %>
+              <div style="margin-bottom: var(--spacing-sm)">
+                <div
+                  style="
+                    font-size: 14px;
+                    color: var(--color-text-muted);
+                    margin-bottom: 4px;
+                  "
+                >
+                  <strong>Bạn đã nối với:</strong>
+                </div>
+                <div
+                  style="
+                      padding: 8px 12px;
+                      background: white;
+                      border-radius: var(--radius-sm);
+                      border: 2px solid <%= isPairCorrect ? 'var(--color-success)' : 'var(--color-danger)' %>;
+                      font-weight: 500;
+                    "
+                >
+                  <%= userRight %> <% if (isPairCorrect) { %>
+                  <span style="margin-left: 8px; color: var(--color-success)"
+                    >✓</span
+                  >
+                  <% } else { %>
+                  <span style="margin-left: 8px; color: var(--color-danger)"
+                    >✗</span
+                  >
+                  <% } %>
+                </div>
+              </div>
+              <% } else { %>
+              <div style="margin-bottom: var(--spacing-sm)">
+                <div
+                  style="
+                    font-size: 14px;
+                    color: var(--color-text-muted);
+                    margin-bottom: 4px;
+                  "
+                >
+                  <strong>Bạn đã nối với:</strong>
+                </div>
+                <div style="color: var(--color-text-muted); font-style: italic">
+                  (Không trả lời)
+                </div>
+              </div>
+              <% } %>
+
+              <!-- Correct answer (show if wrong or no answer) -->
+              <% if (!isPairCorrect) { %>
+              <div>
+                <div
+                  style="
+                    font-size: 14px;
+                    color: var(--color-text-muted);
+                    margin-bottom: 4px;
+                  "
+                >
+                  <strong>Đáp án đúng:</strong>
+                </div>
+                <div
+                  style="
+                    padding: 8px 12px;
+                    background: var(--color-success-soft);
+                    border-radius: var(--radius-sm);
+                    border: 2px solid var(--color-success);
+                    font-weight: 500;
+                    color: var(--color-success);
+                  "
+                >
+                  <%= correctPair.right %> ✓
+                </div>
+              </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+
+      <% if (!isCorrect) { %>
+      <div
+        style="
+          padding: var(--spacing-md);
+          background: #ffe6e6;
+          border: 1px solid var(--color-danger);
+          border-radius: var(--radius-md);
+          color: var(--color-danger);
+          font-weight: bold;
+          text-align: center;
+        "
+      >
+        ✗ Có một số cặp nối chưa chính xác
+      </div>
+      <% } else { %>
+      <div
+        style="
+          padding: var(--spacing-md);
+          background: var(--color-success-soft);
+          border: 1px solid var(--color-success);
+          border-radius: var(--radius-md);
+          color: var(--color-success);
+          font-weight: bold;
+          text-align: center;
+        "
+      >
+        ✓ Tất cả các cặp nối đều chính xác
+      </div>
+      <% } %>
+    </div>
     <% } else { %>
     <div style="color: var(--color-text-muted); font-style: italic">
       Loại câu hỏi này chưa hỗ trợ hiển thị chi tiết.
