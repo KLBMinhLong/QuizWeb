@@ -1,226 +1,300 @@
-<%- include("../partical/header", { title: subject.name }) %>
+<%- include("../partical/header", { title: subject.name + " - OnThiTracNghiem" , user: typeof user !=='undefined' ? user
+  : null }) %>
 
-<!-- Breadcrumb -->
-<nav class="breadcrumb">
-  <a href="/" class="breadcrumb__item">Trang chủ</a>
-  <span class="breadcrumb__separator">›</span>
-  <a href="/subjects" class="breadcrumb__item">Môn học</a>
-  <span class="breadcrumb__separator">›</span>
-  <span class="breadcrumb__item breadcrumb__item--current"
-    ><%= subject.name %></span
-  >
-</nav>
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol class="breadcrumb__list">
+      <li class="breadcrumb__item">
+        <a href="/" class="breadcrumb__link">
+          <svg class="breadcrumb__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Trang chủ
+        </a>
+      </li>
+      <li class="breadcrumb__separator" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </li>
+      <li class="breadcrumb__item">
+        <a href="/subjects" class="breadcrumb__link">Môn học</a>
+      </li>
+      <li class="breadcrumb__separator" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </li>
+      <li class="breadcrumb__item breadcrumb__item--current" aria-current="page">
+        <%= subject.name %>
+      </li>
+    </ol>
+  </nav>
 
-<!-- Subject Detail Layout -->
-<div class="subject-detail">
-  <!-- Left Column: Main Info -->
-  <div class="subject-detail__main">
-    <div class="subject-header">
-      <h1 class="subject-header__title"><%= subject.name %></h1>
-      <p class="subject-header__description"><%= subject.description %></p>
-
-      <div class="subject-meta">
-        <div class="subject-meta__item">
-          <span class="subject-meta__label">Thời gian:</span>
-          <span><%= subject.examConfig?.durationMinutes || 0 %> phút</span>
-        </div>
-        <div class="subject-meta__item">
-          <span class="subject-meta__label">Tổng câu hỏi:</span>
-          <span><%= subject.questionStats?.total || 0 %> câu</span>
-        </div>
-        <div class="subject-meta__item">
-          <span class="subject-meta__label">Cấu hình đề:</span>
-          <span>
-            <%= subject.examConfig?.easyCount || 0 %> dễ, <%=
-            subject.examConfig?.mediumCount || 0 %> TB, <%=
-            subject.examConfig?.hardCount || 0 %> khó
-          </span>
-        </div>
+  <!-- Subject Hero Section -->
+  <section class="subject-hero">
+    <div class="subject-hero__content">
+      <div class="subject-hero__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        </svg>
+      </div>
+      <div class="subject-hero__text">
+        <h1 class="subject-hero__title">
+          <%= subject.name %>
+        </h1>
+        <p class="subject-hero__description">
+          <%= subject.description || 'Môn học luyện thi trắc nghiệm' %>
+        </p>
       </div>
     </div>
-  </div>
 
-  <!-- Right Column: Question Distribution & Action -->
-  <div class="subject-detail__sidebar">
-    <div class="question-distribution">
-      <h3 class="question-distribution__title">Phân bố câu hỏi</h3>
-
-      <div class="question-distribution__grid">
-        <div class="question-stat question-stat--easy">
-          <div class="question-stat__number">
-            <%= subject.questionStats?.easy || 0 %>
-          </div>
-          <div class="question-stat__label">Dễ</div>
-        </div>
-        <div class="question-stat question-stat--medium">
-          <div class="question-stat__number">
-            <%= subject.questionStats?.medium || 0 %>
-          </div>
-          <div class="question-stat__label">Trung bình</div>
-        </div>
-        <div class="question-stat question-stat--hard">
-          <div class="question-stat__number">
-            <%= subject.questionStats?.hard || 0 %>
-          </div>
-          <div class="question-stat__label">Khó</div>
-        </div>
-        <div class="question-stat question-stat--total">
-          <div class="question-stat__number">
-            <%= subject.questionStats?.total || 0 %>
-          </div>
-          <div class="question-stat__label">Tổng</div>
-        </div>
-      </div>
-
-      <% if (subject.questionStats && subject.questionStats.total > 0) { %>
-      <div class="question-distribution__actions">
+    <% if (subject.questionStats && subject.questionStats.total> 0) { %>
+      <div class="subject-hero__action">
         <form method="get" action="/exam/start/<%= subject.slug %>">
-          <button type="submit" class="btn btn-primary" style="width: 100%">
+          <button type="submit" class="btn btn-primary btn--lg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
             Bắt đầu luyện thi
           </button>
         </form>
       </div>
-      <% } else { %>
-      <div
-        style="
-          text-align: center;
-          padding: var(--spacing-lg);
-          color: var(--color-text-muted);
-          font-size: 14px;
-        "
-      >
-        <p style="margin-bottom: var(--spacing-md)">
-          Môn học này chưa có câu hỏi.
-        </p>
-        <% if (user && user.role === 'admin') { %>
-        <a
-          href="/admin/questions"
-          style="
-            color: var(--color-primary);
-            font-weight: 600;
-            text-decoration: none;
-          "
-        >
-          Thêm câu hỏi
-        </a>
-        <% } %>
-      </div>
       <% } %>
-    </div>
-  </div>
-</div>
+  </section>
 
-<!-- Comments Section -->
-<section class="comments" id="comments" style="margin-top: var(--spacing-3xl)">
-  <h3 class="comments__title">Bình luận</h3>
-
-  <% if (error) { %>
-  <div class="alert alert-error" style="margin-bottom: var(--spacing-lg)"><%= error %></div>
-  <% } %> <% if (user) { %>
-  <!-- Comment Form -->
-  <form
-    class="comment-form"
-    id="commentForm"
-    method="post"
-    action="/subjects/<%= subject.slug %>/comments"
-  >
-    <textarea
-      name="content"
-      id="commentContent"
-      class="comment-form__input"
-      rows="3"
-      placeholder="Viết bình luận của bạn..."
-      required
-      maxlength="1000"
-    ></textarea>
-    <div class="comment-form__char-count" id="charCount" style="text-align: right; font-size: 12px; color: var(--color-text-muted); margin-top: var(--spacing-xs)">0/1000 ký tự</div>
-    <div class="comment-form__actions">
-      <button class="btn btn-primary" type="submit" id="submitCommentBtn">Gửi bình luận</button>
-    </div>
-  </form>
-  <% } else { %>
-  <div
-    style="
-      background: var(--color-primary-soft);
-      padding: var(--spacing-lg);
-      border-radius: var(--radius-md);
-      margin-bottom: var(--spacing-xl);
-    "
-  >
-    <p style="color: var(--color-text-main); margin: 0">
-      Bạn cần
-      <a
-        href="/auth/login"
-        style="
-          color: var(--color-primary);
-          font-weight: 600;
-          text-decoration: none;
-        "
-        >đăng nhập</a
-      >
-      để viết bình luận.
-    </p>
-  </div>
-  <% } %>
-
-  <!-- Comment List -->
-  <div class="comment-list">
-    <% if (!comments || comments.length === 0) { %>
-    <p
-      style="
-        color: var(--color-text-muted);
-        text-align: center;
-        padding: var(--spacing-xl);
-      "
-    >
-      Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
-    </p>
-    <% } else { %> <% comments.forEach(function(c){ %>
-    <div class="comment-item">
-      <div class="comment-item__avatar">
-        <%= (c.usernameSnapshot || "?").slice(0,1).toUpperCase() %>
+  <!-- Stats Cards -->
+  <section class="subject-stats">
+    <div class="stat-card-grid">
+      <div class="stat-card stat-card--time">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="stat-card__info">
+          <span class="stat-card__value">
+            <%= subject.examConfig?.durationMinutes || 0 %>
+          </span>
+          <span class="stat-card__label">phút</span>
+        </div>
       </div>
-      <div class="comment-item__body">
-        <div class="comment-item__meta">
-          <span class="comment-item__user"><%= c.usernameSnapshot %></span>
-          <span class="comment-item__time">
-            <%= new Date(c.createdAt).toLocaleDateString('vi-VN', { year:
-            'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:
-            '2-digit' }) %>
+
+      <div class="stat-card stat-card--easy">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="stat-card__info">
+          <span class="stat-card__value">
+            <%= subject.questionStats?.easy || 0 %>
+          </span>
+          <span class="stat-card__label">Dễ</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card--medium">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="stat-card__info">
+          <span class="stat-card__value">
+            <%= subject.questionStats?.medium || 0 %>
+          </span>
+          <span class="stat-card__label">Trung bình</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card--hard">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon
+              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+            </polygon>
+          </svg>
+        </div>
+        <div class="stat-card__info">
+          <span class="stat-card__value">
+            <%= subject.questionStats?.hard || 0 %>
+          </span>
+          <span class="stat-card__label">Khó</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Exam Config Info -->
+  <section class="exam-config">
+    <div class="exam-config__card">
+      <h3 class="exam-config__title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        Cấu hình đề thi
+      </h3>
+      <div class="exam-config__content">
+        <div class="exam-config__item">
+          <span class="exam-config__label">Số câu trong đề:</span>
+          <span class="exam-config__value">
+            <%= (subject.examConfig?.easyCount || 0) + (subject.examConfig?.mediumCount || 0) +
+              (subject.examConfig?.hardCount || 0) %> câu
           </span>
         </div>
-        <div class="comment-item__content"><%= c.content %></div>
-        <% if (user && (String(user.userId) === String(c.userId) || user.role ===
-        'admin' || user.role === 'moderator')) { %>
-        <div style="margin-top: var(--spacing-sm)">
-          <form
-            method="post"
-            action="/subjects/<%= subject.slug %>/comments/<%= String(c._id) %>/delete"
-            style="display: inline"
-            onsubmit="return confirm('Bạn có chắc muốn xóa bình luận này?')"
-          >
-            <button
-              type="submit"
-              style="
-                background: none;
-                border: none;
-                color: var(--color-hard);
-                cursor: pointer;
-                font-size: 12px;
-                padding: 0;
-              "
-            >
-              Xóa
-            </button>
-          </form>
+        <div class="exam-config__item">
+          <span class="exam-config__label">Phân bố:</span>
+          <span class="exam-config__value">
+            <span class="config-badge config-badge--easy">
+              <%= subject.examConfig?.easyCount || 0 %> dễ
+            </span>
+            <span class="config-badge config-badge--medium">
+              <%= subject.examConfig?.mediumCount || 0 %> TB
+            </span>
+            <span class="config-badge config-badge--hard">
+              <%= subject.examConfig?.hardCount || 0 %> khó
+            </span>
+          </span>
+        </div>
+        <div class="exam-config__item">
+          <span class="exam-config__label">Thời gian làm bài:</span>
+          <span class="exam-config__value">
+            <%= subject.examConfig?.durationMinutes || 0 %> phút
+          </span>
+        </div>
+      </div>
+
+      <% if (!subject.questionStats || subject.questionStats.total===0) { %>
+        <div class="exam-config__empty">
+          <p>Môn học này chưa có câu hỏi.</p>
+          <% if (user && user.roles && user.roles.includes('admin')) { %>
+            <a href="/admin/questions" class="btn btn-secondary">Thêm câu hỏi</a>
+            <% } %>
         </div>
         <% } %>
-      </div>
     </div>
-    <% }) %> <% } %>
-  </div>
-</section>
+  </section>
 
-<script src="/static/js/subject-comments.js"></script>
+  <!-- Comments Section -->
+  <section class="comments-section" id="comments">
+    <div class="comments-section__header">
+      <h3 class="comments-section__title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        Bình luận
+        <% if (comments && comments.length> 0) { %>
+          <span class="comments-section__count">
+            <%= comments.length %>
+          </span>
+          <% } %>
+      </h3>
+    </div>
 
-<%- include("../partical/footer") %>
+    <% if (error) { %>
+      <div class="alert alert-error">
+        <%= error %>
+      </div>
+      <% } %>
+
+        <!-- Comment Form -->
+        <% if (user) { %>
+          <div class="comment-form-wrapper">
+            <div class="comment-form__avatar">
+              <%= (user.username || "?" ).slice(0,1).toUpperCase() %>
+            </div>
+            <form class="comment-form" id="commentForm" method="post" action="/subjects/<%= subject.slug %>/comments">
+              <div class="comment-form__input-wrapper">
+                <textarea name="content" id="commentContent" class="comment-form__textarea" rows="3"
+                  placeholder="Viết bình luận của bạn..." required maxlength="1000"></textarea>
+                <div class="comment-form__footer">
+                  <span class="comment-form__char-count" id="charCount">0/1000</span>
+                  <button class="btn btn-primary btn--sm" type="submit" id="submitCommentBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="22" y1="2" x2="11" y2="13"></line>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Gửi
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <% } else { %>
+            <div class="comment-login-prompt">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <p>Bạn cần <a href="/auth/login">đăng nhập</a> để viết bình luận.</p>
+            </div>
+            <% } %>
+
+              <!-- Comment List -->
+              <div class="comment-list">
+                <% if (!comments || comments.length===0) { %>
+                  <div class="comment-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <p>Chưa có bình luận nào.</p>
+                    <span>Hãy là người đầu tiên bình luận!</span>
+                  </div>
+                  <% } else { %>
+                    <% comments.forEach(function(c){ %>
+                      <div class="comment-item">
+                        <div class="comment-item__avatar">
+                          <%= (c.usernameSnapshot || "?" ).slice(0,1).toUpperCase() %>
+                        </div>
+                        <div class="comment-item__body">
+                          <div class="comment-item__header">
+                            <span class="comment-item__user">
+                              <%= c.usernameSnapshot %>
+                            </span>
+                            <span class="comment-item__time">
+                              <%= new Date(c.createdAt).toLocaleDateString('vi-VN', { year: 'numeric' , month: 'short' ,
+                                day: 'numeric' , hour: '2-digit' , minute: '2-digit' }) %>
+                            </span>
+                          </div>
+                          <div class="comment-item__content">
+                            <%= c.content %>
+                          </div>
+                          <% if (user && (String(user.userId)===String(c.userId) || (user.roles &&
+                            (user.roles.includes('admin') || user.roles.includes('moderator'))))) { %>
+                            <div class="comment-item__actions">
+                              <form method="post"
+                                action="/subjects/<%= subject.slug %>/comments/<%= String(c._id) %>/delete"
+                                onsubmit="return confirm('Bạn có chắc muốn xóa bình luận này?')">
+                                <button type="submit" class="comment-delete-btn">
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path
+                                      d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                  </svg>
+                                  Xóa
+                                </button>
+                              </form>
+                            </div>
+                            <% } %>
+                        </div>
+                      </div>
+                      <% }) %>
+                        <% } %>
+              </div>
+  </section>
+
+  <script src="/static/js/subject-comments.js"></script>
+
+  <%- include("../partical/footer") %>
