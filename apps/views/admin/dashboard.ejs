@@ -1,60 +1,154 @@
-<%- include("../partical/header", { title: "Admin", user: typeof user !== 'undefined' ? user : null }) %>
+<%- include('./partials/header', { pageTitle: 'Dashboard' , activePage: 'dashboard' , breadcrumb: null, user: typeof
+  user !=='undefined' ? user : null }) %>
 
-<!-- Breadcrumb -->
-<nav class="breadcrumb">
-  <a href="/" class="breadcrumb__item">Trang chủ</a>
-  <span class="breadcrumb__separator">›</span>
-  <span class="breadcrumb__item breadcrumb__item--current">Quản trị</span>
-</nav>
+  <% if (typeof error !=='undefined' && error) { %>
+    <div class="alert alert-error">
+      <%= error %>
+    </div>
+    <% } %>
+      <% if (typeof success !=='undefined' && success) { %>
+        <div class="alert alert-success">
+          <%= success %>
+        </div>
+        <% } %>
 
-<div class="admin-header">
-  <h1 class="admin-header__title">Quản trị hệ thống</h1>
-</div>
+          <div class="admin-content__header">
+            <div>
+              <h1 class="admin-content__title">Dashboard</h1>
+              <p class="admin-content__subtitle">Chào mừng trở lại! Đây là tổng quan hệ thống của bạn.</p>
+            </div>
+          </div>
 
-<div class="subject-grid">
-  <a
-    href="/admin/subjects"
-    class="card"
-    style="text-decoration: none; display: block"
-  >
-    <h3 class="card__title">Quản lý môn học</h3>
-    <p class="card__content" style="color: var(--color-text-muted)">
-      Tạo, chỉnh sửa và xoá các môn học
-    </p>
-  </a>
+          <!-- Stats Cards -->
+          <div class="admin-stats-grid">
+            <a href="/admin/subjects" class="admin-stat-card">
+              <div class="admin-stat-card__icon admin-stat-card__icon--green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+              </div>
+              <div class="admin-stat-card__content">
+                <div class="admin-stat-card__value">
+                  <%= typeof stats !=='undefined' && stats.subjects ? stats.subjects : 0 %>
+                </div>
+                <div class="admin-stat-card__label">Môn học</div>
+              </div>
+            </a>
 
-  <a
-    href="/admin/questions"
-    class="card"
-    style="text-decoration: none; display: block"
-  >
-    <h3 class="card__title">Quản lý câu hỏi</h3>
-    <p class="card__content" style="color: var(--color-text-muted)">
-      Thêm và quản lý câu hỏi cho các môn học
-    </p>
-  </a>
+            <a href="/admin/questions" class="admin-stat-card">
+              <div class="admin-stat-card__icon admin-stat-card__icon--blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              </div>
+              <div class="admin-stat-card__content">
+                <div class="admin-stat-card__value">
+                  <%= typeof stats !=='undefined' && stats.questions ? stats.questions : 0 %>
+                </div>
+                <div class="admin-stat-card__label">Câu hỏi</div>
+              </div>
+            </a>
 
-  <a
-    href="/admin/roles"
-    class="card"
-    style="text-decoration: none; display: block"
-  >
-    <h3 class="card__title">Quản lý Roles</h3>
-    <p class="card__content" style="color: var(--color-text-muted)">
-      Tạo, chỉnh sửa và xoá các roles hệ thống
-    </p>
-  </a>
+            <a href="/admin/users" class="admin-stat-card">
+              <div class="admin-stat-card__icon admin-stat-card__icon--purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <div class="admin-stat-card__content">
+                <div class="admin-stat-card__value">
+                  <%= typeof stats !=='undefined' && stats.users ? stats.users : 0 %>
+                </div>
+                <div class="admin-stat-card__label">Người dùng</div>
+              </div>
+            </a>
 
-  <a
-    href="/admin/users"
-    class="card"
-    style="text-decoration: none; display: block"
-  >
-    <h3 class="card__title">Quản lý Users</h3>
-    <p class="card__content" style="color: var(--color-text-muted)">
-      Xem danh sách, block/unblock và gán roles cho users
-    </p>
-  </a>
-</div>
+            <a href="/admin/roles" class="admin-stat-card">
+              <div class="admin-stat-card__icon admin-stat-card__icon--orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </div>
+              <div class="admin-stat-card__content">
+                <div class="admin-stat-card__value">
+                  <%= typeof stats !=='undefined' && stats.roles ? stats.roles : 0 %>
+                </div>
+                <div class="admin-stat-card__label">Roles</div>
+              </div>
+            </a>
+          </div>
 
-<%- include("../partical/footer") %>
+          <!-- Quick Actions -->
+          <div class="admin-panel">
+            <div class="admin-panel__header">
+              <h3 class="admin-panel__title">Thao tác nhanh</h3>
+            </div>
+            <div class="admin-panel__body">
+              <div class="admin-quick-grid">
+                <a href="/admin/subjects" class="admin-quick-card">
+                  <div class="admin-quick-card__icon admin-stat-card__icon--green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                  </div>
+                  <div class="admin-quick-card__content">
+                    <div class="admin-quick-card__title">Quản lý môn học</div>
+                    <div class="admin-quick-card__desc">Thêm môn học và cấu hình đề thi</div>
+                  </div>
+                </a>
+
+                <a href="/admin/questions/create" class="admin-quick-card">
+                  <div class="admin-quick-card__icon admin-stat-card__icon--blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="12" y1="18" x2="12" y2="12"></line>
+                      <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                  </div>
+                  <div class="admin-quick-card__content">
+                    <div class="admin-quick-card__title">Tạo câu hỏi mới</div>
+                    <div class="admin-quick-card__desc">Thêm câu hỏi trắc nghiệm mới</div>
+                  </div>
+                </a>
+
+                <a href="/admin/questions/import" class="admin-quick-card">
+                  <div class="admin-quick-card__icon admin-stat-card__icon--purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  </div>
+                  <div class="admin-quick-card__content">
+                    <div class="admin-quick-card__title">Import câu hỏi</div>
+                    <div class="admin-quick-card__desc">Nhập hàng loạt từ file JSON/CSV</div>
+                  </div>
+                </a>
+
+                <a href="/admin/roles" class="admin-quick-card">
+                  <div class="admin-quick-card__icon admin-stat-card__icon--orange">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                      </path>
+                    </svg>
+                  </div>
+                  <div class="admin-quick-card__content">
+                    <div class="admin-quick-card__title">Quản lý phân quyền</div>
+                    <div class="admin-quick-card__desc">Cấu hình roles và permissions</div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <%- include('./partials/footer') %>

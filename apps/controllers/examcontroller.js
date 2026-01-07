@@ -125,18 +125,36 @@ router.get("/history", requireAuth, async function (req, res) {
       return res.status(403).send("Bạn không có quyền xem lịch sử thi");
     }
 
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+
     const service = new ExamService();
     const result = await service.getAttemptHistory(user, {
-      limit: 50, // Optional pagination (AC3)
+      limit: 1000, // Get all for pagination
     });
 
     if (!result.ok) {
       return res.status(400).send(result.message);
     }
 
+    // Apply pagination
+    const allAttempts = result.attempts || [];
+    const totalItems = allAttempts.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+    const startIndex = (currentPage - 1) * limit;
+    const attempts = allAttempts.slice(startIndex, startIndex + limit);
+
     res.render("exam/history.ejs", {
-      attempts: result.attempts,
+      attempts: attempts,
       isAdminOrModerator: result.isAdminOrModerator,
+      // Pagination data
+      currentPage: currentPage,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      itemsPerPage: limit,
+      baseUrl: '/exam/history',
       user,
     });
   } catch (e) {

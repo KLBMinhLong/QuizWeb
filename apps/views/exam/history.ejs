@@ -1,107 +1,110 @@
 <%- include("../partical/header", { title: "Lịch sử thi" }) %>
 
-<!-- Breadcrumb -->
-<nav class="breadcrumb">
-  <a href="/" class="breadcrumb__item">Trang chủ</a>
-  <span class="breadcrumb__separator">›</span>
-  <span class="breadcrumb__item breadcrumb__item--current">Lịch sử thi</span>
-</nav>
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a href="/" class="breadcrumb__item">Trang chủ</a>
+    <span class="breadcrumb__separator">›</span>
+    <span class="breadcrumb__item breadcrumb__item--current">Lịch sử thi</span>
+  </nav>
 
-<div class="page-header">
-  <h1 class="page-title">Lịch sử thi</h1>
-  <p class="page-subtitle">Xem lại các bài thi đã làm</p>
-</div>
-
-<% if (!attempts || attempts.length === 0) { %>
-<div class="card">
-  <p style="text-align: center; color: var(--color-text-muted)">
-    Bạn chưa có lịch sử thi nào.
-  </p>
-  <div style="text-align: center; margin-top: var(--spacing-lg)">
-    <a href="/subjects" class="btn btn-primary">Xem môn học</a>
+  <div class="page-header">
+    <h1 class="page-title">Lịch sử thi</h1>
+    <p class="page-subtitle">Xem lại các bài thi đã làm</p>
   </div>
-</div>
-<% } else { %>
-<div class="card">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <% if (isAdminOrModerator) { %>
-        <th>Người dùng</th>
-        <% } %>
-        <th>Môn học</th>
-        <th>Ngày thi</th>
-        <th>Thời gian</th>
-        <th>Số câu</th>
-        <th>Điểm</th>
-        <th>Trạng thái</th>
-        <th>Thao tác</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% attempts.forEach(function(attempt) { const startDate = new
-      Date(attempt.startedAt); const formattedDate =
-      startDate.toLocaleDateString('vi-VN'); const formattedTime =
-      startDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit'
-      }); const isFinished = !!attempt.finishedAt; const score = attempt.score
-      !== null && attempt.score !== undefined ? attempt.score : '-'; %>
-      <tr>
-        <% if (isAdminOrModerator) { %>
-        <td>
-          <% if (attempt.user) { %>
-          <strong><%= attempt.user.username %></strong>
-          <% if (attempt.user.fullName && attempt.user.fullName !==
-          attempt.user.username) { %>
-          <br /><span
-            style="font-size: 0.875rem; color: var(--color-text-muted)"
-            ><%= attempt.user.fullName %></span
-          >
-          <% } %> <% } else { %>
-          <span style="color: var(--color-text-muted); font-style: italic"
-            >(Guest)</span
-          >
-          <% } %>
-        </td>
-        <% } %>
-        <td>
-          <strong><%= attempt.subject.name %></strong>
-        </td>
-        <td><%= formattedDate %></td>
-        <td><%= formattedTime %></td>
-        <td style="text-align: center"><%= attempt.totalQuestions %></td>
-        <td style="text-align: center">
-          <% if (isFinished) { %>
-          <span style="font-weight: 600; color: var(--color-primary)"
-            ><%= score %></span
-          >
-          <% } else { %>
-          <span style="color: var(--color-text-muted)">-</span>
-          <% } %>
-        </td>
-        <td>
-          <% if (isFinished) { %>
-          <span class="badge badge-success">Đã hoàn thành</span>
-          <% } else { %>
-          <span class="badge badge-warning">Chưa nộp</span>
-          <% } %>
-        </td>
-        <td>
-          <% if (isFinished) { %>
-          <a
-            href="/exam/attempt/<%= attempt._id %>"
-            class="btn btn-sm btn-secondary"
-          >
-            Xem chi tiết
-          </a>
-          <% } else { %>
-          <span style="color: var(--color-text-muted); font-size: 0.875rem"
-            >Không có</span
-          >
-          <% } %>
-        </td>
-      </tr>
-      <% }) %>
-    </tbody>
-  </table>
-</div>
-<% } %> <%- include("../partical/footer") %>
+
+  <% if (!attempts || attempts.length===0) { %>
+    <div class="card">
+      <p style="text-align: center; color: var(--color-text-muted)">
+        Bạn chưa có lịch sử thi nào.
+      </p>
+      <div style="text-align: center; margin-top: var(--spacing-lg)">
+        <a href="/subjects" class="btn btn-primary">Xem môn học</a>
+      </div>
+    </div>
+    <% } else { %>
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <% if (isAdminOrModerator) { %>
+                <th>Người dùng</th>
+                <% } %>
+                  <th>Môn học</th>
+                  <th>Ngày thi</th>
+                  <th>Thời gian</th>
+                  <th>Số câu</th>
+                  <th>Điểm</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% attempts.forEach(function(attempt) { const startDate=new Date(attempt.startedAt); const
+              formattedDate=startDate.toLocaleDateString('vi-VN'); const
+              formattedTime=startDate.toLocaleTimeString('vi-VN', { hour: '2-digit' , minute: '2-digit' }); const
+              isFinished=!!attempt.finishedAt; const score=attempt.score !==null && attempt.score !==undefined ?
+              attempt.score : '-' ; %>
+              <tr>
+                <% if (isAdminOrModerator) { %>
+                  <td>
+                    <% if (attempt.user) { %>
+                      <strong>
+                        <%= attempt.user.username %>
+                      </strong>
+                      <% if (attempt.user.fullName && attempt.user.fullName !==attempt.user.username) { %>
+                        <br /><span style="font-size: 0.875rem; color: var(--color-text-muted)">
+                          <%= attempt.user.fullName %>
+                        </span>
+                        <% } %>
+                          <% } else { %>
+                            <span style="color: var(--color-text-muted); font-style: italic">(Guest)</span>
+                            <% } %>
+                  </td>
+                  <% } %>
+                    <td>
+                      <strong>
+                        <%= attempt.subject.name %>
+                      </strong>
+                    </td>
+                    <td>
+                      <%= formattedDate %>
+                    </td>
+                    <td>
+                      <%= formattedTime %>
+                    </td>
+                    <td style="text-align: center">
+                      <%= attempt.totalQuestions %>
+                    </td>
+                    <td style="text-align: center">
+                      <% if (isFinished) { %>
+                        <span style="font-weight: 600; color: var(--color-primary)">
+                          <%= score %>
+                        </span>
+                        <% } else { %>
+                          <span style="color: var(--color-text-muted)">-</span>
+                          <% } %>
+                    </td>
+                    <td>
+                      <% if (isFinished) { %>
+                        <span class="badge badge-success">Đã hoàn thành</span>
+                        <% } else { %>
+                          <span class="badge badge-warning">Chưa nộp</span>
+                          <% } %>
+                    </td>
+                    <td>
+                      <% if (isFinished) { %>
+                        <a href="/exam/attempt/<%= attempt._id %>" class="btn btn-sm btn-secondary">
+                          Xem chi tiết
+                        </a>
+                        <% } else { %>
+                          <span style="color: var(--color-text-muted); font-size: 0.875rem">Không có</span>
+                          <% } %>
+                    </td>
+              </tr>
+              <% }) %>
+          </tbody>
+        </table>
+
+        <%- include("../partical/pagination", { currentPage, totalPages, totalItems, itemsPerPage, baseUrl }) %>
+      </div>
+      <% } %> <%- include("../partical/footer") %>

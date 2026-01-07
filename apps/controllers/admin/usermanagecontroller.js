@@ -14,13 +14,38 @@ router.get("/", requirePermission("users.read"), async function (req, res) {
       trangThai: req.query.trangThai || "all",
       search: req.query.search || "",
     };
-    const users = await service.getUsers(filters);
+    
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+    
+    const allUsers = await service.getUsers(filters);
     const allRoles = await service.getAllRoles();
+    
+    // Apply pagination
+    const totalItems = allUsers.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+    const startIndex = (currentPage - 1) * limit;
+    const users = allUsers.slice(startIndex, startIndex + limit);
+    
+    // Build base URL for pagination
+    let baseUrl = '/admin/users?';
+    if (filters.trangThai && filters.trangThai !== 'all') baseUrl += `trangThai=${filters.trangThai}&`;
+    if (filters.search) baseUrl += `search=${encodeURIComponent(filters.search)}&`;
+    baseUrl = baseUrl.slice(0, -1); // Remove trailing &
+    
     const success = req.query.success || null;
     res.render("admin/users.ejs", { 
       users, 
       allRoles,
       filters,
+      // Pagination data
+      currentPage: currentPage,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      itemsPerPage: limit,
+      baseUrl: baseUrl,
       error: null, 
       success,
       user: req.user 
@@ -31,6 +56,11 @@ router.get("/", requirePermission("users.read"), async function (req, res) {
       users: [], 
       allRoles: [],
       filters: { trangThai: "all", search: "" },
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: 0,
+      itemsPerPage: 20,
+      baseUrl: '/admin/users',
       error: "Lỗi server khi tải danh sách users", 
       success: null,
       user: req.user 

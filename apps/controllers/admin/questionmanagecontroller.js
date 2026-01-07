@@ -53,13 +53,32 @@ router.get("/", async function (req, res) {
     const type = req.query.type || "";
     const keyword = req.query.keyword || "";
     
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+    
     // Lấy danh sách questions với filter
-    const questions = await questionService.getQuestions({
+    const allQuestions = await questionService.getQuestions({
       subjectId: subjectId,
       difficulty: difficulty || null,
       type: type || null,
       keyword: keyword || null,
     });
+    
+    // Apply pagination
+    const totalItems = allQuestions.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+    const startIndex = (currentPage - 1) * limit;
+    const questions = allQuestions.slice(startIndex, startIndex + limit);
+    
+    // Build base URL for pagination
+    let baseUrl = '/admin/questions?';
+    if (subjectId) baseUrl += `subjectId=${subjectId}&`;
+    if (difficulty) baseUrl += `difficulty=${difficulty}&`;
+    if (type) baseUrl += `type=${type}&`;
+    if (keyword) baseUrl += `keyword=${encodeURIComponent(keyword)}&`;
+    baseUrl = baseUrl.slice(0, -1); // Remove trailing & or ?
     
     // Đọc success/error message từ query
     let success = null;
@@ -83,6 +102,12 @@ router.get("/", async function (req, res) {
         type: type,
         keyword: keyword,
       },
+      // Pagination data
+      currentPage: currentPage,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      itemsPerPage: limit,
+      baseUrl: baseUrl,
       success: success,
       error: error,
       user: req.user,

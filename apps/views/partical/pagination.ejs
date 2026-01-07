@@ -1,0 +1,78 @@
+<%# Pagination Partial for Public Pages Usage: <%- include('../partials/pagination', { currentPage: currentPage,
+    totalPages: totalPages, totalItems: totalItems, itemsPerPage: itemsPerPage, baseUrl: '/exam/history' }) %>
+    %>
+
+    <% if (totalPages> 1) { %>
+        <div class="pagination"
+            style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: var(--spacing-xl); flex-wrap: wrap;">
+            <!-- Previous button -->
+            <% if (currentPage> 1) { %>
+                <a href="<%= baseUrl %><%= baseUrl.includes('?') ? '&' : '?' %>page=<%= currentPage - 1 %>"
+                    class="btn btn-secondary btn--sm" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="width: 16px; height: 16px;">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    Trước
+                </a>
+                <% } %>
+
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <% // Calculate visible page numbers let startPage=Math.max(1, currentPage - 2); let
+                            endPage=Math.min(totalPages, currentPage + 2); if (currentPage <=3) { endPage=Math.min(5,
+                            totalPages); } if (currentPage>= totalPages - 2) {
+                            startPage = Math.max(1, totalPages - 4);
+                            }
+                            %>
+
+                            <!-- First page -->
+                            <% if (startPage> 1) { %>
+                                <a href="<%= baseUrl %><%= baseUrl.includes('?') ? '&' : '?' %>page=1"
+                                    class="btn btn--sm" style="min-width: 36px; text-align: center;">1</a>
+                                <% if (startPage> 2) { %>
+                                    <span style="padding: 0 4px; color: var(--color-text-muted);">...</span>
+                                    <% } %>
+                                        <% } %>
+
+                                            <!-- Middle pages -->
+                                            <% for (let i=startPage; i <=endPage; i++) { %>
+                                                <a href="<%= baseUrl %><%= baseUrl.includes('?') ? '&' : '?' %>page=<%= i %>"
+                                                    class="btn btn--sm <%= i === currentPage ? 'btn-primary' : '' %>"
+                                                    style="min-width: 36px; text-align: center;">
+                                                    <%= i %>
+                                                </a>
+                                                <% } %>
+
+                                                    <!-- Last page -->
+                                                    <% if (endPage < totalPages) { %>
+                                                        <% if (endPage < totalPages - 1) { %>
+                                                            <span
+                                                                style="padding: 0 4px; color: var(--color-text-muted);">...</span>
+                                                            <% } %>
+                                                                <a href="<%= baseUrl %><%= baseUrl.includes('?') ? '&' : '?' %>page=<%= totalPages %>"
+                                                                    class="btn btn--sm"
+                                                                    style="min-width: 36px; text-align: center;">
+                                                                    <%= totalPages %>
+                                                                </a>
+                                                                <% } %>
+                    </div>
+
+                    <!-- Next button -->
+                    <% if (currentPage < totalPages) { %>
+                        <a href="<%= baseUrl %><%= baseUrl.includes('?') ? '&' : '?' %>page=<%= currentPage + 1 %>"
+                            class="btn btn-secondary btn--sm"
+                            style="display: inline-flex; align-items: center; gap: 4px;">
+                            Sau
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                style="width: 16px; height: 16px;">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </a>
+                        <% } %>
+        </div>
+
+        <div
+            style="text-align: center; margin-top: var(--spacing-md); font-size: 14px; color: var(--color-text-muted);">
+            Trang <%= currentPage %>/<%= totalPages %> (Tổng: <%= totalItems %> mục)
+        </div>
+        <% } %>

@@ -1,167 +1,186 @@
-<%- include("../partical/header", { title: "Admin - Sửa câu hỏi" }) %>
+<%- include('./partials/header', { pageTitle: 'Sửa câu hỏi' , activePage: 'question-edit' , breadcrumb: 'Sửa' , user:
+  typeof user !=='undefined' ? user : null }) %>
 
-<script src="/static/js/admin-questions.js"></script>
+  <% if (typeof error !=='undefined' && error) { %>
+    <div class="alert alert-error">
+      <%= error %>
+    </div>
+    <% } %>
 
-<!-- Breadcrumb -->
-<nav class="breadcrumb">
-  <a href="/" class="breadcrumb__item">Trang chủ</a>
-  <span class="breadcrumb__separator">›</span>
-  <a href="/admin" class="breadcrumb__item">Quản trị</a>
-  <span class="breadcrumb__separator">›</span>
-  <a href="/admin/questions" class="breadcrumb__item">Quản lý câu hỏi</a>
-  <span class="breadcrumb__separator">›</span>
-  <span class="breadcrumb__item breadcrumb__item--current">Sửa</span>
-</nav>
+      <div class="admin-content__header">
+        <div>
+          <h1 class="admin-content__title">Sửa câu hỏi</h1>
+          <p class="admin-content__subtitle">Chỉnh sửa thông tin câu hỏi trong ngân hàng đề</p>
+        </div>
+        <div class="admin-content__actions">
+          <a href="/admin/questions" class="admin-btn admin-btn--secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Quay lại
+          </a>
+        </div>
+      </div>
 
-<div class="admin-header">
-  <h1 class="admin-header__title">Sửa câu hỏi</h1>
-</div>
+      <div class="admin-panel">
+        <div class="admin-panel__header">
+          <h3 class="admin-panel__title">Thông tin câu hỏi</h3>
+        </div>
+        <div class="admin-panel__body">
+          <form method="post" action="/admin/questions/<%= question._id %>/update">
+            <input type="hidden" id="answers-json" name="answers" value="<%= JSON.stringify(question.answers) %>" />
 
-<% if (error) { %>
-<div class="alert alert-error"><%= error %></div>
-<% } %>
+            <div class="admin-form-inline">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Môn học <span style="color: #dc2626;">*</span></label>
+                <select name="subjectId" id="subjectId" class="admin-form-select" required>
+                  <option value="">-- Chọn môn học --</option>
+                  <% if (subjects && subjects.length> 0) { %>
+                    <% subjects.forEach(function(s) { %>
+                      <option value="<%= s._id %>" <%=String(question.subjectId)===String(s._id) ? 'selected' : '' %>>
+                        <%= s.name %>
+                      </option>
+                      <% }) %>
+                        <% } %>
+                </select>
+              </div>
 
-<div class="card mt-xl">
-  <h3 class="card__title">Thông tin câu hỏi</h3>
-  <form method="post" action="/admin/questions/<%= question._id %>/update">
-    <input type="hidden" id="answers-json" name="answers" value="<%= JSON.stringify(question.answers) %>" />
-    
-    <div class="form-group">
-      <label class="form-label">Môn học <span style="color: red;">*</span></label>
-      <select name="subjectId" id="subjectId" class="form-input" required>
-        <option value="">-- Chọn môn học --</option>
-        <% if (subjects && subjects.length > 0) { %>
-          <% subjects.forEach(function(s) { %>
-            <option value="<%= s._id %>" <%= String(question.subjectId) === String(s._id) ? "selected" : "" %>><%= s.name %></option>
-          <% }) %>
-        <% } %>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Độ khó <span style="color: red;">*</span></label>
-      <select name="difficulty" id="difficulty" class="form-input" required>
-        <option value="easy" <%= question.difficulty === "easy" ? "selected" : "" %>>Dễ</option>
-        <option value="medium" <%= question.difficulty === "medium" ? "selected" : "" %>>Trung bình</option>
-        <option value="hard" <%= question.difficulty === "hard" ? "selected" : "" %>>Khó</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Loại câu hỏi <span style="color: red;">*</span></label>
-      <select name="type" id="type" class="form-input" required>
-        <option value="">-- Chọn loại câu hỏi --</option>
-        <option value="single_choice" <%= question.type === "single_choice" ? "selected" : "" %>>Trắc nghiệm một lựa chọn</option>
-        <option value="multiple_choice" <%= question.type === "multiple_choice" ? "selected" : "" %>>Trắc nghiệm nhiều lựa chọn</option>
-        <option value="true_false" <%= question.type === "true_false" ? "selected" : "" %>>Đúng/Sai</option>
-        <option value="fill_in_blank" <%= question.type === "fill_in_blank" ? "selected" : "" %>>Điền từ</option>
-        <option value="matching" <%= question.type === "matching" ? "selected" : "" %>>Nối cặp</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Nội dung câu hỏi <span style="color: red;">*</span></label>
-      <textarea name="content" id="content" class="form-textarea" rows="4" required><%= question.content %></textarea>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">URL hình ảnh/video (tùy chọn)</label>
-      <input type="url" name="mediaUrl" id="mediaUrl" class="form-input" value="<%= question.mediaUrl || '' %>" placeholder="https://..." />
-    </div>
-    
-    <div class="form-group" id="answers-container">
-      <!-- Dynamic answers fields will be inserted here -->
-    </div>
-    
-    <div class="form-group">
-      <button type="submit" class="btn btn-primary">Cập nhật</button>
-      <a href="/admin/questions" class="btn" style="margin-left: 0.5rem;">Hủy</a>
-    </div>
-  </form>
-</div>
+              <div class="admin-form-group">
+                <label class="admin-form-label">Độ khó <span style="color: #dc2626;">*</span></label>
+                <select name="difficulty" id="difficulty" class="admin-form-select" required>
+                  <option value="easy" <%=question.difficulty==='easy' ? 'selected' : '' %>>Dễ</option>
+                  <option value="medium" <%=question.difficulty==='medium' ? 'selected' : '' %>>Trung bình</option>
+                  <option value="hard" <%=question.difficulty==='hard' ? 'selected' : '' %>>Khó</option>
+                </select>
+              </div>
 
-<script>
-// Load existing answers when page loads
-document.addEventListener("DOMContentLoaded", function() {
-  const question = <%- JSON.stringify(question) %>;
-  const typeSelect = document.getElementById("type");
-  
-  if (typeSelect && question.answers) {
-    // Trigger change to render fields
-    typeSelect.dispatchEvent(new Event("change"));
-    
-    // Fill in existing answers after a short delay to ensure fields are rendered
-    setTimeout(function() {
-      loadExistingAnswers(question.type, question.answers);
-    }, 100);
-  }
-});
+              <div class="admin-form-group">
+                <label class="admin-form-label">Loại câu hỏi <span style="color: #dc2626;">*</span></label>
+                <select name="type" id="type" class="admin-form-select" required>
+                  <option value="">-- Chọn loại câu hỏi --</option>
+                  <option value="single_choice" <%=question.type==='single_choice' ? 'selected' : '' %>>Trắc nghiệm một
+                    lựa chọn</option>
+                  <option value="multiple_choice" <%=question.type==='multiple_choice' ? 'selected' : '' %>>Trắc nghiệm
+                    nhiều lựa chọn</option>
+                  <option value="true_false" <%=question.type==='true_false' ? 'selected' : '' %>>Đúng/Sai</option>
+                  <option value="fill_in_blank" <%=question.type==='fill_in_blank' ? 'selected' : '' %>>Điền từ</option>
+                  <option value="matching" <%=question.type==='matching' ? 'selected' : '' %>>Nối cặp</option>
+                </select>
+              </div>
+            </div>
 
-function loadExistingAnswers(type, answers) {
-  switch(type) {
-    case "single_choice":
-    case "multiple_choice": {
-      const list = document.getElementById("choice-answers-list");
-      if (!list) return;
-      list.innerHTML = "";
-      answers.forEach(function(ans) {
-        const index = list.children.length;
-        const div = document.createElement("div");
-        div.className = "form-group";
-        div.style.display = "flex";
-        div.style.gap = "0.5rem";
-        div.style.alignItems = "center";
-        div.style.marginBottom = "0.5rem";
-        div.innerHTML = `
-          <input type="text" name="choice-text-${index}" value="${ans.text || ''}" placeholder="Nội dung đáp án" class="form-input" style="flex: 1;" />
-          <input type="checkbox" name="choice-correct-${index}" ${ans.isCorrect ? 'checked' : ''} />
+            <div class="admin-form-group">
+              <label class="admin-form-label">Nội dung câu hỏi <span style="color: #dc2626;">*</span></label>
+              <textarea name="content" id="content" class="admin-form-input" rows="4" required
+                style="resize: vertical;"><%= question.content %></textarea>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">URL hình ảnh/video (tùy chọn)</label>
+              <input type="url" name="mediaUrl" id="mediaUrl" class="admin-form-input"
+                value="<%= question.mediaUrl || '' %>" placeholder="https://..." />
+            </div>
+
+            <div class="admin-form-group" id="answers-container">
+              <!-- Dynamic answers fields will be inserted here -->
+            </div>
+
+            <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-xl);">
+              <button type="submit" class="admin-btn admin-btn--primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Cập nhật
+              </button>
+              <a href="/admin/questions" class="admin-btn admin-btn--secondary">Hủy</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <script src="/static/js/admin-questions.js"></script>
+      <script>
+        // Load existing answers when page loads
+        document.addEventListener("DOMContentLoaded", function () {
+          const question = <% - JSON.stringify(question) %>;
+          const typeSelect = document.getElementById("type");
+
+          if (typeSelect && question.answers) {
+            // Trigger change to render fields
+            typeSelect.dispatchEvent(new Event("change"));
+
+            // Fill in existing answers after a short delay to ensure fields are rendered
+            setTimeout(function () {
+              loadExistingAnswers(question.type, question.answers);
+            }, 100);
+          }
+        });
+
+        function loadExistingAnswers(type, answers) {
+          switch (type) {
+            case "single_choice":
+            case "multiple_choice": {
+              const list = document.getElementById("choice-answers-list");
+              if (!list) return;
+              list.innerHTML = "";
+              answers.forEach(function (ans) {
+                const index = list.children.length;
+                const div = document.createElement("div");
+                div.className = "admin-form-group";
+                div.style.display = "flex";
+                div.style.gap = "0.5rem";
+                div.style.alignItems = "center";
+                div.style.marginBottom = "0.5rem";
+                div.innerHTML = `
+          <input type="text" name="choice-text-${index}" value="${ans.text || ''}" placeholder="Nội dung đáp án" class="admin-form-input" style="flex: 1;" />
+          <input type="checkbox" name="choice-correct-${index}" ${ans.isCorrect ? 'checked' : ''} style="width: 20px; height: 20px;" />
           <label style="white-space: nowrap;">Đúng</label>
-          <button type="button" class="btn" onclick="this.parentElement.remove()" style="padding: 0.4rem 0.8rem;">Xóa</button>
+          <button type="button" class="admin-btn admin-btn--danger admin-btn--sm" onclick="this.parentElement.remove()">Xóa</button>
         `;
-        list.appendChild(div);
-      });
-      break;
-    }
-    case "true_false": {
-      const correctValue = answers.find(a => a.isCorrect)?.value;
-      if (correctValue !== undefined) {
-        const radio = document.querySelector(`input[name="tf-correct"][value="${correctValue}"]`);
-        if (radio) radio.checked = true;
-      }
-      break;
-    }
-    case "fill_in_blank": {
-      const textarea = document.getElementById("fill-answers");
-      if (textarea && answers.accepted) {
-        textarea.value = answers.accepted.join("\n");
-      }
-      break;
-    }
-    case "matching": {
-      const list = document.getElementById("matching-pairs-list");
-      if (!list || !answers.pairs) return;
-      list.innerHTML = "";
-      answers.pairs.forEach(function(pair) {
-        const index = list.children.length;
-        const div = document.createElement("div");
-        div.className = "form-group";
-        div.style.display = "grid";
-        div.style.gridTemplateColumns = "1fr 1fr auto";
-        div.style.gap = "0.5rem";
-        div.style.alignItems = "center";
-        div.style.marginBottom = "0.5rem";
-        div.innerHTML = `
-          <input type="text" name="match-left-${index}" value="${pair.left || ''}" placeholder="Bên trái" class="form-input" />
-          <input type="text" name="match-right-${index}" value="${pair.right || ''}" placeholder="Bên phải" class="form-input" />
-          <button type="button" class="btn" onclick="this.parentElement.remove()" style="padding: 0.4rem 0.8rem;">Xóa</button>
+                list.appendChild(div);
+              });
+              break;
+            }
+            case "true_false": {
+              const correctValue = answers.find(a => a.isCorrect)?.value;
+              if (correctValue !== undefined) {
+                const radio = document.querySelector(`input[name="tf-correct"][value="${correctValue}"]`);
+                if (radio) radio.checked = true;
+              }
+              break;
+            }
+            case "fill_in_blank": {
+              const textarea = document.getElementById("fill-answers");
+              if (textarea && answers.accepted) {
+                textarea.value = answers.accepted.join("\n");
+              }
+              break;
+            }
+            case "matching": {
+              const list = document.getElementById("matching-pairs-list");
+              if (!list || !answers.pairs) return;
+              list.innerHTML = "";
+              answers.pairs.forEach(function (pair) {
+                const index = list.children.length;
+                const div = document.createElement("div");
+                div.className = "admin-form-group";
+                div.style.display = "grid";
+                div.style.gridTemplateColumns = "1fr 1fr auto";
+                div.style.gap = "0.5rem";
+                div.style.alignItems = "center";
+                div.style.marginBottom = "0.5rem";
+                div.innerHTML = `
+          <input type="text" name="match-left-${index}" value="${pair.left || ''}" placeholder="Bên trái" class="admin-form-input" />
+          <input type="text" name="match-right-${index}" value="${pair.right || ''}" placeholder="Bên phải" class="admin-form-input" />
+          <button type="button" class="admin-btn admin-btn--danger admin-btn--sm" onclick="this.parentElement.remove()">Xóa</button>
         `;
-        list.appendChild(div);
-      });
-      break;
-    }
-  }
-}
-</script>
+                list.appendChild(div);
+              });
+              break;
+            }
+          }
+        }
+      </script>
 
-<%- include("../partical/footer") %>
-
+      <%- include('./partials/footer') %>
