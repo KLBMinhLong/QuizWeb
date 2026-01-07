@@ -7,8 +7,8 @@ var crypto = require("crypto");
 var QuestionService = require(global.__basedir + "/apps/Services/QuestionService");
 var SubjectService = require(global.__basedir + "/apps/Services/SubjectService");
 
-// Cấu hình multer để lưu file tạm
-var upload = multer({
+// Cấu hình multer để lưu file import tạm
+var uploadImport = multer({
   dest: path.join(__dirname, "../../../uploads/temp"),
   fileFilter: function (req, file, cb) {
     const allowedExtensions = [".xlsx", ".xls", ".csv"];
@@ -24,6 +24,40 @@ var upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
   },
+});
+
+// Cấu hình multer để lưu ảnh câu hỏi
+const questionImagesDir = path.join(__dirname, "../../../public/uploads/questions");
+if (!fs.existsSync(questionImagesDir)) {
+  fs.mkdirSync(questionImagesDir, { recursive: true });
+}
+
+var uploadQuestionImage = multer({
+  storage: multer.diskStorage({
+    destination: function(req, file, cb) {
+      cb(null, questionImagesDir);
+    },
+    filename: function(req, file, cb) {
+      // Generate unique filename: question_timestamp_random.ext
+      const ext = path.extname(file.originalname).toLowerCase();
+      const timestamp = Date.now();
+      const random = crypto.randomBytes(4).toString('hex');
+      const filename = `question_${timestamp}_${random}${ext}`;
+      cb(null, filename);
+    }
+  }),
+  fileFilter: function(req, file, cb) {
+    const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedExtensions.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Chỉ hỗ trợ ảnh: .jpg, .jpeg, .png, .gif, .webp"), false);
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB max for images
+  }
 });
 
 // Đảm bảo thư mục uploads/temp và uploads/imported tồn tại
@@ -130,7 +164,7 @@ router.get("/import", function (req, res) {
 
 // POST /admin/questions/import - Import questions từ file Excel/CSV
 router.post("/import", function (req, res, next) {
-  upload.single("file")(req, res, function (err) {
+  uploadImport.single("file")(req, res, function (err) {
     if (err) {
       // Xử lý lỗi từ multer (fileFilter, fileSize, etc.)
       return res.render("admin/question-import.ejs", {
@@ -278,11 +312,34 @@ router.get("/create", async function (req, res) {
   }
 });
 
-// POST /admin/questions/create - Tạo câu hỏi mới
-router.post("/create", async function (req, res) {
+// POST /admin/questions/create - Tạo câu hỏi mới (với upload ảnh)
+router.post("/create", function(req, res, next) {
+  uploadQuestionImage.single("questionImage")(req, res, function(err) {
+    if (err) {
+      console.error("Image upload error:", err);
+      req.uploadError = err.message;
+    }
+    next();
+  });
+}, async function (req, res) {
   try {
     const subjectService = new SubjectService();
     const subjects = await subjectService.getAllSubjects();
+    
+    // Check for upload error
+    if (req.uploadError) {
+      return res.render("admin/question-create.ejs", {
+        subjects: subjects,
+        error: req.uploadError,
+        user: req.user,
+      });
+    }
+    
+    // Get the uploaded image URL if exists
+    let mediaUrl = null;
+    if (req.file) {
+      mediaUrl = "/static/uploads/questions/" + req.file.filename;
+    }
     
     const questionService = new QuestionService();
     const result = await questionService.createQuestion({
@@ -290,11 +347,15 @@ router.post("/create", async function (req, res) {
       difficulty: req.body.difficulty,
       type: req.body.type,
       content: req.body.content,
-      mediaUrl: req.body.mediaUrl || null,
+      mediaUrl: mediaUrl,
       answers: JSON.parse(req.body.answers || "[]"),
     });
     
     if (!result.ok) {
+      // Delete uploaded file if question creation failed
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
       return res.render("admin/question-create.ejs", {
         subjects: subjects,
         error: result.message,
@@ -305,6 +366,10 @@ router.post("/create", async function (req, res) {
     return res.redirect("/admin/questions?success=created");
   } catch (e) {
     console.error("Error creating question:", e);
+    // Delete uploaded file on error
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
     const subjectService = new SubjectService();
     const subjects = await subjectService.getAllSubjects();
     return res.render("admin/question-create.ejs", {
@@ -339,22 +404,85 @@ router.get("/:id/edit", async function (req, res) {
   }
 });
 
-// POST /admin/questions/:id/update - Cập nhật câu hỏi
-router.post("/:id/update", async function (req, res) {
+// POST /admin/questions/:id/update - Cập nhật câu hỏi (với upload ảnh)
+router.post("/:id/update", function(req, res, next) {
+  uploadQuestionImage.single("questionImage")(req, res, function(err) {
+    if (err) {
+      console.error("Image upload error:", err);
+      req.uploadError = err.message;
+    }
+    next();
+  });
+}, async function (req, res) {
   try {
     const questionService = new QuestionService();
     const subjectService = new SubjectService();
+    
+    // Check for upload error
+    if (req.uploadError) {
+      const question = await questionService.getQuestionById(req.params.id);
+      const subjects = await subjectService.getAllSubjects();
+      return res.render("admin/question-edit.ejs", {
+        question: question,
+        subjects: subjects,
+        error: req.uploadError,
+        user: req.user,
+      });
+    }
+    
+    // Get existing question to check old image
+    const existingQuestion = await questionService.getQuestionById(req.params.id);
+    
+    // Determine mediaUrl
+    let mediaUrl = existingQuestion ? existingQuestion.mediaUrl : null;
+    
+    // If new image uploaded
+    if (req.file) {
+      mediaUrl = "/static/uploads/questions/" + req.file.filename;
+      
+      // Delete old image if exists
+      if (existingQuestion && existingQuestion.mediaUrl && existingQuestion.mediaUrl.startsWith("/static/uploads/questions/")) {
+        const oldImagePath = path.join(__dirname, "../../../public", existingQuestion.mediaUrl.replace("/static/", ""));
+        if (fs.existsSync(oldImagePath)) {
+          try {
+            fs.unlinkSync(oldImagePath);
+          } catch (e) {
+            console.error("Error deleting old image:", e);
+          }
+        }
+      }
+    }
+    
+    // If user wants to remove image (checkbox checked)
+    if (req.body.removeImage === "true") {
+      // Delete existing image
+      if (existingQuestion && existingQuestion.mediaUrl && existingQuestion.mediaUrl.startsWith("/static/uploads/questions/")) {
+        const oldImagePath = path.join(__dirname, "../../../public", existingQuestion.mediaUrl.replace("/static/", ""));
+        if (fs.existsSync(oldImagePath)) {
+          try {
+            fs.unlinkSync(oldImagePath);
+          } catch (e) {
+            console.error("Error deleting old image:", e);
+          }
+        }
+      }
+      mediaUrl = null;
+    }
     
     const result = await questionService.updateQuestion(req.params.id, {
       subjectId: req.body.subjectId,
       difficulty: req.body.difficulty,
       type: req.body.type,
       content: req.body.content,
-      mediaUrl: req.body.mediaUrl || null,
+      mediaUrl: mediaUrl,
       answers: JSON.parse(req.body.answers || "[]"),
     });
     
     if (!result.ok) {
+      // Delete newly uploaded file if update failed
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
       const question = await questionService.getQuestionById(req.params.id);
       const subjects = await subjectService.getAllSubjects();
       return res.render("admin/question-edit.ejs", {
@@ -368,6 +496,10 @@ router.post("/:id/update", async function (req, res) {
     return res.redirect("/admin/questions?success=updated");
   } catch (e) {
     console.error("Error updating question:", e);
+    // Delete uploaded file on error
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
     return res.redirect("/admin/questions?error=" + encodeURIComponent("Lỗi khi cập nhật câu hỏi"));
   }
 });

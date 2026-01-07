@@ -28,7 +28,7 @@
           <h3 class="admin-panel__title">Thông tin câu hỏi</h3>
         </div>
         <div class="admin-panel__body">
-          <form method="post" action="/admin/questions/create">
+          <form method="post" action="/admin/questions/create" enctype="multipart/form-data">
             <input type="hidden" id="answers-json" name="answers" value="[]" />
 
             <div class="admin-form-inline">
@@ -75,8 +75,18 @@
             </div>
 
             <div class="admin-form-group">
-              <label class="admin-form-label">URL hình ảnh/video (tùy chọn)</label>
-              <input type="url" name="mediaUrl" id="mediaUrl" class="admin-form-input" placeholder="https://..." />
+              <label class="admin-form-label">Hình ảnh minh họa (tùy chọn)</label>
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <input type="file" name="questionImage" id="questionImage" accept="image/*" class="admin-form-input"
+                  style="flex: 1;" onchange="previewImage(this)" />
+              </div>
+              <div id="imagePreview" style="margin-top: 0.5rem; display: none;">
+                <img id="previewImg" src="" alt="Preview"
+                  style="max-width: 300px; max-height: 200px; border-radius: 8px; border: 1px solid #e2e8f0;" />
+              </div>
+              <p style="font-size: 13px; color: var(--color-text-muted); margin-top: 6px;">
+                📷 Hỗ trợ: JPG, PNG, GIF, WebP. Tối đa 5MB.
+              </p>
             </div>
 
             <div class="admin-form-group" id="answers-container">
@@ -97,5 +107,25 @@
       </div>
 
       <script src="/static/js/admin-questions.js"></script>
+      <script>
+        function previewImage(input) {
+          const preview = document.getElementById('imagePreview');
+          const previewImg = document.getElementById('previewImg');
+
+          if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+              previewImg.src = e.target.result;
+              preview.style.display = 'block';
+            };
+
+            reader.readAsDataURL(input.files[0]);
+          } else {
+            preview.style.display = 'none';
+            previewImg.src = '';
+          }
+        }
+      </script>
 
       <%- include('./partials/footer') %>

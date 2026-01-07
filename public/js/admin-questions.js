@@ -52,9 +52,12 @@ function renderChoiceAnswers(container, multiple) {
     </button>
   `;
   
-  // Add default empty options for new question
-  addChoiceAnswer('', false);
-  addChoiceAnswer('', false);
+  // Only add default empty options for new question (not in edit mode)
+  // Edit mode will call loadExistingAnswers which will populate the answers
+  if (!window.isEditMode) {
+    addChoiceAnswer('', false);
+    addChoiceAnswer('', false);
+  }
 }
 
 function addChoiceAnswer(text, isCorrect) {
@@ -142,9 +145,11 @@ function renderMatchingAnswers(container) {
     </p>
   `;
   
-  // Add default empty pairs for new question
-  addMatchingPair('', '');
-  addMatchingPair('', '');
+  // Only add default empty pairs for new question (not in edit mode)
+  if (!window.isEditMode) {
+    addMatchingPair('', '');
+    addMatchingPair('', '');
+  }
 }
 
 function addMatchingPair(left, right) {
