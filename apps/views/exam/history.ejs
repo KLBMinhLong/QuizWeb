@@ -12,99 +12,458 @@
     <p class="page-subtitle">Xem lại các bài thi đã làm</p>
   </div>
 
-  <% if (!attempts || attempts.length===0) { %>
-    <div class="card">
-      <p style="text-align: center; color: var(--color-text-muted)">
-        Bạn chưa có lịch sử thi nào.
-      </p>
-      <div style="text-align: center; margin-top: var(--spacing-lg)">
-        <a href="/subjects" class="btn btn-primary">Xem môn học</a>
+  <!-- Filter Section -->
+  <div class="history-filter">
+    <form method="get" action="/exam/history" class="filter-form">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label class="filter-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            Môn học
+          </label>
+          <select name="subject" class="filter-select">
+            <option value="">Tất cả môn học</option>
+            <% if (subjects && subjects.length> 0) { %>
+              <% subjects.forEach(function(s) { %>
+                <option value="<%= s._id %>" <%=subjectFilter===String(s._id) ? 'selected' : '' %>>
+                  <%= s.name %>
+                </option>
+                <% }) %>
+                  <% } %>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Từ ngày
+          </label>
+          <input type="date" name="dateFrom" class="filter-input" value="<%= dateFrom %>">
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Đến ngày
+          </label>
+          <input type="date" name="dateTo" class="filter-input" value="<%= dateTo %>">
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn btn-primary btn-filter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            Lọc
+          </button>
+          <% if (subjectFilter || dateFrom || dateTo) { %>
+            <a href="/exam/history" class="btn btn-secondary btn-clear">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Xóa lọc
+            </a>
+            <% } %>
+        </div>
       </div>
+    </form>
+  </div>
+
+  <% if (!attempts || attempts.length===0) { %>
+    <div class="empty-state">
+      <div class="empty-state__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </div>
+      <h3 class="empty-state__title">
+        <% if (subjectFilter || dateFrom || dateTo) { %>
+          Không tìm thấy kết quả
+          <% } else { %>
+            Chưa có lịch sử thi
+            <% } %>
+      </h3>
+      <p class="empty-state__text">
+        <% if (subjectFilter || dateFrom || dateTo) { %>
+          Thử thay đổi bộ lọc để xem kết quả khác
+          <% } else { %>
+            Bạn chưa hoàn thành bài thi nào. Hãy bắt đầu làm bài ngay!
+            <% } %>
+      </p>
+      <% if (!subjectFilter && !dateFrom && !dateTo) { %>
+        <a href="/subjects" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          Xem môn học
+        </a>
+        <% } %>
     </div>
     <% } else { %>
-      <div class="card">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <% if (isAdminOrModerator) { %>
-                <th>Người dùng</th>
-                <% } %>
-                  <th>Môn học</th>
-                  <th>Ngày thi</th>
-                  <th>Thời gian</th>
-                  <th>Số câu</th>
-                  <th>Điểm</th>
-                  <th>Trạng thái</th>
-                  <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% attempts.forEach(function(attempt) { const startDate=new Date(attempt.startedAt); const
-              formattedDate=startDate.toLocaleDateString('vi-VN'); const
-              formattedTime=startDate.toLocaleTimeString('vi-VN', { hour: '2-digit' , minute: '2-digit' }); const
-              isFinished=!!attempt.finishedAt; const score=attempt.score !==null && attempt.score !==undefined ?
-              attempt.score : '-' ; %>
-              <tr>
-                <% if (isAdminOrModerator) { %>
-                  <td>
-                    <% if (attempt.user) { %>
-                      <strong>
-                        <%= attempt.user.username %>
-                      </strong>
-                      <% if (attempt.user.fullName && attempt.user.fullName !==attempt.user.username) { %>
-                        <br /><span style="font-size: 0.875rem; color: var(--color-text-muted)">
-                          <%= attempt.user.fullName %>
-                        </span>
-                        <% } %>
-                          <% } else { %>
-                            <span style="color: var(--color-text-muted); font-style: italic">(Guest)</span>
-                            <% } %>
-                  </td>
-                  <% } %>
-                    <td>
-                      <strong>
-                        <%= attempt.subject.name %>
-                      </strong>
-                    </td>
-                    <td>
-                      <%= formattedDate %>
-                    </td>
-                    <td>
-                      <%= formattedTime %>
-                    </td>
-                    <td style="text-align: center">
-                      <%= attempt.totalQuestions %>
-                    </td>
-                    <td style="text-align: center">
-                      <% if (isFinished) { %>
-                        <span style="font-weight: 600; color: var(--color-primary)">
-                          <%= score %>
-                        </span>
-                        <% } else { %>
-                          <span style="color: var(--color-text-muted)">-</span>
-                          <% } %>
-                    </td>
-                    <td>
-                      <% if (isFinished) { %>
-                        <span class="badge badge-success">Đã hoàn thành</span>
-                        <% } else { %>
-                          <span class="badge badge-warning">Chưa nộp</span>
-                          <% } %>
-                    </td>
-                    <td>
-                      <% if (isFinished) { %>
-                        <a href="/exam/attempt/<%= attempt._id %>" class="btn btn-sm btn-secondary">
-                          Xem chi tiết
-                        </a>
-                        <% } else { %>
-                          <span style="color: var(--color-text-muted); font-size: 0.875rem">Không có</span>
-                          <% } %>
-                    </td>
-              </tr>
-              <% }) %>
-          </tbody>
-        </table>
-
-        <%- include("../partical/pagination", { currentPage, totalPages, totalItems, itemsPerPage, baseUrl }) %>
+      <!-- Results Summary -->
+      <div class="results-summary">
+        <span class="results-count">
+          Hiển thị <strong>
+            <%= attempts.length %>
+          </strong> / <strong>
+            <%= totalItems %>
+          </strong> kết quả
+        </span>
       </div>
-      <% } %> <%- include("../partical/footer") %>
+
+      <!-- History List -->
+      <div class="history-list">
+        <% attempts.forEach(function(attempt, index) { 
+          const startDate = new Date(attempt.startedAt);
+          const formattedDate = startDate.toLocaleDateString('vi-VN');
+          const formattedTime = startDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+          const isFinished = !!attempt.finishedAt;
+          const score = attempt.score !== null && attempt.score !== undefined ? attempt.score : null;
+          const isPassed = score !== null && score >= 50;
+        %>
+          <div class="history-item">
+            <div class="history-item__index"><%= index + 1 %></div>
+            <div class="history-item__content">
+              <div class="history-item__main">
+                <span class="history-item__subject"><%= attempt.subject.name %></span>
+                <% if (isAdminOrModerator && attempt.user) { %>
+                  <span class="history-item__user">- <%= attempt.user.username %></span>
+                <% } %>
+              </div>
+              <div class="history-item__meta">
+                <span><%= formattedDate %> <%= formattedTime %></span>
+                <span>•</span>
+                <span><%= attempt.totalQuestions %> câu</span>
+              </div>
+            </div>
+            <div class="history-item__score">
+              <% if (isFinished) { %>
+                <span class="score-text <%= isPassed ? 'score-text--pass' : 'score-text--fail' %>">
+                  <%= score %> điểm
+                </span>
+              <% } else { %>
+                <span class="score-text score-text--pending">Chưa nộp</span>
+              <% } %>
+            </div>
+            <div class="history-item__action">
+              <% if (isFinished) { %>
+                <a href="/exam/attempt/<%= attempt._id %>" class="link-view">Xem</a>
+              <% } else { %>
+                <span class="link-disabled">—</span>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <%- include("../partical/pagination", { currentPage, totalPages, totalItems, itemsPerPage, baseUrl }) %>
+        <% } %>
+
+          <style>
+            /* History Filter */
+            .history-filter {
+              background: var(--color-bg-card);
+              border-radius: var(--radius-lg);
+              padding: var(--spacing-lg);
+              margin-bottom: var(--spacing-xl);
+              box-shadow: var(--shadow-sm);
+            }
+
+            .filter-form {
+              width: 100%;
+            }
+
+            .filter-row {
+              display: flex;
+              flex-wrap: wrap;
+              gap: var(--spacing-md);
+              align-items: flex-end;
+            }
+
+            .filter-group {
+              flex: 1;
+              min-width: 180px;
+            }
+
+            .filter-label {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-size: 13px;
+              font-weight: 500;
+              color: var(--color-text-muted);
+              margin-bottom: 6px;
+            }
+
+            .filter-label svg {
+              width: 14px;
+              height: 14px;
+            }
+
+            .filter-select,
+            .filter-input {
+              width: 100%;
+              padding: 10px 14px;
+              border: 1px solid var(--color-border);
+              border-radius: var(--radius-md);
+              background: var(--color-bg-main);
+              font-size: 14px;
+              color: var(--color-text-main);
+              transition: border-color 0.2s, box-shadow 0.2s;
+            }
+
+            .filter-select:focus,
+            .filter-input:focus {
+              outline: none;
+              border-color: var(--color-primary);
+              box-shadow: 0 0 0 3px var(--color-primary-soft);
+            }
+
+            .filter-actions {
+              display: flex;
+              gap: var(--spacing-sm);
+            }
+
+            .btn-filter,
+            .btn-clear {
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+              padding: 10px 16px;
+            }
+
+            .btn-filter svg,
+            .btn-clear svg {
+              width: 16px;
+              height: 16px;
+            }
+
+            /* Results Summary */
+            .results-summary {
+              margin-bottom: var(--spacing-md);
+              font-size: 14px;
+              color: var(--color-text-muted);
+            }
+
+            /* Empty State */
+            .empty-state {
+              text-align: center;
+              padding: var(--spacing-3xl) var(--spacing-xl);
+              background: var(--color-bg-card);
+              border-radius: var(--radius-lg);
+              box-shadow: var(--shadow-sm);
+            }
+
+            .empty-state__icon {
+              width: 80px;
+              height: 80px;
+              margin: 0 auto var(--spacing-lg);
+              color: var(--color-text-muted);
+              opacity: 0.5;
+            }
+
+            .empty-state__icon svg {
+              width: 100%;
+              height: 100%;
+            }
+
+            .empty-state__title {
+              font-size: 20px;
+              font-weight: 600;
+              color: var(--color-text-main);
+              margin: 0 0 var(--spacing-sm);
+            }
+
+            .empty-state__text {
+              color: var(--color-text-muted);
+              margin: 0 0 var(--spacing-xl);
+            }
+
+            /* History List */
+            .history-list {
+              display: flex;
+              flex-direction: column;
+              gap: var(--spacing-md);
+              margin-bottom: var(--spacing-xl);
+            }
+
+            .history-item {
+              display: flex;
+              align-items: center;
+              gap: var(--spacing-lg);
+              padding: var(--spacing-lg);
+              background: var(--color-bg-card);
+              border-radius: var(--radius-md);
+              border: 1px solid var(--color-border);
+              transition: border-color 0.2s, box-shadow 0.2s;
+            }
+
+            .history-item__index {
+              width: 36px;
+              height: 36px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 14px;
+              font-weight: 600;
+              color: var(--color-primary);
+              background: var(--color-primary-soft);
+              border-radius: var(--radius-md);
+              flex-shrink: 0;
+            }
+
+            .history-item__content {
+              flex: 1;
+              min-width: 0;
+            }
+
+            .history-item__main {
+              font-size: 15px;
+              font-weight: 600;
+              color: var(--color-text-main);
+              margin-bottom: 4px;
+            }
+
+            .history-item__subject {
+              color: var(--color-text-main);
+            }
+
+            .history-item__user {
+              color: var(--color-text-muted);
+              font-weight: 400;
+              font-size: 13px;
+            }
+
+            .history-item__meta {
+              font-size: 13px;
+              color: var(--color-text-muted);
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
+
+            .history-item__score {
+              flex-shrink: 0;
+              min-width: 90px;
+              text-align: center;
+              padding: var(--spacing-sm) var(--spacing-md);
+              border-radius: var(--radius-md);
+              background: var(--color-bg-main);
+            }
+
+            .score-text {
+              font-size: 14px;
+              font-weight: 600;
+            }
+
+            .score-text--pass {
+              color: var(--color-success);
+            }
+
+            .score-text--fail {
+              color: #666;
+            }
+
+            .score-text--pending {
+              color: var(--color-text-muted);
+              font-style: italic;
+              font-weight: 400;
+            }
+
+            .history-item__action {
+              flex-shrink: 0;
+            }
+
+            .link-view {
+              display: inline-flex;
+              align-items: center;
+              gap: 4px;
+              padding: 8px 16px;
+              font-size: 13px;
+              font-weight: 500;
+              color: var(--color-primary);
+              background: var(--color-primary-soft);
+              border-radius: var(--radius-md);
+              text-decoration: none;
+              transition: background 0.2s;
+            }
+
+            .link-view:hover {
+              background: var(--color-primary);
+              color: white;
+              text-decoration: none;
+            }
+
+            .link-disabled {
+              color: var(--color-text-muted);
+              padding: 8px 16px;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+              .filter-row {
+                flex-direction: column;
+              }
+
+              .filter-group {
+                min-width: 100%;
+              }
+
+              .filter-actions {
+                width: 100%;
+                justify-content: stretch;
+              }
+
+              .filter-actions .btn {
+                flex: 1;
+                justify-content: center;
+              }
+
+              .history-item {
+                flex-wrap: wrap;
+                gap: var(--spacing-sm);
+                padding: var(--spacing-md);
+              }
+
+              .history-item__index {
+                width: 32px;
+                height: 32px;
+              }
+
+              .history-item__content {
+                flex-basis: calc(100% - 52px);
+              }
+
+              .history-item__score {
+                margin-left: 48px;
+                flex: 1;
+                text-align: left;
+              }
+
+              .history-item__action {
+                margin-left: auto;
+              }
+            }
+          </style>
+
+          <%- include("../partical/footer") %>
