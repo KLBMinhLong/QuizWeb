@@ -198,18 +198,18 @@ router.post("/import", function (req, res, next) {
     const result = await service.importQuestions(filePath, originalName, fileHash);
 
     // Nếu là duplicate file, không cần xử lý thêm
-    if (result.isDuplicate) {
-      // Xóa file tạm
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-      return res.render("admin/question-import.ejs", {
-        success: null,
-        error: result.message,
-        importErrors: null,
-        user: req.user,
-      });
-    }
+    // if (result.isDuplicate) {
+    //   // Xóa file tạm
+    //   if (fs.existsSync(filePath)) {
+    //     fs.unlinkSync(filePath);
+    //   }
+    //   return res.render("admin/question-import.ejs", {
+    //     success: null,
+    //     error: result.message,
+    //     importErrors: null,
+    //     user: req.user,
+    //   });
+    // }
 
     if (!result.ok) {
       // Xóa file tạm nếu có lỗi
