@@ -1,7 +1,7 @@
 {
   "name": "quizweb",
   "version": "1.0.0",
-  "description": "Online Quiz Platform (Subject-only) - Express + EJS - pattern like Lab3",
+  "description": "Online Quiz Platform (Subject-only) - Express + EJS - pattern",
   "license": "ISC",
   "type": "commonjs",
   "main": "app.js",
