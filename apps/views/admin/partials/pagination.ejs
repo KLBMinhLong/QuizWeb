@@ -1,0 +1,84 @@
+<% if (totalPages> 1) { %>
+    <div class="admin-pagination">
+        <div class="admin-pagination__info">
+            Hiển thị <strong>
+                <%= Math.min((currentPage - 1) * itemsPerPage + 1, totalItems) %>-<%= Math.min(currentPage *
+                        itemsPerPage, totalItems) %>
+            </strong>
+            trong tổng số <strong>
+                <%= totalItems %>
+            </strong> mục
+        </div>
+
+        <nav class="admin-pagination__nav">
+            <% if (currentPage> 1) { %>
+                <a href="<%= baseUrl %><%= baseUrl.includes('?') ? '&' : '?' %>page=<%= currentPage - 1 %>"
+                    class="admin-pagination__btn" title="Trang trước">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </a>
+                <% } else { %>
+                    <span class="admin-pagination__btn admin-pagination__btn--disabled">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </span>
+                    <% } %>
+
+                        <% var startPage=Math.max(1, currentPage - 2); var endPage=Math.min(totalPages, currentPage +
+                            2); if (currentPage <=3) { endPage=Math.min(5, totalPages); } if (currentPage>= totalPages -
+                            2) {
+                            startPage = Math.max(1, totalPages - 4);
+                            }
+                            %>
+
+                            <% if (startPage> 1) { %>
+                                <a href="<%= baseUrl %><%= baseUrl.includes('?') ? '&' : '?' %>page=1"
+                                    class="admin-pagination__btn">1</a>
+                                <% if (startPage> 2) { %>
+                                    <span class="admin-pagination__ellipsis">...</span>
+                                    <% } %>
+                                        <% } %>
+
+                                            <% for (var i=startPage; i <=endPage; i++) { %>
+                                                <a href="<%= baseUrl %><%= baseUrl.includes('?') ? '&' : '?' %>page=<%= i %>"
+                                                    class="admin-pagination__btn <%= i === currentPage ? 'admin-pagination__btn--active' : '' %>">
+                                                    <%= i %>
+                                                </a>
+                                                <% } %>
+
+                                                    <% if (endPage < totalPages) { %>
+                                                        <% if (endPage < totalPages - 1) { %>
+                                                            <span class="admin-pagination__ellipsis">...</span>
+                                                            <% } %>
+                                                                <a href="<%= baseUrl %><%= baseUrl.includes('?') ? '&' : '?' %>page=<%= totalPages %>"
+                                                                    class="admin-pagination__btn">
+                                                                    <%= totalPages %>
+                                                                </a>
+                                                                <% } %>
+
+                                                                    <% if (currentPage < totalPages) { %>
+                                                                        <a href="<%= baseUrl %><%= baseUrl.includes('?') ? '&' : '?' %>page=<%= currentPage + 1 %>"
+                                                                            class="admin-pagination__btn"
+                                                                            title="Trang sau">
+                                                                            <svg viewBox="0 0 24 24" fill="none"
+                                                                                stroke="currentColor" stroke-width="2">
+                                                                                <polyline points="9 18 15 12 9 6">
+                                                                                </polyline>
+                                                                            </svg>
+                                                                        </a>
+                                                                        <% } else { %>
+                                                                            <span
+                                                                                class="admin-pagination__btn admin-pagination__btn--disabled">
+                                                                                <svg viewBox="0 0 24 24" fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    stroke-width="2">
+                                                                                    <polyline points="9 18 15 12 9 6">
+                                                                                    </polyline>
+                                                                                </svg>
+                                                                            </span>
+                                                                            <% } %>
+        </nav>
+    </div>
+    <% } %>

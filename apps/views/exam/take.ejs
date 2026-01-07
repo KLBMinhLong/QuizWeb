@@ -1,214 +1,298 @@
-<%- include("../partical/header", { title: "Làm bài" }) %>
+<%- include("../partical/header", { title: "Làm bài - " + (subject ? subject.name : "OnThiTracNghiem" ), user: typeof
+  user !=='undefined' ? user : null }) %>
 
-<!-- Breadcrumb (US-41) -->
-<nav class="breadcrumb">
-  <a href="/" class="breadcrumb__item">Trang chủ</a>
-  <span class="breadcrumb__separator">›</span>
-  <a href="/subjects" class="breadcrumb__item">Môn học</a>
-  <span class="breadcrumb__separator">›</span>
-  <% if (subject && subject.slug) { %>
-  <a href="/subjects/<%= subject.slug %>" class="breadcrumb__item"><%= subject.name %></a>
-  <span class="breadcrumb__separator">›</span>
-  <% } %>
-  <span class="breadcrumb__item breadcrumb__item--current">Làm bài</span>
-</nav>
-
-<div class="page-header">
-  <h1 class="page-title">Làm bài<% if (subject && subject.name) { %>: <%= subject.name %><% } %></h1>
-</div>
-
-<% if (hasShortage) { %>
-<div class="alert alert-warning" style="margin-bottom: var(--spacing-xl);">
-  ⚠️ Ngân hàng câu hỏi hiện không đủ theo cấu hình đề. Hệ thống đã lấy tối đa số câu có thể cho mỗi độ khó.
-</div>
-<% } %>
-
-<% if (typeof isResume !== 'undefined' && isResume) { %>
-<div class="alert alert-info" style="margin-bottom: var(--spacing-xl);">
-  ℹ️ Bạn đang tiếp tục bài thi chưa hoàn thành.
-</div>
-<% } %>
-
-<% if (!questions || questions.length === 0) { %>
-<div class="card">
-  <p>Chưa đủ câu hỏi trong ngân hàng cho môn này.</p>
-</div>
-<% } else { %>
-
-<!-- Timer (US-41) -->
-<div id="exam-timer" class="exam-timer">
-  <div class="exam-timer-content">
-    <span class="exam-timer-label">⏱️ Thời gian còn lại:</span>
-    <span id="exam-timer-text" class="exam-timer-text">--:--</span>
-  </div>
-  <div id="exam-timer-warning" class="exam-timer-warning" style="display: none;">
-    Thời gian sắp hết! Hãy nộp bài sớm.
-  </div>
-</div>
-
-<form 
-  id="exam-form" 
-  method="post" 
-  action="/exam/submit" 
-  class="card"
-  data-duration-minutes="<%= durationMinutes %>"
-  data-remaining-seconds="<%= typeof remainingSeconds !== 'undefined' ? remainingSeconds : (durationMinutes * 60) %>"
-  data-attempt-id="<%= attemptId %>"
-  data-total-questions="<%= questions.length %>"
->
-  <input type="hidden" name="subjectId" value="<%= subjectId %>" />
-  <input type="hidden" name="attemptId" value="<%= attemptId %>" />
-
-  <% questions.forEach(function(q, idx){ 
-       // Get saved answer if any
-       const savedAns = userAnswers && userAnswers[q._id];
-  %>
-  <div class="exam-question" data-question-type="<%= q.type %>" data-question-id="<%= q._id %>">
-    <div class="exam-question-header">
-      <span class="badge">Câu <%= idx + 1 %></span>
-    </div>
-
-    <!-- Hướng dẫn ngắn cho từng loại câu hỏi -->
-    <div class="exam-question-hint">
-      <% 
-        const hints = {
-          'single_choice': 'Chọn một đáp án đúng',
-          'multiple_choice': 'Chọn một hoặc nhiều đáp án đúng',
-          'true_false': 'Chọn Đúng hoặc Sai',
-          'fill_in_blank': 'Nhập đáp án vào ô trống',
-          'matching': 'Nối mỗi mục bên trái với mục tương ứng bên phải'
-        };
-        const hint = hints[q.type] || 'Trả lời câu hỏi';
-      %>
-      <span class="exam-question-hint-text">💡 <%= hint %></span>
-    </div>
-
-    <div class="exam-question-content"><%= q.content %></div>
-
-    <% if (q.mediaUrl) { %>
-    <div class="exam-question-media">
-      <% if (q.mediaUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) { %>
-      <img src="<%= q.mediaUrl %>" alt="Media" class="exam-media-image" />
-      <% } else if (q.mediaUrl.match(/\.(mp4|webm|ogg)$/i)) { %>
-      <video src="<%= q.mediaUrl %>" controls class="exam-media-video">
-        Trình duyệt của bạn không hỗ trợ video.
-      </video>
-      <% } else { %>
-      <div class="exam-media-link">
-        <a href="<%= q.mediaUrl %>" target="_blank">Mở media</a>
+  <% if (!questions || questions.length===0) { %>
+    <div class="container">
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+            </path>
+          </svg>
+        </div>
+        <h3 class="empty-state__title">Chưa đủ câu hỏi</h3>
+        <p class="empty-state__description">Ngân hàng câu hỏi cho môn này chưa đủ.</p>
+        <a href="/subjects" class="btn btn-primary">Quay lại</a>
       </div>
-      <% } %>
     </div>
-    <% } %>
+    <% } else { %>
 
-    <!-- Single Choice -->
-    <% if (q.type === 'single_choice' && Array.isArray(q.answers)) { %>
-    <div class="exam-question-options">
-      <% q.answers.forEach(function(a, answerIndex){ 
-         const isChecked = savedAns == answerIndex;
-      %>
-      <label class="exam-option">
-        <input
-          type="radio"
-          name="answers[<%= q._id %>]"
-          value="<%= answerIndex %>"
-          class="exam-answer-input"
-          <%= isChecked ? 'checked' : '' %>
-        />
-        <span><%= a.text || a.value || a %></span>
-      </label>
-      <% }) %>
-    </div>
-    <% } %>
-
-    <!-- Multiple Choice -->
-    <% if (q.type === 'multiple_choice' && Array.isArray(q.answers)) { %>
-    <div class="exam-question-options">
-      <% q.answers.forEach(function(a, answerIndex){ 
-         const isChecked = savedAns && Array.isArray(savedAns) && savedAns.map(String).includes(String(answerIndex));
-      %>
-      <label class="exam-option">
-        <input
-          type="checkbox"
-          name="answers[<%= q._id %>][]"
-          value="<%= answerIndex %>"
-          class="exam-answer-input exam-answer-checkbox"
-          <%= isChecked ? 'checked' : '' %>
-        />
-        <span><%= a.text || a.value || a %></span>
-      </label>
-      <% }) %>
-    </div>
-    <% } %>
-
-    <!-- True/False -->
-    <% if (q.type === 'true_false' && Array.isArray(q.answers)) { %>
-    <div class="exam-question-truefalse">
-      <% q.answers.forEach(function(a, answerIndex){ 
-         const valStr = a.value === true ? 'true' : 'false';
-         const isChecked = String(savedAns) === valStr;
-      %>
-      <label class="exam-option exam-option-truefalse">
-        <input
-          type="radio"
-          name="answers[<%= q._id %>]"
-          value="<%= valStr %>"
-          class="exam-answer-input"
-          <%= isChecked ? 'checked' : '' %>
-        />
-        <span class="exam-truefalse-label"><%= a.value === true ? '✅ Đúng' : '❌ Sai' %></span>
-      </label>
-      <% }) %>
-    </div>
-    <% } %>
-
-    <!-- Fill in Blank -->
-    <% if (q.type === 'fill_in_blank') { %>
-    <div class="exam-question-fillblank">
-      <input
-        type="text"
-        name="answers[<%= q._id %>]"
-        class="exam-answer-input exam-answer-text"
-        placeholder="<%= (q.answers && q.answers.placeholder) || 'Nhập đáp án của bạn' %>"
-        value="<%= savedAns || '' %>"
-      />
-    </div>
-    <% } %>
-
-    <!-- Matching -->
-    <% if (q.type === 'matching' && q.answers && q.answers.leftItems && q.answers.rightItems) { %>
-    <div class="exam-question-matching">
-      <div class="exam-matching-grid">
-        <% q.answers.leftItems.forEach(function(leftItem, leftIndex){ 
-           const selectedVal = savedAns ? savedAns[leftItem] : '';
-        %>
-        <div class="exam-matching-row">
-          <div class="exam-matching-left">
-            <span class="exam-matching-number"><%= leftIndex + 1 %>.</span>
-            <span class="exam-matching-item"><%= leftItem %></span>
-          </div>
-          <div class="exam-matching-right">
-            <select name="answers[<%= q._id %>][<%= leftItem %>]" class="exam-answer-input exam-answer-select">
-              <option value="">-- Chọn đáp án --</option>
-              <% q.answers.rightItems.forEach(function(rightItem){ %>
-              <option value="<%= rightItem %>" <%= selectedVal === rightItem ? 'selected' : '' %>><%= rightItem %></option>
-              <% }) %>
-            </select>
+      <!-- Exam Header - Fixed Top -->
+      <div class="exam-header" id="examHeader">
+        <div class="exam-header__left">
+          <a href="/subjects/<%= subject ? subject.slug : '' %>" class="exam-header__back" title="Thoát (mất tiến độ)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </a>
+          <div class="exam-header__info">
+            <h1 class="exam-header__title">
+              <%= subject ? subject.name : 'Làm bài' %>
+            </h1>
+            <span class="exam-header__progress" id="progressText">0/<%= questions.length %> câu</span>
           </div>
         </div>
-        <% }) %>
+
+        <div class="exam-header__center">
+          <div class="exam-timer" id="examTimer">
+            <svg class="exam-timer__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span class="exam-timer__text" id="timerText">--:--</span>
+          </div>
+        </div>
+
+        <div class="exam-header__right">
+          <button type="button" class="btn btn-primary btn--submit" id="submitBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span>Nộp bài</span>
+          </button>
+        </div>
       </div>
-    </div>
-    <% } %>
 
-  </div>
-  <% }) %>
+      <!-- Alerts -->
+      <div class="exam-alerts">
+        <% if (hasShortage) { %>
+          <div class="alert alert-warning">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            Ngân hàng câu hỏi không đủ. Hệ thống đã lấy tối đa số câu có thể.
+          </div>
+          <% } %>
+            <% if (typeof isResume !=='undefined' && isResume) { %>
+              <div class="alert alert-info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Bạn đang tiếp tục bài thi chưa hoàn thành.
+              </div>
+              <% } %>
+      </div>
 
-  <div class="exam-actions">
-    <button type="submit" class="btn btn-primary">Nộp bài</button>
-  </div>
-</form>
-<% } %>
+      <!-- Question Navigation -->
+      <div class="question-nav" id="questionNav">
+        <div class="question-nav__label">Câu hỏi:</div>
+        <div class="question-nav__items">
+          <% questions.forEach(function(q, idx){ const hasAnswer=userAnswers && userAnswers[q._id]; %>
+            <button type="button" class="question-nav__item <%= hasAnswer ? 'question-nav__item--answered' : '' %>"
+              data-index="<%= idx %>" onclick="scrollToQuestion(<%= idx %>)">
+              <%= idx + 1 %>
+            </button>
+            <% }) %>
+        </div>
+      </div>
 
-<script src="/static/js/exam-take.js"></script>
-<%- include("../partical/footer") %>
+      <!-- Main Exam Form -->
+      <form id="examForm" method="post" action="/exam/submit" data-duration-minutes="<%= durationMinutes %>"
+        data-remaining-seconds="<%= typeof remainingSeconds !== 'undefined' ? remainingSeconds : (durationMinutes * 60) %>"
+        data-attempt-id="<%= attemptId %>" data-total-questions="<%= questions.length %>">
+        <input type="hidden" name="subjectId" value="<%= subjectId %>" />
+        <input type="hidden" name="attemptId" value="<%= attemptId %>" />
+
+        <div class="exam-questions">
+          <% questions.forEach(function(q, idx){ const savedAns=userAnswers && userAnswers[q._id]; const
+            typeLabels={ 'single_choice' : { label: 'Trắc nghiệm' , color: 'blue' }, 'multiple_choice' : {
+            label: 'Nhiều đáp án' , color: 'purple' }, 'true_false' : { label: 'Đúng/Sai' , color: 'green'
+            }, 'fill_in_blank' : { label: 'Điền khuyết' , color: 'yellow' }, 'matching' : { label: 'Ghép cặp' ,
+            color: 'orange' } }; const typeInfo=typeLabels[q.type] || { label: q.type, color: 'gray' }; %>
+            <div class="question-card" id="question-<%= idx %>" data-question-type="<%= q.type %>"
+              data-question-id="<%= q._id %>">
+              <div class="question-card__header">
+                <div class="question-card__number">Câu <%= idx + 1 %>
+                </div>
+                <span class="question-card__type question-card__type--<%= typeInfo.color %>">
+                  <%= typeInfo.label %>
+                </span>
+              </div>
+
+              <div class="question-card__content">
+                <%= q.content %>
+              </div>
+
+              <% if (q.mediaUrl) { %>
+                <div class="question-card__media">
+                  <% if (q.mediaUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) { %>
+                    <img src="<%= q.mediaUrl %>" alt="Hình ảnh câu hỏi" />
+                    <% } else if (q.mediaUrl.match(/\.(mp4|webm|ogg)$/i)) { %>
+                      <video src="<%= q.mediaUrl %>" controls></video>
+                      <% } else { %>
+                        <a href="<%= q.mediaUrl %>" target="_blank" class="btn btn-secondary btn--sm">Xem media</a>
+                        <% } %>
+                </div>
+                <% } %>
+
+                  <!-- Single Choice -->
+                  <% if (q.type==='single_choice' && Array.isArray(q.answers)) { %>
+                    <div class="answer-options">
+                      <% q.answers.forEach(function(a, answerIndex){ const isChecked=savedAns==answerIndex; const
+                        optionLetters=['A', 'B' , 'C' , 'D' , 'E' , 'F' , 'G' , 'H' ]; %>
+                        <label class="answer-option <%= isChecked ? 'answer-option--selected' : '' %>">
+                          <input type="radio" name="answers[<%= q._id %>]" value="<%= answerIndex %>"
+                            class="answer-option__input" <%=isChecked ? 'checked' : '' %> />
+                          <span class="answer-option__letter">
+                            <%= optionLetters[answerIndex] || (answerIndex + 1) %>
+                          </span>
+                          <span class="answer-option__text">
+                            <%= a.text || a.value || a %>
+                          </span>
+                          <span class="answer-option__check">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                          </span>
+                        </label>
+                        <% }) %>
+                    </div>
+                    <% } %>
+
+                      <!-- Multiple Choice -->
+                      <% if (q.type==='multiple_choice' && Array.isArray(q.answers)) { %>
+                        <div class="answer-options answer-options--multiple">
+                          <% q.answers.forEach(function(a, answerIndex){ const isChecked=savedAns &&
+                            Array.isArray(savedAns) && savedAns.map(String).includes(String(answerIndex)); const
+                            optionLetters=['A', 'B' , 'C' , 'D' , 'E' , 'F' , 'G' , 'H' ]; %>
+                            <label
+                              class="answer-option answer-option--checkbox <%= isChecked ? 'answer-option--selected' : '' %>">
+                              <input type="checkbox" name="answers[<%= q._id %>][]" value="<%= answerIndex %>"
+                                class="answer-option__input" <%=isChecked ? 'checked' : '' %> />
+                              <span class="answer-option__letter">
+                                <%= optionLetters[answerIndex] || (answerIndex + 1) %>
+                              </span>
+                              <span class="answer-option__text">
+                                <%= a.text || a.value || a %>
+                              </span>
+                              <span class="answer-option__check">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                              </span>
+                            </label>
+                            <% }) %>
+                        </div>
+                        <% } %>
+
+                          <!-- True/False -->
+                          <% if (q.type==='true_false' && Array.isArray(q.answers)) { %>
+                            <div class="answer-truefalse">
+                              <% q.answers.forEach(function(a, answerIndex){ const valStr=a.value===true ? 'true'
+                                : 'false' ; const isChecked=String(savedAns)===valStr; %>
+                                <label
+                                  class="truefalse-option truefalse-option--<%= valStr %> <%= isChecked ? 'truefalse-option--selected' : '' %>">
+                                  <input type="radio" name="answers[<%= q._id %>]" value="<%= valStr %>"
+                                    class="truefalse-option__input" <%=isChecked ? 'checked' : '' %> />
+                                  <span class="truefalse-option__icon">
+                                    <% if (a.value===true) { %>
+                                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                      </svg>
+                                      <% } else { %>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                          <circle cx="12" cy="12" r="10"></circle>
+                                          <line x1="15" y1="9" x2="9" y2="15"></line>
+                                          <line x1="9" y1="9" x2="15" y2="15"></line>
+                                        </svg>
+                                        <% } %>
+                                  </span>
+                                  <span class="truefalse-option__text">
+                                    <%= a.value===true ? 'Đúng' : 'Sai' %>
+                                  </span>
+                                </label>
+                                <% }) %>
+                            </div>
+                            <% } %>
+
+                              <!-- Fill in Blank -->
+                              <% if (q.type==='fill_in_blank' ) { %>
+                                <div class="answer-fillblank">
+                                  <div class="fillblank-input">
+                                    <svg class="fillblank-input__icon" viewBox="0 0 24 24" fill="none"
+                                      stroke="currentColor" stroke-width="2">
+                                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                    <input type="text" name="answers[<%= q._id %>]" class="fillblank-input__field"
+                                      placeholder="Nhập đáp án của bạn..." value="<%= savedAns || '' %>"
+                                      autocomplete="off" />
+                                  </div>
+                                </div>
+                                <% } %>
+
+                                  <!-- Matching (Drag & Drop) -->
+                                  <% if (q.type==='matching' && q.answers && q.answers.leftItems &&
+                                    q.answers.rightItems) { %>
+                                    <div class="answer-matching" data-question-id="<%= q._id %>">
+                                      <div class="matching-columns">
+                                        <div class="matching-column matching-column--left">
+                                          <div class="matching-column__header">Cột trái</div>
+                                          <% q.answers.leftItems.forEach(function(leftItem, leftIndex){ %>
+                                            <div class="matching-item matching-item--left"
+                                              data-left-item="<%= leftItem %>">
+                                              <span class="matching-item__number">
+                                                <%= leftIndex + 1 %>
+                                              </span>
+                                              <span class="matching-item__text">
+                                                <%= leftItem %>
+                                              </span>
+                                              <div class="matching-item__slot" data-left="<%= leftItem %>">
+                                                <% const savedMatch=savedAns && savedAns[leftItem]; %>
+                                                  <% if (savedMatch) { %>
+                                                    <div class="matching-chip" data-value="<%= savedMatch %>"
+                                                      draggable="true">
+                                                      <%= savedMatch %>
+                                                    </div>
+                                                    <input type="hidden" name="answers[<%= q._id %>][<%= leftItem %>]"
+                                                      value="<%= savedMatch %>" />
+                                                    <% } else { %>
+                                                      <span class="matching-item__placeholder">Kéo thả vào đây</span>
+                                                      <input type="hidden" name="answers[<%= q._id %>][<%= leftItem %>]"
+                                                        value="" />
+                                                      <% } %>
+                                              </div>
+                                            </div>
+                                            <% }) %>
+                                        </div>
+
+                                        <div class="matching-column matching-column--right">
+                                          <div class="matching-column__header">Cột phải</div>
+                                          <div class="matching-pool" data-question-id="<%= q._id %>">
+                                            <% const usedItems=savedAns ? Object.values(savedAns) : [];
+                                              q.answers.rightItems.forEach(function(rightItem, rightIndex){ const
+                                              isUsed=usedItems.includes(rightItem); %>
+                                              <% if (!isUsed) { %>
+                                                <div class="matching-chip" data-value="<%= rightItem %>"
+                                                  draggable="true">
+                                                  <span class="matching-chip__number">
+                                                    <%= String.fromCharCode(65 + rightIndex) %>
+                                                  </span>
+                                                  <%= rightItem %>
+                                                </div>
+                                                <% } %>
+                                                  <% }) %>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <% } %>
+
+            </div>
+            <% }) %>
+        </div>
+      </form>
+
+      <script src="/static/js/exam-take.js"></script>
+
+      <% } %>
+
+        <%- include("../partical/footer") %>

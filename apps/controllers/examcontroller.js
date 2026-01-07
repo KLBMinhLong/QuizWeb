@@ -125,18 +125,82 @@ router.get("/history", requireAuth, async function (req, res) {
       return res.status(403).send("Bạn không có quyền xem lịch sử thi");
     }
 
+    // Get filter params
+    const subjectFilter = req.query.subject || '';
+    const dateFrom = req.query.dateFrom || '';
+    const dateTo = req.query.dateTo || '';
+
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+
     const service = new ExamService();
     const result = await service.getAttemptHistory(user, {
-      limit: 50, // Optional pagination (AC3)
+      limit: 1000, // Get all for pagination
     });
 
     if (!result.ok) {
       return res.status(400).send(result.message);
     }
 
+    // Get all subjects for filter dropdown
+    const subjectService = new SubjectService();
+    const allSubjects = await subjectService.getAllSubjects();
+
+    // Apply filters
+    let filteredAttempts = result.attempts || [];
+    
+    // Filter by subject
+    if (subjectFilter) {
+      filteredAttempts = filteredAttempts.filter(a => 
+        a.subject && String(a.subject._id) === subjectFilter
+      );
+    }
+    
+    // Filter by date range
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      fromDate.setHours(0, 0, 0, 0);
+      filteredAttempts = filteredAttempts.filter(a => 
+        new Date(a.startedAt) >= fromDate
+      );
+    }
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      filteredAttempts = filteredAttempts.filter(a => 
+        new Date(a.startedAt) <= toDate
+      );
+    }
+
+    // Apply pagination
+    const totalItems = filteredAttempts.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+    const startIndex = (currentPage - 1) * limit;
+    const attempts = filteredAttempts.slice(startIndex, startIndex + limit);
+
+    // Build baseUrl with filters
+    let baseUrl = '/exam/history?';
+    if (subjectFilter) baseUrl += `subject=${subjectFilter}&`;
+    if (dateFrom) baseUrl += `dateFrom=${dateFrom}&`;
+    if (dateTo) baseUrl += `dateTo=${dateTo}&`;
+    baseUrl = baseUrl.replace(/[&?]$/, '');
+
     res.render("exam/history.ejs", {
-      attempts: result.attempts,
+      attempts: attempts,
       isAdminOrModerator: result.isAdminOrModerator,
+      subjects: allSubjects || [],
+      // Filter values
+      subjectFilter,
+      dateFrom,
+      dateTo,
+      // Pagination data
+      currentPage: currentPage,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      itemsPerPage: limit,
+      baseUrl: baseUrl || '/exam/history',
       user,
     });
   } catch (e) {

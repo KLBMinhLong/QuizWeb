@@ -1,151 +1,205 @@
-<%- include("../partical/header", { title: "Admin - Questions" }) %>
+<%- include('./partials/header', { pageTitle: 'Quản lý câu hỏi' , activePage: 'questions' , breadcrumb: 'Câu hỏi' ,
+  user: typeof user !=='undefined' ? user : null }) %>
 
-<!-- Breadcrumb -->
-<nav class="breadcrumb">
-  <a href="/" class="breadcrumb__item">Trang chủ</a>
-  <span class="breadcrumb__separator">›</span>
-  <a href="/admin" class="breadcrumb__item">Quản trị</a>
-  <span class="breadcrumb__separator">›</span>
-  <span class="breadcrumb__item breadcrumb__item--current">Quản lý câu hỏi</span>
-</nav>
-
-<div class="admin-header">
-  <h1 class="admin-header__title">Quản lý câu hỏi</h1>
-</div>
-
-<% if (error) { %>
-<div class="alert alert-error"><%= error %></div>
-<% } %> 
-<% if (success) { %>
-<div class="alert alert-success"><%= success %></div>
-<% } %>
-
-<!-- Actions -->
-<div class="card mt-xl">
-  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-    <div>
-      <a href="/admin/questions/create" class="btn btn-primary">Tạo câu hỏi mới</a>
-      <a href="/admin/questions/import" class="btn" style="margin-left: 0.5rem;">Import từ file</a>
+  <% if (typeof error !=='undefined' && error) { %>
+    <div class="alert alert-error">
+      <%= error %>
     </div>
-  </div>
-</div>
-
-<!-- Filter Form -->
-<div class="card mt-xl">
-  <h3 class="card__title">Lọc câu hỏi</h3>
-  <form method="get" action="/admin/questions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
-    <div class="form-group">
-      <label class="form-label">Môn học</label>
-      <select name="subjectId" class="form-input">
-        <option value="">Tất cả môn học</option>
-        <% if (subjects && subjects.length > 0) { %>
-          <% subjects.forEach(function(s) { %>
-            <option value="<%= s._id %>" <%= filters && filters.subjectId === String(s._id) ? "selected" : "" %>><%= s.name %></option>
-          <% }) %>
+    <% } %>
+      <% if (typeof success !=='undefined' && success) { %>
+        <div class="alert alert-success">
+          <%= success %>
+        </div>
         <% } %>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Độ khó</label>
-      <select name="difficulty" class="form-input">
-        <option value="">Tất cả</option>
-        <option value="easy" <%= filters && filters.difficulty === "easy" ? "selected" : "" %>>Dễ</option>
-        <option value="medium" <%= filters && filters.difficulty === "medium" ? "selected" : "" %>>Trung bình</option>
-        <option value="hard" <%= filters && filters.difficulty === "hard" ? "selected" : "" %>>Khó</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Loại câu hỏi</label>
-      <select name="type" class="form-input">
-        <option value="">Tất cả</option>
-        <option value="single_choice" <%= filters && filters.type === "single_choice" ? "selected" : "" %>>Trắc nghiệm một lựa chọn</option>
-        <option value="multiple_choice" <%= filters && filters.type === "multiple_choice" ? "selected" : "" %>>Trắc nghiệm nhiều lựa chọn</option>
-        <option value="true_false" <%= filters && filters.type === "true_false" ? "selected" : "" %>>Đúng/Sai</option>
-        <option value="fill_in_blank" <%= filters && filters.type === "fill_in_blank" ? "selected" : "" %>>Điền từ</option>
-        <option value="matching" <%= filters && filters.type === "matching" ? "selected" : "" %>>Nối cặp</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Tìm kiếm</label>
-      <input type="text" name="keyword" value="<%= filters && filters.keyword ? filters.keyword : '' %>" placeholder="Tìm trong nội dung..." class="form-input" />
-    </div>
-    
-    <div class="form-group">
-      <button type="submit" class="btn btn-primary" style="width: 100%;">Lọc</button>
-      <a href="/admin/questions" class="btn" style="width: 100%; margin-top: 0.5rem;">Xóa bộ lọc</a>
-    </div>
-  </form>
-</div>
 
-<!-- Questions List -->
-<div class="card mt-xl">
-  <h3 class="card__title">Danh sách câu hỏi (<%= questions ? questions.length : 0 %>)</h3>
-  <% if (!questions || questions.length === 0) { %>
-  <p class="card__content" style="color: var(--color-text-muted)">
-    Chưa có câu hỏi nào.
-  </p>
-  <% } else { %>
-  <div style="overflow-x: auto">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Nội dung</th>
-          <th>Môn học</th>
-          <th>Độ khó</th>
-          <th>Loại</th>
-          <th style="text-align: center">Thao tác</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% questions.forEach(function(q){ %>
-        <tr>
-          <td style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            <%= q.content %>
-          </td>
-          <td>
-            <% if (q.subject) { %>
-              <span style="font-weight: 600"><%= q.subject.name %></span>
-            <% } else { %>
-              <span style="color: #999;">N/A</span>
-            <% } %>
-          </td>
-          <td>
-            <% 
-              const difficultyLabels = { easy: "Dễ", medium: "Trung bình", hard: "Khó" };
-              const difficultyColors = { easy: "#16a34a", medium: "#ea580c", hard: "#dc2626" };
-              const difficultyBg = { easy: "#dcfce7", medium: "#fff7ed", hard: "#fee2e2" };
-            %>
-            <span style="background: <%= difficultyBg[q.difficulty] || '#f3f4f6' %>; color: <%= difficultyColors[q.difficulty] || '#6b7280' %>; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">
-              <%= difficultyLabels[q.difficulty] || q.difficulty %>
-            </span>
-          </td>
-          <td>
-            <% 
-              const typeLabels = {
-                single_choice: "Trắc nghiệm 1 lựa chọn",
-                multiple_choice: "Trắc nghiệm nhiều lựa chọn",
-                true_false: "Đúng/Sai",
-                fill_in_blank: "Điền từ",
-                matching: "Nối cặp"
-              };
-            %>
-            <span style="font-size: 13px;"><%= typeLabels[q.type] || q.type %></span>
-          </td>
-          <td style="text-align: center">
-            <a href="/admin/questions/<%= q._id %>/edit" class="btn" style="padding: 0.4rem 0.8rem; font-size: 13px;">Sửa</a>
-            <form method="post" action="/admin/questions/<%= q._id %>/delete" style="display: inline-block; margin-left: 0.5rem;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa câu hỏi này?');">
-              <button type="submit" class="btn" style="padding: 0.4rem 0.8rem; font-size: 13px; background: #fee2e2; color: #dc2626; border-color: #fecaca;">Xóa</button>
+          <div class="admin-content__header">
+            <div>
+              <h1 class="admin-content__title">Quản lý câu hỏi</h1>
+              <p class="admin-content__subtitle">Thêm, sửa và xóa câu hỏi trong ngân hàng đề</p>
+            </div>
+            <div class="admin-content__actions">
+              <a href="/admin/questions/import" class="admin-btn admin-btn--secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Import
+              </a>
+              <a href="/admin/questions/create" class="admin-btn admin-btn--primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Tạo câu hỏi mới
+              </a>
+            </div>
+          </div>
+
+          <!-- Filter Bar -->
+          <div class="admin-filter-bar">
+            <form method="get" action="/admin/questions" style="display: contents;">
+              <div class="admin-filter-group">
+                <label>Môn học</label>
+                <select name="subjectId" class="admin-form-select">
+                  <option value="">Tất cả môn học</option>
+                  <% if (subjects && subjects.length> 0) { %>
+                    <% subjects.forEach(function(s) { %>
+                      <option value="<%= s._id %>" <%=filters && filters.subjectId===String(s._id) ? 'selected' : '' %>>
+                        <%= s.name %>
+                      </option>
+                      <% }) %>
+                        <% } %>
+                </select>
+              </div>
+
+              <div class="admin-filter-group">
+                <label>Độ khó</label>
+                <select name="difficulty" class="admin-form-select">
+                  <option value="">Tất cả</option>
+                  <option value="easy" <%=filters && filters.difficulty==='easy' ? 'selected' : '' %>>Dễ</option>
+                  <option value="medium" <%=filters && filters.difficulty==='medium' ? 'selected' : '' %>>Trung bình
+                  </option>
+                  <option value="hard" <%=filters && filters.difficulty==='hard' ? 'selected' : '' %>>Khó</option>
+                </select>
+              </div>
+
+              <div class="admin-filter-group">
+                <label>Loại câu hỏi</label>
+                <select name="type" class="admin-form-select">
+                  <option value="">Tất cả</option>
+                  <option value="single_choice" <%=filters && filters.type==='single_choice' ? 'selected' : '' %>>Một
+                    lựa chọn</option>
+                  <option value="multiple_choice" <%=filters && filters.type==='multiple_choice' ? 'selected' : '' %>
+                    >Nhiều lựa chọn</option>
+                  <option value="true_false" <%=filters && filters.type==='true_false' ? 'selected' : '' %>>Đúng/Sai
+                  </option>
+                  <option value="fill_in_blank" <%=filters && filters.type==='fill_in_blank' ? 'selected' : '' %>>Điền
+                    từ</option>
+                  <option value="matching" <%=filters && filters.type==='matching' ? 'selected' : '' %>>Nối cặp</option>
+                </select>
+              </div>
+
+              <div class="admin-filter-group" style="flex: 2;">
+                <label>Tìm kiếm</label>
+                <input type="text" name="keyword" value="<%= filters && filters.keyword ? filters.keyword : '' %>"
+                  placeholder="Tìm trong nội dung..." class="admin-form-input" />
+              </div>
+
+              <div class="admin-filter-actions">
+                <button type="submit" class="admin-btn admin-btn--primary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  Lọc
+                </button>
+                <a href="/admin/questions" class="admin-btn admin-btn--secondary">Xóa bộ lọc</a>
+              </div>
             </form>
-          </td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
-  <% } %>
-</div>
+          </div>
 
-<%- include("../partical/footer") %>
+          <!-- Questions List -->
+          <div class="admin-panel">
+            <div class="admin-panel__header">
+              <h3 class="admin-panel__title">
+                Danh sách câu hỏi
+                <span class="admin-panel__count">
+                  <%= totalItems || 0 %>
+                </span>
+              </h3>
+            </div>
+
+            <% if (!questions || questions.length===0) { %>
+              <div class="admin-panel__body">
+                <div class="admin-empty">
+                  <div class="admin-empty__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                  </div>
+                  <div class="admin-empty__title">Chưa có câu hỏi nào</div>
+                  <div class="admin-empty__text">Bấm "Tạo câu hỏi mới" hoặc "Import" để thêm câu hỏi</div>
+                </div>
+              </div>
+              <% } else { %>
+                <div class="admin-panel__body admin-panel__body--no-padding">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40%;">Nội dung</th>
+                        <th>Môn học</th>
+                        <th>Độ khó</th>
+                        <th>Loại</th>
+                        <th style="text-align: center; width: 140px;">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% const difficultyLabels={ easy: 'Dễ' , medium: 'Trung bình' , hard: 'Khó' }; const
+                        difficultyClasses={ easy: 'admin-badge--success' , medium: 'admin-badge--warning' ,
+                        hard: 'admin-badge--danger' }; const typeLabels={ single_choice: 'Một lựa chọn' ,
+                        multiple_choice: 'Nhiều lựa chọn' , true_false: 'Đúng/Sai' , fill_in_blank: 'Điền từ' ,
+                        matching: 'Nối cặp' }; %>
+                        <% questions.forEach(function(q) { %>
+                          <tr>
+                            <td>
+                              <div class="admin-table__cell-main"
+                                style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                <%= q.content %>
+                              </div>
+                            </td>
+                            <td>
+                              <% if (q.subject) { %>
+                                <span class="admin-badge admin-badge--info">
+                                  <%= q.subject.name %>
+                                </span>
+                                <% } else { %>
+                                  <span class="admin-badge admin-badge--muted">N/A</span>
+                                  <% } %>
+                            </td>
+                            <td>
+                              <span class="admin-badge <%= difficultyClasses[q.difficulty] || 'admin-badge--muted' %>">
+                                <%= difficultyLabels[q.difficulty] || q.difficulty %>
+                              </span>
+                            </td>
+                            <td>
+                              <span style="font-size: 13px; color: var(--color-text-muted);">
+                                <%= typeLabels[q.type] || q.type %>
+                              </span>
+                            </td>
+                            <td>
+                              <div style="display: flex; gap: 8px; justify-content: center;">
+                                <a href="/admin/questions/<%= q._id %>/edit" class="admin-btn admin-btn--ghost"
+                                  title="Sửa">
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                  </svg>
+                                </a>
+                                <form method="post" action="/admin/questions/<%= q._id %>/delete"
+                                  style="display: inline;"
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa câu hỏi này?');">
+                                  <button type="submit" class="admin-btn admin-btn--ghost" style="color: #dc2626;"
+                                    title="Xóa">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                      <polyline points="3 6 5 6 21 6"></polyline>
+                                      <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                      </path>
+                                    </svg>
+                                  </button>
+                                </form>
+                              </div>
+                            </td>
+                          </tr>
+                          <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+                <%- include('./partials/pagination', { currentPage, totalPages, totalItems, itemsPerPage, baseUrl }) %>
+                  <% } %>
+          </div>
+
+          <%- include('./partials/footer') %>

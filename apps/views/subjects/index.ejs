@@ -1,44 +1,100 @@
-<%- include("../partical/header", { title: "Môn học" }) %>
+<%- include("../partical/header", { title: "Môn học - OnThiTracNghiem" , user: typeof user !=='undefined' ? user : null
+  }) %>
 
-<!-- Breadcrumb -->
-<nav class="breadcrumb">
-  <a href="/" class="breadcrumb__item">Trang chủ</a>
-  <span class="breadcrumb__separator">›</span>
-  <span class="breadcrumb__item breadcrumb__item--current">Môn học</span>
-</nav>
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol class="breadcrumb__list">
+      <li class="breadcrumb__item">
+        <a href="/" class="breadcrumb__link">
+          <svg class="breadcrumb__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Trang chủ
+        </a>
+      </li>
+      <li class="breadcrumb__separator" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </li>
+      <li class="breadcrumb__item breadcrumb__item--current" aria-current="page">
+        Môn học
+      </li>
+    </ol>
+  </nav>
 
-<h1>Danh sách môn học</h1>
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-header__title">Danh sách môn học</h1>
+    <p class="page-header__subtitle">Chọn môn học để bắt đầu luyện tập</p>
+  </div>
 
-<% if (!subjects || subjects.length === 0) { %>
-<div class="card" style="text-align: center; padding: var(--spacing-3xl)">
-  <div style="font-size: 48px; margin-bottom: var(--spacing-lg)">📚</div>
-  <h3 style="color: var(--color-text-muted); margin-bottom: var(--spacing-md)">Chưa có môn học</h3>
-  <p style="color: var(--color-text-muted); margin-top: var(--spacing-md)">
-    Vào
-    <a
-      href="/admin/subjects"
-      style="color: var(--color-primary); font-weight: 600; text-decoration: none"
-      >Admin</a
-    >
-    để tạo môn học mới.
-  </p>
-</div>
-<% } else { %>
-<div class="subject-grid">
-  <% subjects.forEach(function(s){ %>
-  <a href="/subjects/<%= s.slug %>" class="subject-card">
-    <h3 class="subject-card__title"><%= s.name %></h3>
-    <p class="subject-card__description">
-      <%= s.description || 'Chưa có mô tả' %>
-    </p>
-    <div class="subject-card__meta">
-      <span class="subject-card__questions">
-        <%= ((s.examConfig?.easyCount || 0) + (s.examConfig?.mediumCount || 0) +
-        (s.examConfig?.hardCount || 0)) %> câu hỏi
-      </span>
-      <span><%= s.examConfig?.durationMinutes || 0 %> phút</span>
+  <% if (!subjects || subjects.length===0) { %>
+    <!-- Empty State -->
+    <div class="empty-state">
+      <div class="empty-state__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          <line x1="12" y1="6" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3 class="empty-state__title">Chưa có môn học</h3>
+      <p class="empty-state__description">
+        Hiện tại chưa có môn học nào được tạo.
+        <% if (typeof user !=='undefined' && user && user.roles && user.roles.includes('admin')) { %>
+          <a href="/admin/subjects" class="empty-state__link">Tạo môn học mới</a>
+          <% } %>
+      </p>
     </div>
-  </a>
-  <% }) %>
-</div>
-<% } %> <%- include("../partical/footer") %>
+    <% } else { %>
+      <!-- Subject Grid -->
+      <div class="subject-grid">
+        <% subjects.forEach(function(s, index){ %>
+          <a href="/subjects/<%= s.slug %>" class="subject-card" style="animation-delay: <%= index * 0.05 %>s">
+            <div class="subject-card__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+            </div>
+            <div class="subject-card__content">
+              <h3 class="subject-card__title">
+                <%= s.name %>
+              </h3>
+              <p class="subject-card__description">
+                <%= s.description || 'Khám phá và luyện tập ngay' %>
+              </p>
+              <div class="subject-card__meta">
+                <span class="subject-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                  <%= ((s.examConfig?.easyCount || 0) + (s.examConfig?.mediumCount || 0) + (s.examConfig?.hardCount ||
+                    0)) %> câu hỏi
+                </span>
+                <span class="subject-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <%= s.examConfig?.durationMinutes || 0 %> phút
+                </span>
+              </div>
+            </div>
+            <div class="subject-card__arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </div>
+          </a>
+          <% }) %>
+      </div>
+      <% } %>
+
+        <%- include("../partical/footer") %>

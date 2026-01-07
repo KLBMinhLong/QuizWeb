@@ -237,6 +237,7 @@ class ExamService {
         total: totalQuestions,
         correctCount,
         questionResults, // Để hiển thị chi tiết nếu cần
+        attemptId: attemptId, // Để link tới trang chi tiết
       };
     } finally {
       await this.client.close();

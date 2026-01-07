@@ -1,167 +1,247 @@
-<%- include("../partical/header", { title: "Admin - Sửa câu hỏi" }) %>
+<%- include('./partials/header', { pageTitle: 'Sửa câu hỏi' , activePage: 'question-edit' , breadcrumb: 'Sửa' , user:
+  typeof user !=='undefined' ? user : null }) %>
 
-<script src="/static/js/admin-questions.js"></script>
-
-<!-- Breadcrumb -->
-<nav class="breadcrumb">
-  <a href="/" class="breadcrumb__item">Trang chủ</a>
-  <span class="breadcrumb__separator">›</span>
-  <a href="/admin" class="breadcrumb__item">Quản trị</a>
-  <span class="breadcrumb__separator">›</span>
-  <a href="/admin/questions" class="breadcrumb__item">Quản lý câu hỏi</a>
-  <span class="breadcrumb__separator">›</span>
-  <span class="breadcrumb__item breadcrumb__item--current">Sửa</span>
-</nav>
-
-<div class="admin-header">
-  <h1 class="admin-header__title">Sửa câu hỏi</h1>
-</div>
-
-<% if (error) { %>
-<div class="alert alert-error"><%= error %></div>
-<% } %>
-
-<div class="card mt-xl">
-  <h3 class="card__title">Thông tin câu hỏi</h3>
-  <form method="post" action="/admin/questions/<%= question._id %>/update">
-    <input type="hidden" id="answers-json" name="answers" value="<%= JSON.stringify(question.answers) %>" />
-    
-    <div class="form-group">
-      <label class="form-label">Môn học <span style="color: red;">*</span></label>
-      <select name="subjectId" id="subjectId" class="form-input" required>
-        <option value="">-- Chọn môn học --</option>
-        <% if (subjects && subjects.length > 0) { %>
-          <% subjects.forEach(function(s) { %>
-            <option value="<%= s._id %>" <%= String(question.subjectId) === String(s._id) ? "selected" : "" %>><%= s.name %></option>
-          <% }) %>
-        <% } %>
-      </select>
+  <% if (typeof error !=='undefined' && error) { %>
+    <div class="alert alert-error">
+      <%= error %>
     </div>
-    
-    <div class="form-group">
-      <label class="form-label">Độ khó <span style="color: red;">*</span></label>
-      <select name="difficulty" id="difficulty" class="form-input" required>
-        <option value="easy" <%= question.difficulty === "easy" ? "selected" : "" %>>Dễ</option>
-        <option value="medium" <%= question.difficulty === "medium" ? "selected" : "" %>>Trung bình</option>
-        <option value="hard" <%= question.difficulty === "hard" ? "selected" : "" %>>Khó</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Loại câu hỏi <span style="color: red;">*</span></label>
-      <select name="type" id="type" class="form-input" required>
-        <option value="">-- Chọn loại câu hỏi --</option>
-        <option value="single_choice" <%= question.type === "single_choice" ? "selected" : "" %>>Trắc nghiệm một lựa chọn</option>
-        <option value="multiple_choice" <%= question.type === "multiple_choice" ? "selected" : "" %>>Trắc nghiệm nhiều lựa chọn</option>
-        <option value="true_false" <%= question.type === "true_false" ? "selected" : "" %>>Đúng/Sai</option>
-        <option value="fill_in_blank" <%= question.type === "fill_in_blank" ? "selected" : "" %>>Điền từ</option>
-        <option value="matching" <%= question.type === "matching" ? "selected" : "" %>>Nối cặp</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Nội dung câu hỏi <span style="color: red;">*</span></label>
-      <textarea name="content" id="content" class="form-textarea" rows="4" required><%= question.content %></textarea>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">URL hình ảnh/video (tùy chọn)</label>
-      <input type="url" name="mediaUrl" id="mediaUrl" class="form-input" value="<%= question.mediaUrl || '' %>" placeholder="https://..." />
-    </div>
-    
-    <div class="form-group" id="answers-container">
-      <!-- Dynamic answers fields will be inserted here -->
-    </div>
-    
-    <div class="form-group">
-      <button type="submit" class="btn btn-primary">Cập nhật</button>
-      <a href="/admin/questions" class="btn" style="margin-left: 0.5rem;">Hủy</a>
-    </div>
-  </form>
-</div>
+    <% } %>
 
-<script>
-// Load existing answers when page loads
-document.addEventListener("DOMContentLoaded", function() {
-  const question = <%- JSON.stringify(question) %>;
-  const typeSelect = document.getElementById("type");
-  
-  if (typeSelect && question.answers) {
-    // Trigger change to render fields
-    typeSelect.dispatchEvent(new Event("change"));
-    
-    // Fill in existing answers after a short delay to ensure fields are rendered
-    setTimeout(function() {
-      loadExistingAnswers(question.type, question.answers);
-    }, 100);
-  }
-});
+      <div class="admin-content__header">
+        <div>
+          <h1 class="admin-content__title">Sửa câu hỏi</h1>
+          <p class="admin-content__subtitle">Chỉnh sửa thông tin câu hỏi trong ngân hàng đề</p>
+        </div>
+        <div class="admin-content__actions">
+          <a href="/admin/questions" class="admin-btn admin-btn--secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Quay lại
+          </a>
+        </div>
+      </div>
 
-function loadExistingAnswers(type, answers) {
-  switch(type) {
-    case "single_choice":
-    case "multiple_choice": {
-      const list = document.getElementById("choice-answers-list");
-      if (!list) return;
-      list.innerHTML = "";
-      answers.forEach(function(ans) {
-        const index = list.children.length;
-        const div = document.createElement("div");
-        div.className = "form-group";
-        div.style.display = "flex";
-        div.style.gap = "0.5rem";
-        div.style.alignItems = "center";
-        div.style.marginBottom = "0.5rem";
-        div.innerHTML = `
-          <input type="text" name="choice-text-${index}" value="${ans.text || ''}" placeholder="Nội dung đáp án" class="form-input" style="flex: 1;" />
-          <input type="checkbox" name="choice-correct-${index}" ${ans.isCorrect ? 'checked' : ''} />
-          <label style="white-space: nowrap;">Đúng</label>
-          <button type="button" class="btn" onclick="this.parentElement.remove()" style="padding: 0.4rem 0.8rem;">Xóa</button>
-        `;
-        list.appendChild(div);
-      });
-      break;
-    }
-    case "true_false": {
-      const correctValue = answers.find(a => a.isCorrect)?.value;
-      if (correctValue !== undefined) {
-        const radio = document.querySelector(`input[name="tf-correct"][value="${correctValue}"]`);
-        if (radio) radio.checked = true;
-      }
-      break;
-    }
-    case "fill_in_blank": {
-      const textarea = document.getElementById("fill-answers");
-      if (textarea && answers.accepted) {
-        textarea.value = answers.accepted.join("\n");
-      }
-      break;
-    }
-    case "matching": {
-      const list = document.getElementById("matching-pairs-list");
-      if (!list || !answers.pairs) return;
-      list.innerHTML = "";
-      answers.pairs.forEach(function(pair) {
-        const index = list.children.length;
-        const div = document.createElement("div");
-        div.className = "form-group";
-        div.style.display = "grid";
-        div.style.gridTemplateColumns = "1fr 1fr auto";
-        div.style.gap = "0.5rem";
-        div.style.alignItems = "center";
-        div.style.marginBottom = "0.5rem";
-        div.innerHTML = `
-          <input type="text" name="match-left-${index}" value="${pair.left || ''}" placeholder="Bên trái" class="form-input" />
-          <input type="text" name="match-right-${index}" value="${pair.right || ''}" placeholder="Bên phải" class="form-input" />
-          <button type="button" class="btn" onclick="this.parentElement.remove()" style="padding: 0.4rem 0.8rem;">Xóa</button>
-        `;
-        list.appendChild(div);
-      });
-      break;
-    }
-  }
-}
-</script>
+      <div class="admin-panel">
+        <div class="admin-panel__header">
+          <h3 class="admin-panel__title">Thông tin câu hỏi</h3>
+        </div>
+        <div class="admin-panel__body">
+          <form method="post" action="/admin/questions/<%= question._id %>/update" enctype="multipart/form-data">
+            <input type="hidden" id="answers-json" name="answers" value="<%= JSON.stringify(question.answers) %>" />
 
-<%- include("../partical/footer") %>
+            <div class="admin-form-inline">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Môn học <span style="color: #dc2626;">*</span></label>
+                <select name="subjectId" id="subjectId" class="admin-form-select" required>
+                  <option value="">-- Chọn môn học --</option>
+                  <% if (subjects && subjects.length> 0) { %>
+                    <% subjects.forEach(function(s) { %>
+                      <option value="<%= s._id %>" <%=String(question.subjectId)===String(s._id) ? 'selected' : '' %>>
+                        <%= s.name %>
+                      </option>
+                      <% }) %>
+                        <% } %>
+                </select>
+              </div>
 
+              <div class="admin-form-group">
+                <label class="admin-form-label">Độ khó <span style="color: #dc2626;">*</span></label>
+                <select name="difficulty" id="difficulty" class="admin-form-select" required>
+                  <option value="easy" <%=question.difficulty==='easy' ? 'selected' : '' %>>Dễ</option>
+                  <option value="medium" <%=question.difficulty==='medium' ? 'selected' : '' %>>Trung bình</option>
+                  <option value="hard" <%=question.difficulty==='hard' ? 'selected' : '' %>>Khó</option>
+                </select>
+              </div>
+
+              <div class="admin-form-group">
+                <label class="admin-form-label">Loại câu hỏi <span style="color: #dc2626;">*</span></label>
+                <select name="type" id="type" class="admin-form-select" required>
+                  <option value="">-- Chọn loại câu hỏi --</option>
+                  <option value="single_choice" <%=question.type==='single_choice' ? 'selected' : '' %>>Trắc nghiệm một
+                    lựa chọn</option>
+                  <option value="multiple_choice" <%=question.type==='multiple_choice' ? 'selected' : '' %>>Trắc nghiệm
+                    nhiều lựa chọn</option>
+                  <option value="true_false" <%=question.type==='true_false' ? 'selected' : '' %>>Đúng/Sai</option>
+                  <option value="fill_in_blank" <%=question.type==='fill_in_blank' ? 'selected' : '' %>>Điền từ</option>
+                  <option value="matching" <%=question.type==='matching' ? 'selected' : '' %>>Nối cặp</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Nội dung câu hỏi <span style="color: #dc2626;">*</span></label>
+              <textarea name="content" id="content" class="admin-form-input" rows="4" required
+                style="resize: vertical;"><%= question.content %></textarea>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Hình ảnh minh họa (tùy chọn)</label>
+
+              <% if (question.mediaUrl) { %>
+                <div id="currentImage"
+                  style="margin-bottom: 0.75rem; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                  <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 0.5rem;">Hình ảnh hiện tại:
+                  </p>
+                  <img src="<%= question.mediaUrl %>" alt="Current image"
+                    style="max-width: 300px; max-height: 200px; border-radius: 8px; border: 1px solid #e2e8f0;" />
+                  <div style="margin-top: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                      <input type="checkbox" name="removeImage" value="true" style="width: 16px; height: 16px;"
+                        onchange="toggleCurrentImage(this)" />
+                      <span style="color: #dc2626; font-size: 13px;">Xóa hình ảnh này</span>
+                    </label>
+                  </div>
+                </div>
+                <% } %>
+
+                  <div style="display: flex; align-items: center; gap: 1rem;">
+                    <input type="file" name="questionImage" id="questionImage" accept="image/*" class="admin-form-input"
+                      style="flex: 1;" onchange="previewImage(this)" />
+                  </div>
+                  <div id="imagePreview" style="margin-top: 0.5rem; display: none;">
+                    <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 0.25rem;">Hình ảnh mới:
+                    </p>
+                    <img id="previewImg" src="" alt="Preview"
+                      style="max-width: 300px; max-height: 200px; border-radius: 8px; border: 1px solid #e2e8f0;" />
+                  </div>
+                  <p style="font-size: 13px; color: var(--color-text-muted); margin-top: 6px;">
+                    📷 Hỗ trợ: JPG, PNG, GIF, WebP. Tối đa 5MB. Để trống nếu không muốn thay đổi.
+                  </p>
+            </div>
+
+            <div class="admin-form-group" id="answers-container">
+              <!-- Dynamic answers fields will be inserted here -->
+            </div>
+
+            <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-xl);">
+              <button type="submit" class="admin-btn admin-btn--primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Cập nhật
+              </button>
+              <a href="/admin/questions" class="admin-btn admin-btn--secondary">Hủy</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <script>
+        // Set edit mode flag BEFORE loading admin-questions.js
+        window.isEditMode = true;
+      </script>
+      <script src="/static/js/admin-questions.js"></script>
+      <script>
+        // Load existing answers when page loads
+        document.addEventListener("DOMContentLoaded", function () {
+          const question = JSON.parse('<%- JSON.stringify(question) %>');
+          const typeSelect = document.getElementById("type");
+
+          if (typeSelect && question.type) {
+            // Trigger change to render the answer fields container
+            typeSelect.dispatchEvent(new Event("change"));
+
+            // Fill in existing answers after a short delay to ensure fields are rendered
+            setTimeout(function () {
+              loadExistingAnswers(question.type, question.answers);
+            }, 100);
+          }
+        });
+
+        function loadExistingAnswers(type, answers) {
+          if (!answers) return;
+
+          switch (type) {
+            case "single_choice":
+            case "multiple_choice": {
+              const list = document.getElementById("choice-answers-list");
+              if (!list) return;
+              list.innerHTML = ""; // Clear default answers
+
+              if (Array.isArray(answers)) {
+                answers.forEach(function (ans) {
+                  addChoiceAnswer(ans.text || '', ans.isCorrect || false);
+                });
+              }
+
+              // Add default empty answers if none exist
+              if (list.children.length === 0) {
+                addChoiceAnswer('', false);
+                addChoiceAnswer('', false);
+              }
+              break;
+            }
+            case "true_false": {
+              if (Array.isArray(answers)) {
+                const correctAnswer = answers.find(a => a.isCorrect);
+                if (correctAnswer !== undefined) {
+                  const valueToCheck = correctAnswer.value === true ? "true" : "false";
+                  const radio = document.querySelector('input[name="tf-correct"][value="' + valueToCheck + '"]');
+                  if (radio) radio.checked = true;
+                }
+              }
+              break;
+            }
+            case "fill_in_blank": {
+              const textarea = document.getElementById("fill-answers");
+              if (textarea && answers.accepted && Array.isArray(answers.accepted)) {
+                textarea.value = answers.accepted.join("\n");
+              }
+              break;
+            }
+            case "matching": {
+              const list = document.getElementById("matching-pairs-list");
+              if (!list) return;
+              list.innerHTML = ""; // Clear default pairs
+
+              if (answers.pairs && Array.isArray(answers.pairs)) {
+                answers.pairs.forEach(function (pair) {
+                  addMatchingPair(pair.left || '', pair.right || '');
+                });
+              }
+
+              // Add default empty pairs if none exist
+              if (list.children.length === 0) {
+                addMatchingPair('', '');
+                addMatchingPair('', '');
+              }
+              break;
+            }
+          }
+        }
+
+        // Image preview functions
+        function previewImage(input) {
+          const preview = document.getElementById('imagePreview');
+          const previewImg = document.getElementById('previewImg');
+
+          if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+              previewImg.src = e.target.result;
+              preview.style.display = 'block';
+            };
+
+            reader.readAsDataURL(input.files[0]);
+          } else {
+            preview.style.display = 'none';
+            previewImg.src = '';
+          }
+        }
+
+        function toggleCurrentImage(checkbox) {
+          const currentImage = document.getElementById('currentImage');
+          if (currentImage) {
+            const img = currentImage.querySelector('img');
+            if (img) {
+              img.style.opacity = checkbox.checked ? '0.3' : '1';
+              img.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
+            }
+          }
+        }
+      </script>
+
+      <%- include('./partials/footer') %>

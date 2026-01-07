@@ -1,39 +1,161 @@
-<%- include("partical/header", { title: "OnThiTracNghiem", user: typeof user !== 'undefined' ? user : null }) %>
+<%- include("partical/header", { title: "OnThiTracNghiem - Ôn thi trắc nghiệm trực tuyến" , user: typeof user
+  !=='undefined' ? user : null }) %>
 
-<div
-  class="admin-header"
-  style="text-align: center; margin-top: var(--spacing-3xl)"
->
-  <h1 class="admin-header__title" style="font-size: 48px">OnThiTracNghiem</h1>
-  <p
-    style="
-      font-size: 18px;
-      color: var(--color-text-muted);
-      margin-top: var(--spacing-md);
-    "
-  >
-    Web ôn thi trắc nghiệm - Nơi luyện tập và nâng cao kiến thức
-  </p>
-</div>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero__content">
+      <h1 class="hero__title">
+        Luyện thi trắc nghiệm
+        <span class="hero__title-highlight">hiệu quả</span>
+      </h1>
+      <p class="hero__subtitle">
+        Nền tảng ôn thi trực tuyến với đa dạng môn học và loại câu hỏi.
+        Theo dõi tiến độ và cải thiện kết quả thi của bạn.
+      </p>
+      <div class="hero__actions">
+        <a href="/subjects" class="btn btn-primary btn--lg">
+          <svg class="btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Bắt đầu ôn thi
+        </a>
+        <% if (typeof user==='undefined' || !user) { %>
+          <a href="/auth/register" class="btn btn-secondary btn--lg">Tạo tài khoản</a>
+          <% } %>
+      </div>
+    </div>
+    <div class="hero__decoration">
+      <div class="hero__shape hero__shape--1"></div>
+      <div class="hero__shape hero__shape--2"></div>
+      <div class="hero__shape hero__shape--3"></div>
+    </div>
+  </section>
 
-<div class="subject-grid" style="margin-top: var(--spacing-3xl)">
-  <a
-    href="/subjects"
-    class="card"
-    style="text-decoration: none; display: block"
-  >
-    <h3 class="card__title">Danh sách môn học</h3>
-    <p class="card__content" style="color: var(--color-text-muted)">
-      Khám phá các môn học và bắt đầu luyện tập ngay
-    </p>
-  </a>
+  <!-- Features Section -->
+  <section class="features">
+    <h2 class="features__title">Tính năng nổi bật</h2>
+    <div class="features__grid">
+      <div class="feature-card">
+        <div class="feature-card__icon feature-card__icon--green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+        </div>
+        <h3 class="feature-card__title">Đa dạng môn học</h3>
+        <p class="feature-card__description">
+          Nhiều môn học khác nhau với ngân hàng câu hỏi phong phú được cập nhật liên tục.
+        </p>
+      </div>
 
-  <a href="/admin" class="card" style="text-decoration: none; display: block">
-    <h3 class="card__title">Quản trị hệ thống</h3>
-    <p class="card__content" style="color: var(--color-text-muted)">
-      Quản lý môn học và câu hỏi
-    </p>
-  </a>
-</div>
+      <div class="feature-card">
+        <div class="feature-card__icon feature-card__icon--blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <h3 class="feature-card__title">Nhiều loại câu hỏi</h3>
+        <p class="feature-card__description">
+          Hỗ trợ trắc nghiệm, đúng/sai, điền khuyết, ghép cặp và nhiều dạng khác.
+        </p>
+      </div>
 
-<%- include("partical/footer") %>
+      <div class="feature-card">
+        <div class="feature-card__icon feature-card__icon--yellow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="12" y1="20" x2="12" y2="10"></line>
+            <line x1="18" y1="20" x2="18" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="16"></line>
+          </svg>
+        </div>
+        <h3 class="feature-card__title">Theo dõi tiến độ</h3>
+        <p class="feature-card__description">
+          Xem lịch sử thi, phân tích kết quả và cải thiện điểm số qua từng lần luyện tập.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card__icon feature-card__icon--purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <h3 class="feature-card__title">Thi có giới hạn thời gian</h3>
+        <p class="feature-card__description">
+          Làm quen với áp lực thi thật với chế độ đếm ngược thời gian.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Actions -->
+  <section class="quick-actions">
+    <h2 class="quick-actions__title">Bắt đầu ngay</h2>
+    <div class="quick-actions__grid">
+      <a href="/subjects" class="action-card action-card--primary">
+        <div class="action-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </div>
+        <div class="action-card__content">
+          <h3 class="action-card__title">Khám phá môn học</h3>
+          <p class="action-card__description">Xem danh sách môn học và bắt đầu luyện tập ngay</p>
+        </div>
+        <svg class="action-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+
+      <% if (typeof user !=='undefined' && user) { %>
+        <a href="/exam/history" class="action-card action-card--secondary">
+          <div class="action-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="action-card__content">
+            <h3 class="action-card__title">Lịch sử thi</h3>
+            <p class="action-card__description">Xem lại các bài thi đã làm và kết quả của bạn</p>
+          </div>
+          <svg class="action-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+        <% } else { %>
+          <a href="/auth/register" class="action-card action-card--secondary">
+            <div class="action-card__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+              </svg>
+            </div>
+            <div class="action-card__content">
+              <h3 class="action-card__title">Tạo tài khoản</h3>
+              <p class="action-card__description">Đăng ký để lưu tiến độ và theo dõi kết quả học tập</p>
+            </div>
+            <svg class="action-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+          <% } %>
+    </div>
+  </section>
+
+  <%- include("partical/footer") %>
