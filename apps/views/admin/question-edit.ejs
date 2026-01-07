@@ -106,77 +106,74 @@
           const question = <% - JSON.stringify(question) %>;
           const typeSelect = document.getElementById("type");
 
-          if (typeSelect && question.answers) {
-            // Trigger change to render fields
+          if (typeSelect && question.type) {
+            // Trigger change to render the answer fields container
             typeSelect.dispatchEvent(new Event("change"));
 
             // Fill in existing answers after a short delay to ensure fields are rendered
             setTimeout(function () {
               loadExistingAnswers(question.type, question.answers);
-            }, 100);
+            }, 50);
           }
         });
 
         function loadExistingAnswers(type, answers) {
+          if (!answers) return;
+
           switch (type) {
             case "single_choice":
             case "multiple_choice": {
               const list = document.getElementById("choice-answers-list");
               if (!list) return;
-              list.innerHTML = "";
-              answers.forEach(function (ans) {
-                const index = list.children.length;
-                const div = document.createElement("div");
-                div.className = "admin-form-group";
-                div.style.display = "flex";
-                div.style.gap = "0.5rem";
-                div.style.alignItems = "center";
-                div.style.marginBottom = "0.5rem";
-                div.innerHTML = `
-          <input type="text" name="choice-text-${index}" value="${ans.text || ''}" placeholder="Nội dung đáp án" class="admin-form-input" style="flex: 1;" />
-          <input type="checkbox" name="choice-correct-${index}" ${ans.isCorrect ? 'checked' : ''} style="width: 20px; height: 20px;" />
-          <label style="white-space: nowrap;">Đúng</label>
-          <button type="button" class="admin-btn admin-btn--danger admin-btn--sm" onclick="this.parentElement.remove()">Xóa</button>
-        `;
-                list.appendChild(div);
-              });
+              list.innerHTML = ""; // Clear default answers
+
+              if (Array.isArray(answers)) {
+                answers.forEach(function (ans) {
+                  addChoiceAnswer(ans.text || '', ans.isCorrect || false);
+                });
+              }
+
+              // Add default empty answers if none exist
+              if (list.children.length === 0) {
+                addChoiceAnswer('', false);
+                addChoiceAnswer('', false);
+              }
               break;
             }
             case "true_false": {
-              const correctValue = answers.find(a => a.isCorrect)?.value;
-              if (correctValue !== undefined) {
-                const radio = document.querySelector(`input[name="tf-correct"][value="${correctValue}"]`);
-                if (radio) radio.checked = true;
+              if (Array.isArray(answers)) {
+                const correctAnswer = answers.find(a => a.isCorrect);
+                if (correctAnswer !== undefined) {
+                  const valueToCheck = correctAnswer.value === true ? "true" : "false";
+                  const radio = document.querySelector('input[name="tf-correct"][value="' + valueToCheck + '"]');
+                  if (radio) radio.checked = true;
+                }
               }
               break;
             }
             case "fill_in_blank": {
               const textarea = document.getElementById("fill-answers");
-              if (textarea && answers.accepted) {
+              if (textarea && answers.accepted && Array.isArray(answers.accepted)) {
                 textarea.value = answers.accepted.join("\n");
               }
               break;
             }
             case "matching": {
               const list = document.getElementById("matching-pairs-list");
-              if (!list || !answers.pairs) return;
-              list.innerHTML = "";
-              answers.pairs.forEach(function (pair) {
-                const index = list.children.length;
-                const div = document.createElement("div");
-                div.className = "admin-form-group";
-                div.style.display = "grid";
-                div.style.gridTemplateColumns = "1fr 1fr auto";
-                div.style.gap = "0.5rem";
-                div.style.alignItems = "center";
-                div.style.marginBottom = "0.5rem";
-                div.innerHTML = `
-          <input type="text" name="match-left-${index}" value="${pair.left || ''}" placeholder="Bên trái" class="admin-form-input" />
-          <input type="text" name="match-right-${index}" value="${pair.right || ''}" placeholder="Bên phải" class="admin-form-input" />
-          <button type="button" class="admin-btn admin-btn--danger admin-btn--sm" onclick="this.parentElement.remove()">Xóa</button>
-        `;
-                list.appendChild(div);
-              });
+              if (!list) return;
+              list.innerHTML = ""; // Clear default pairs
+
+              if (answers.pairs && Array.isArray(answers.pairs)) {
+                answers.pairs.forEach(function (pair) {
+                  addMatchingPair(pair.left || '', pair.right || '');
+                });
+              }
+
+              // Add default empty pairs if none exist
+              if (list.children.length === 0) {
+                addMatchingPair('', '');
+                addMatchingPair('', '');
+              }
               break;
             }
           }
