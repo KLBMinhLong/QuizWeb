@@ -7,7 +7,7 @@ Tính năng cho phép người dùng bắt đầu làm bài thi trắc nghiệm 
 ```mermaid
 flowchart TD
     A[User truy cập /exam/start/:subjectSlug] --> B[Hiển thị trang start]
-    B --> C[Click "Bắt đầu thi"]
+    B --> C[Click 'Bắt đầu thi']
     C --> D[POST /exam/generate]
     D --> E{Có attempt đang dở?}
     E -->|Có| F{Còn thời gian?}
