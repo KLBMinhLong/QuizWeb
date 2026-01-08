@@ -197,7 +197,19 @@ router.post("/import", function (req, res, next) {
     const fileHash = QuestionService.calculateFileHash(filePath);
     
     const result = await service.importQuestions(filePath, originalName, fileHash);
-
+ 
+    if (result.isDuplicate) {
+      // Xóa file tạm
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      return res.render("admin/question-import.ejs", {
+        success: null,
+        error: result.message,
+        importErrors: null,
+        user: req.user,
+      });
+    }
     if (!result.ok) {
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);

@@ -15,394 +15,217 @@
     </p>
   </div>
 
+  <!-- Score Summary -->
   <div class="card" style="margin-bottom: var(--spacing-xl)">
-    <div style="
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: var(--spacing-lg);
-    ">
-      <div style="
-        text-align: center;
-        padding: var(--spacing-lg);
-        background: var(--color-primary-soft);
-        border-radius: var(--radius-md);
-      ">
-        <div style="font-size: 48px; font-weight: bold; color: var(--color-primary)">
+    <div class="attempt-summary">
+      <div class="attempt-stat attempt-stat--primary">
+        <div class="attempt-stat__value attempt-stat__value--xl">
           <%= attempt.score !==null ? attempt.score : '-' %>
         </div>
-        <div style="
-          font-size: 14px;
-          color: var(--color-text-muted);
-          margin-top: var(--spacing-sm);
-        ">
-          Điểm số
-        </div>
+        <div class="attempt-stat__label">Điểm số</div>
       </div>
-
-      <div style="text-align: center; padding: var(--spacing-lg)">
-        <div style="font-size: 32px; font-weight: bold; color: var(--color-success)">
+      <div class="attempt-stat">
+        <div class="attempt-stat__value attempt-stat__value--lg attempt-stat__value--success">
           <%= questionDetails.filter(q=> q.isCorrect).length %>
         </div>
-        <div style="
-          font-size: 14px;
-          color: var(--color-text-muted);
-          margin-top: var(--spacing-sm);
-        ">
-          Câu đúng
-        </div>
+        <div class="attempt-stat__label">Câu đúng</div>
       </div>
-
-      <div style="text-align: center; padding: var(--spacing-lg)">
-        <div style="
-          font-size: 32px;
-          font-weight: bold;
-          color: var(--color-text-main);
-        ">
+      <div class="attempt-stat">
+        <div class="attempt-stat__value attempt-stat__value--lg">
           <%= attempt.totalQuestions %>
         </div>
-        <div style="
-          font-size: 14px;
-          color: var(--color-text-muted);
-          margin-top: var(--spacing-sm);
-        ">
-          Tổng số câu
-        </div>
+        <div class="attempt-stat__label">Tổng số câu</div>
       </div>
-
-      <div style="text-align: center; padding: var(--spacing-lg)">
-        <div style="
-          font-size: 32px;
-          font-weight: bold;
-          color: var(--color-text-main);
-        ">
+      <div class="attempt-stat">
+        <div class="attempt-stat__value attempt-stat__value--lg">
           <%= attempt.durationMinutes %>
         </div>
-        <div style="
-          font-size: 14px;
-          color: var(--color-text-muted);
-          margin-top: var(--spacing-sm);
-        ">
-          Phút
-        </div>
+        <div class="attempt-stat__label">Phút</div>
       </div>
     </div>
   </div>
 
+  <!-- Question Details -->
   <div class="card">
     <h2 style="margin-bottom: var(--spacing-lg)">Chi tiết từng câu</h2>
 
-    <% questionDetails.forEach(function(detail, idx) { const question=detail.question; const
-      userAnswer=detail.userAnswer; const isCorrect=detail.isCorrect; %>
-      <div class="exam-question" style="
-      margin-bottom: var(--spacing-xl);
-      padding-bottom: var(--spacing-lg);
-      border-bottom: 1px solid var(--color-border);
-    ">
-        <div style="
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-md);
-        margin-bottom: var(--spacing-md);
-      ">
+    <% questionDetails.forEach(function(detail) { const question=detail.question; const userAnswer=detail.userAnswer;
+      const isCorrect=detail.isCorrect; %>
+      <div class="review-question">
+        <div class="review-question__header">
           <span class="badge">Câu <%= detail.index %></span>
           <span class="badge badge-secondary">
             <%= question.difficulty %>
           </span>
           <% if (isCorrect) { %>
-            <span class="badge badge-success">✓ Đúng</span>
+            <span class="badge badge-success">Đúng</span>
             <% } else { %>
-              <span class="badge badge-danger">✗ Sai</span>
+              <span class="badge badge-danger">Sai</span>
               <% } %>
         </div>
 
-        <div class="exam-question-content" style="margin-bottom: var(--spacing-md)">
+        <div class="review-question__content">
           <%= question.content %>
         </div>
-        <% if (question.type==='single_choice' || question.type==='multiple_choice' ) { %>
-          <div class="exam-question-options">
-            <% (question.answers || []).forEach(function(answer, answerIndex) { const isUserAnswer=userAnswer
-              !==undefined && userAnswer !==null && Number(userAnswer)===answerIndex; const
-              isCorrectAnswer=answer.isCorrect===true; let bgColor='' ; let borderColor='' ; if (isCorrectAnswer) {
-              bgColor='var(--color-success-soft)' ; borderColor='var(--color-success)' ; } else if (isUserAnswer &&
-              !isCorrect) { bgColor='#ffe6e6' ; borderColor='var(--color-danger)' ; } %>
-              <div style="
-          padding: var(--spacing-md);
-          margin-bottom: var(--spacing-sm);
-          border-radius: var(--radius-md);
-          border: 2px solid <%= borderColor || 'var(--color-border)' %>;
-          background: <%= bgColor || 'transparent' %>;
-        ">
-                <div style="display: flex; align-items: center; gap: var(--spacing-sm)">
-                  <% if (isUserAnswer) { %>
-                    <span style="font-weight: bold; color: var(--color-primary)">→</span>
-                    <% } %>
-                      <span>
-                        <%= answer.text %>
+
+        <% if (question.mediaUrl) { %>
+          <div class="exam-question-media">
+            <img src="<%= question.mediaUrl %>" alt="Hình ảnh câu hỏi" class="exam-media-image">
+          </div>
+          <% } %>
+
+            <% if (question.type==='single_choice' || question.type==='multiple_choice' ) { %>
+              <!-- Choice Questions -->
+              <div class="review-options">
+                <% (question.answers || []).forEach(function(answer, answerIndex) { const isUserAnswer=userAnswer
+                  !==undefined && userAnswer !==null && Number(userAnswer)===answerIndex; const
+                  isCorrectAnswer=answer.isCorrect===true; let optionClass='' ; if (isCorrectAnswer) {
+                  optionClass='review-option--correct' ; } else if (isUserAnswer && !isCorrect) {
+                  optionClass='review-option--wrong' ; } %>
+                  <div class="review-option <%= optionClass %>">
+                    <span class="review-option__text">
+                      <%= answer.text %>
+                    </span>
+                    <% if (isCorrectAnswer) { %>
+                      <span class="review-option__badge review-option__badge--correct">Đáp án đúng</span>
+                      <% } %>
+                  </div>
+                  <% }) %>
+              </div>
+
+              <% } else if (question.type==='true_false' ) { %>
+                <!-- True/False Questions -->
+                <div class="review-options">
+                  <% (question.answers || []).forEach(function(answer, answerIndex) { const isUserAnswer=userAnswer
+                    !==undefined && userAnswer !==null && Number(userAnswer)===answerIndex; const
+                    isCorrectAnswer=answer.isCorrect===true; let optionClass='' ; if (isCorrectAnswer) {
+                    optionClass='review-option--correct' ; } else if (isUserAnswer && !isCorrect) {
+                    optionClass='review-option--wrong' ; } %>
+                    <div class="review-option <%= optionClass %>">
+                      <span class="review-option__text">
+                        <%= answer.value ? 'Đúng' : 'Sai' %>
                       </span>
                       <% if (isCorrectAnswer) { %>
-                        <span style="
-              margin-left: auto;
-              color: var(--color-success);
-              font-weight: bold;
-            ">✓ Đáp án đúng</span>
+                        <span class="review-option__badge review-option__badge--correct">Đáp án đúng</span>
                         <% } %>
-                </div>
-              </div>
-              <% }) %>
-          </div>
-          <% } else if (question.type==='true_false' ) { %>
-            <div class="exam-question-options">
-              <% (question.answers || []).forEach(function(answer, answerIndex) { const isUserAnswer=userAnswer
-                !==undefined && userAnswer !==null && Number(userAnswer)===answerIndex; const
-                isCorrectAnswer=answer.isCorrect===true; let bgColor='' ; let borderColor='' ; if (isCorrectAnswer) {
-                bgColor='var(--color-success-soft)' ; borderColor='var(--color-success)' ; } else if (isUserAnswer &&
-                !isCorrect) { bgColor='#ffe6e6' ; borderColor='var(--color-danger)' ; } %>
-                <div style="
-          padding: var(--spacing-md);
-          margin-bottom: var(--spacing-sm);
-          border-radius: var(--radius-md);
-          border: 2px solid <%= borderColor || 'var(--color-border)' %>;
-          background: <%= bgColor || 'transparent' %>;
-        ">
-                  <div style="display: flex; align-items: center; gap: var(--spacing-sm)">
-                    <% if (isUserAnswer) { %>
-                      <span style="font-weight: bold; color: var(--color-primary)">→</span>
-                      <% } %>
-                        <span>
-                          <%= answer.value ? 'Đúng' : 'Sai' %>
-                        </span>
-                        <% if (isCorrectAnswer) { %>
-                          <span style="
-              margin-left: auto;
-              color: var(--color-success);
-              font-weight: bold;
-            ">Đáp án đúng</span>
-                          <% } %>
-                  </div>
-                </div>
-                <% }) %>
-            </div>
-            <% } else if (question.type==='fill_in_blank' ) { %>
-              <div style="margin-top: var(--spacing-md)">
-                <div style="
-            padding: var(--spacing-md);
-            margin-bottom: var(--spacing-md);
-            border-radius: var(--radius-md);
-            border: 2px solid <%= isCorrect ? 'var(--color-success)' : 'var(--color-danger)' %>;
-            background: <%= isCorrect ? 'var(--color-success-soft)' : '#ffe6e6' %>; ">
-                  <div style="
-            font-size: 14px;
-            color: var(--color-text-muted);
-            margin-bottom: var(--spacing-sm);
-          ">
-                    <strong>Câu trả lời của bạn:</strong>
-                  </div>
-                  <div style="font-size: 16px; font-weight: 600">
-                    <% if (userAnswer !==undefined && userAnswer !==null && userAnswer !=='' ) { %>
-                      <%= userAnswer %>
-                        <% } else { %>
-                          <span style="color: var(--color-text-muted); font-style: italic">(Không trả lời)</span>
-                          <% } %>
-                  </div>
-                  <% if (isCorrect) { %>
-                    <div style="
-            margin-top: var(--spacing-sm);
-            color: var(--color-success);
-            font-weight: bold;
-          ">
-                      Chính xác
                     </div>
-                    <% } else { %>
-                      <div style="
-            margin-top: var(--spacing-sm);
-            color: var(--color-danger);
-            font-weight: bold;
-          ">
-                        Không chính xác
-                      </div>
-                      <% } %>
+                    <% }) %>
                 </div>
 
-                <div style="
-          padding: var(--spacing-md);
-          border-radius: var(--radius-md);
-          border: 2px solid var(--color-success);
-          background: var(--color-success-soft);
-        ">
-                  <div style="
-            font-size: 14px;
-            color: var(--color-text-muted);
-            margin-bottom: var(--spacing-sm);
-          ">
-                    <strong>Đáp án được chấp nhận:</strong>
-                  </div>
-                  <% if (question.answers && question.answers.accepted && question.answers.accepted.length> 0) { %>
-                    <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-sm)">
-                      <% question.answers.accepted.forEach(function(acceptedAnswer) { %>
-                        <span style="
-              display: inline-block;
-              padding: 4px 12px;
-              background: white;
-              border: 1px solid var(--color-success);
-              border-radius: var(--radius-sm);
-              font-size: 14px;
-              font-weight: 500;
-            ">
-                          <%= acceptedAnswer %>
-                        </span>
-                        <% }) %>
+                <% } else if (question.type==='fill_in_blank' ) { %>
+                  <!-- Fill in Blank -->
+                  <div class="review-fill">
+                    <div
+                      class="review-fill__answer <%= isCorrect ? 'review-fill__answer--correct' : 'review-fill__answer--wrong' %>">
+                      <div class="review-fill__label"><strong>Câu trả lời của bạn:</strong></div>
+                      <div class="review-fill__value">
+                        <% if (userAnswer !==undefined && userAnswer !==null && userAnswer !=='' ) { %>
+                          <%= userAnswer %>
+                            <% } else { %>
+                              <span style="color: var(--color-text-muted); font-style: italic;">(Không trả lời)</span>
+                              <% } %>
+                      </div>
+                      <div
+                        class="review-fill__result <%= isCorrect ? 'review-fill__result--correct' : 'review-fill__result--wrong' %>">
+                        <%= isCorrect ? 'Chính xác' : 'Không chính xác' %>
+                      </div>
                     </div>
-                    <% } else { %>
-                      <span style="color: var(--color-text-muted); font-style: italic">Không có đáp án</span>
-                      <% } %>
-                </div>
-              </div>
-              <% } else if (question.type==='matching' ) { %>
-                <div style="margin-top: var(--spacing-md)">
-                  <div style="
-          display: grid;
-          gap: var(--spacing-sm);
-          margin-bottom: var(--spacing-md);
-        ">
+
+                    <div class="review-fill__accepted">
+                      <div class="review-fill__label"><strong>Đáp án được chấp nhận:</strong></div>
+                      <% if (question.answers && question.answers.accepted && question.answers.accepted.length> 0) { %>
+                        <div class="review-fill__accepted-list">
+                          <% question.answers.accepted.forEach(function(acceptedAnswer) { %>
+                            <span class="review-fill__accepted-item">
+                              <%= acceptedAnswer %>
+                            </span>
+                            <% }) %>
+                        </div>
+                        <% } else { %>
+                          <span style="color: var(--color-text-muted); font-style: italic;">Không có đáp án</span>
+                          <% } %>
+                    </div>
+                  </div>
+
+                  <% } else if (question.type==='matching' ) { %>
+                    <!-- Matching Questions -->
                     <% const userPairs={}; if (userAnswer && typeof userAnswer==='object' ) { if
                       (Array.isArray(userAnswer)) { userAnswer.forEach(pair=> {
-                      if (pair.left
-                      && pair.right) { userPairs[pair.left] = pair.right; } }); } else {
-                      Object.assign(userPairs, userAnswer); } } // Lấy correct pairs const
-                      correctPairs = question.answers && question.answers.pairs ?
-                      question.answers.pairs : []; %> <% correctPairs.forEach(function(correctPair, idx) { const
-                        userRight=userPairs[correctPair.left]; const isPairCorrect=userRight===correctPair.right; const
-                        hasUserAnswer=userRight !==undefined && userRight !==null; %>
-                        <div style="
-            padding: var(--spacing-md);
-            border-radius: var(--radius-md);
-            border: 2px solid <%= isPairCorrect ? 'var(--color-success)' : (hasUserAnswer ? 'var(--color-danger)' : 'var(--color-border)') %>;
-            background: <%= isPairCorrect ? 'var(--color-success-soft)' : (hasUserAnswer ? '#ffe6e6' : 'transparent') %>;
-          ">
-                          <div style="
-              display: flex;
-              align-items: center;
-              gap: var(--spacing-md);
-              flex-wrap: wrap;
-            ">
-                            <div style="flex: 1; min-width: 200px">
-                              <div style="
-                  font-size: 14px;
-                  color: var(--color-text-muted);
-                  margin-bottom: 4px;
-                ">
-                                <strong>Nối từ:</strong>
-                              </div>
-                              <div style="font-weight: 600; color: var(--color-text-main)">
+                      if (pair.left && pair.right) {
+                      userPairs[pair.left] = pair.right;
+                      }
+                      });
+                      } else {
+                      Object.assign(userPairs, userAnswer);
+                      }
+                      }
+                      const correctPairs = question.answers && question.answers.pairs ? question.answers.pairs : [];
+                      %>
+                      <div class="review-matching">
+                        <% correctPairs.forEach(function(correctPair) { const userRight=userPairs[correctPair.left];
+                          const isPairCorrect=userRight===correctPair.right; const hasUserAnswer=userRight !==undefined
+                          && userRight !==null; %>
+                          <div
+                            class="review-matching__pair <%= isPairCorrect ? 'review-matching__pair--correct' : (hasUserAnswer ? 'review-matching__pair--wrong' : '') %>">
+                            <div class="review-matching__left">
+                              <div class="review-matching__left-label"><strong>Nối từ:</strong></div>
+                              <div class="review-matching__left-value">
                                 <%= correctPair.left %>
                               </div>
                             </div>
 
-                            <div style="font-size: 20px; color: var(--color-primary)">→</div>
+                            <span class="review-matching__arrow">→</span>
 
-                            <div style="flex: 2; min-width: 250px">
+                            <div class="review-matching__right">
                               <% if (hasUserAnswer) { %>
-                                <div style="margin-bottom: var(--spacing-sm)">
-                                  <div style="
-                    font-size: 14px;
-                    color: var(--color-text-muted);
-                    margin-bottom: 4px;
-                  ">
-                                    <strong>Bạn đã nối với:</strong>
-                                  </div>
-                                  <div style="
-                      padding: 8px 12px;
-                      background: white;
-                      border-radius: var(--radius-sm);
-                      border: 2px solid <%= isPairCorrect ? 'var(--color-success)' : 'var(--color-danger)' %>;
-                      font-weight: 500;
-                    ">
+                                <div class="review-matching__user-answer">
+                                  <div class="review-matching__answer-label"><strong>Bạn đã nối với:</strong></div>
+                                  <span
+                                    class="review-matching__answer-box <%= isPairCorrect ? 'review-matching__answer-box--correct' : 'review-matching__answer-box--wrong' %>">
                                     <%= userRight %>
-                                      <% if (isPairCorrect) { %>
-                                        <span style="margin-left: 8px; color: var(--color-success)">✓</span>
-                                        <% } else { %>
-                                          <span style="margin-left: 8px; color: var(--color-danger)">✗</span>
-                                          <% } %>
-                                  </div>
+                                  </span>
                                 </div>
                                 <% } else { %>
-                                  <div style="margin-bottom: var(--spacing-sm)">
-                                    <div style="
-                    font-size: 14px;
-                    color: var(--color-text-muted);
-                    margin-bottom: 4px;
-                  ">
-                                      <strong>Bạn đã nối với:</strong>
-                                    </div>
-                                    <div style="color: var(--color-text-muted); font-style: italic">
-                                      (Không trả lời)
-                                    </div>
+                                  <div class="review-matching__user-answer">
+                                    <div class="review-matching__answer-label"><strong>Bạn đã nối với:</strong></div>
+                                    <span style="color: var(--color-text-muted); font-style: italic;">(Không trả
+                                      lời)</span>
                                   </div>
                                   <% } %>
 
                                     <% if (!isPairCorrect) { %>
                                       <div>
-                                        <div style="
-                    font-size: 14px;
-                    color: var(--color-text-muted);
-                    margin-bottom: 4px;
-                  ">
-                                          <strong>Đáp án đúng:</strong>
-                                        </div>
-                                        <div style="
-                    padding: 8px 12px;
-                    background: var(--color-success-soft);
-                    border-radius: var(--radius-sm);
-                    border: 2px solid var(--color-success);
-                    font-weight: 500;
-                    color: var(--color-success);
-                  ">
-                                          <%= correctPair.right %> ✓
-                                        </div>
+                                        <div class="review-matching__answer-label"><strong>Đáp án đúng:</strong></div>
+                                        <span class="review-matching__correct-answer">
+                                          <%= correctPair.right %>
+                                        </span>
                                       </div>
                                       <% } %>
                             </div>
                           </div>
-                        </div>
-                        <% }) %>
-                  </div>
-
-                  <% if (!isCorrect) { %>
-                    <div style="
-          padding: var(--spacing-md);
-          background: #ffe6e6;
-          border: 1px solid var(--color-danger);
-          border-radius: var(--radius-md);
-          color: var(--color-danger);
-          font-weight: bold;
-          text-align: center;
-        ">
-                      Có một số cặp nối chưa chính xác
-                    </div>
-                    <% } else { %>
-                      <div style="
-          padding: var(--spacing-md);
-          background: var(--color-success-soft);
-          border: 1px solid var(--color-success);
-          border-radius: var(--radius-md);
-          color: var(--color-success);
-          font-weight: bold;
-          text-align: center;
-        ">
-                        Tất cả các cặp nối đều chính xác
+                          <% }) %>
                       </div>
-                      <% } %>
-                </div>
-                <% } else { %>
-                  <div style="color: var(--color-text-muted); font-style: italic">
-                    Loại câu hỏi này chưa hỗ trợ hiển thị chi tiết.
-                  </div>
-                  <% } %>
+
+                      <% if (!isCorrect) { %>
+                        <div class="review-matching__status review-matching__status--wrong">
+                          Có một số cặp nối chưa chính xác
+                        </div>
+                        <% } else { %>
+                          <div class="review-matching__status review-matching__status--correct">
+                            Tất cả các cặp nối đều chính xác
+                          </div>
+                          <% } %>
+
+                            <% } else { %>
+                              <div style="color: var(--color-text-muted); font-style: italic;">
+                                Loại câu hỏi này chưa hỗ trợ hiển thị chi tiết.
+                              </div>
+                              <% } %>
       </div>
       <% }) %>
   </div>
 
-  <div style="margin-top: var(--spacing-xl); text-align: center">
+  <div class="attempt-back">
     <a href="/exam/history" class="btn btn-secondary">Quay lại lịch sử thi</a>
   </div>
 

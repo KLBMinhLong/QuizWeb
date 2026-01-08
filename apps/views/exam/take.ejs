@@ -93,8 +93,8 @@
       <form id="examForm" method="post" action="/exam/submit" data-duration-minutes="<%= durationMinutes %>"
         data-remaining-seconds="<%= typeof remainingSeconds !== 'undefined' ? remainingSeconds : (durationMinutes * 60) %>"
         data-end-time="<%= typeof endTime !== 'undefined' ? endTime : '' %>"
-        data-server-time="<%= typeof serverTime !== 'undefined' ? serverTime : '' %>"
-        data-attempt-id="<%= attemptId %>" data-total-questions="<%= questions.length %>">
+        data-server-time="<%= typeof serverTime !== 'undefined' ? serverTime : '' %>" data-attempt-id="<%= attemptId %>"
+        data-total-questions="<%= questions.length %>">
         <input type="hidden" name="subjectId" value="<%= subjectId %>" />
         <input type="hidden" name="attemptId" value="<%= attemptId %>" />
 
