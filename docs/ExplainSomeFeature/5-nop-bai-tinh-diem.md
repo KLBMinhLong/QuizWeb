@@ -6,7 +6,7 @@ Tính năng xử lý khi người dùng nộp bài thi và tự động chấm �
 
 ```mermaid
 flowchart TD
-    A[User click "Nộp bài"] --> B[Thu thập câu trả lời]
+    A[User click 'Nộp bài'] --> B[Thu thập câu trả lời]
     B --> C[POST /exam/submit]
     C --> D{Attempt hợp lệ?}
     D -->|Không| E[Trả lỗi]
