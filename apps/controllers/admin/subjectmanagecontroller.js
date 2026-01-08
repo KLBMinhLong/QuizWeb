@@ -5,13 +5,11 @@ var { body, validationResult } = require("express-validator");
 var SubjectService = require(global.__basedir +
   "/apps/Services/SubjectService");
 
-// GET /admin/subjects - Hiển thị danh sách môn học
 router.get("/", async function (req, res) {
   try {
     const service = new SubjectService();
     const subjects = await service.getAllSubjects();
     
-    // Đọc success message từ query parameter
     let success = null;
     if (req.query.success === "created") {
       success = "Tạo môn học thành công!";
@@ -37,7 +35,6 @@ router.get("/", async function (req, res) {
   }
 });
 
-// POST /admin/subjects/create - Tạo môn học mới
 router.post("/create", body("name").notEmpty(), async function (req, res) {
   try {
     const errors = validationResult(req);
@@ -81,7 +78,6 @@ router.post("/create", body("name").notEmpty(), async function (req, res) {
   }
 });
 
-// POST /admin/subjects/:id/update - Cập nhật thông tin môn học
 router.post("/:id/update", body("name").notEmpty(), async function (req, res) {
   try {
     const errors = validationResult(req);
@@ -120,7 +116,6 @@ router.post("/:id/update", body("name").notEmpty(), async function (req, res) {
   }
 });
 
-// POST /admin/subjects/:id/update-config - Cập nhật cấu hình đề thi
 router.post(
   "/:id/update-config",
   body("easyCount").isInt({ min: 0 }),
@@ -174,7 +169,6 @@ router.post(
   }
 );
 
-// POST /admin/subjects/:id/toggle-active - Bật/tắt hiển thị môn học
 router.post("/:id/toggle-active", async function (req, res) {
   try {
     const service = new SubjectService();
@@ -206,7 +200,6 @@ router.post("/:id/toggle-active", async function (req, res) {
   }
 });
 
-// POST /admin/subjects/:id/delete - Xóa môn học
 router.post("/:id/delete", async function (req, res) {
   try {
     const service = new SubjectService();

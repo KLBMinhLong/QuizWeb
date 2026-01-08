@@ -22,7 +22,7 @@ class QuestionRepository {
     const medium = await this.sample(subjectId, "medium", cfg.mediumCount);
     const hard = await this.sample(subjectId, "hard", cfg.hardCount);
 
-    // Trộn thứ tự
+    // Shuffle combined questions
     const combined = [...easy, ...medium, ...hard];
     for (let i = combined.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -80,7 +80,6 @@ class QuestionRepository {
         updatedAt: new Date(),
       },
     };
-    // Loại bỏ các field undefined
     Object.keys(updateDoc.$set).forEach((key) => {
       if (updateDoc.$set[key] === undefined) {
         delete updateDoc.$set[key];

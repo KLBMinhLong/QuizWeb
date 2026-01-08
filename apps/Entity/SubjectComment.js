@@ -4,7 +4,7 @@ class SubjectComment {
     this.userId = null;
     this.usernameSnapshot = "";
     this.content = "";
-    this.status = "visible"; // visible | hidden | deleted
+    this.status = "visible";
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }

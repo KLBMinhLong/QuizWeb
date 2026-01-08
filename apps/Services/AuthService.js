@@ -10,7 +10,6 @@ var UserRoleRepository = require(global.__basedir + "/apps/Repository/UserRoleRe
 var RoleClaimRepository = require(global.__basedir + "/apps/Repository/RoleClaimRepository");
 var UserClaimRepository = require(global.__basedir + "/apps/Repository/UserClaimRepository");
 
-// Ưu tiên lấy JWT secret từ biến môi trường
 const JWT_SECRET = process.env.JWT_SECRET || config.auth.jwtSecret;
 const JWT_EXPIRES_IN =
   process.env.JWT_EXPIRES_IN || config.auth.jwtExpiresIn || "7d";
@@ -26,9 +25,6 @@ class AuthService {
     this.userClaimRepo = new UserClaimRepository(this.db);
   }
 
-  /**
-   * Tạo hoặc lấy role "user" mặc định
-   */
   async ensureDefaultRole() {
     let defaultRole = await this.roleRepo.findByNormalizedName("USER");
     if (!defaultRole) {
@@ -46,9 +42,6 @@ class AuthService {
     return defaultRole;
   }
 
-  /**
-   * Lấy tất cả roles của user (many-to-many)
-   */
   async getUserRoles(userId) {
     const userRoles = await this.userRoleRepo.findByUserId(userId);
     if (userRoles.length === 0) return [];
@@ -62,14 +55,10 @@ class AuthService {
     return roles;
   }
 
-  /**
-   * Lấy tất cả claims của user (từ roles + user claims riêng)
-   */
   async getUserClaims(userId) {
     const claims = [];
-    const claimSet = new Set(); // Tránh trùng lặp
+    const claimSet = new Set();
 
-    // 1. Lấy claims từ roles
     const roles = await this.getUserRoles(userId);
     for (const role of roles) {
       const roleClaims = await this.roleClaimRepo.findByRoleId(role._id);
@@ -85,7 +74,6 @@ class AuthService {
       }
     }
 
-    // 2. Lấy claims riêng của user (override hoặc bổ sung)
     const userClaims = await this.userClaimRepo.findByUserId(userId);
     for (const claim of userClaims) {
       const key = `${claim.claimType}:${claim.claimValue}`;
@@ -101,9 +89,6 @@ class AuthService {
     return claims;
   }
 
-  /**
-   * Lấy tất cả permissions của user
-   */
   async getUserPermissions(userId) {
     const claims = await this.getUserClaims(userId);
     return claims
@@ -121,7 +106,6 @@ class AuthService {
       const normalizedUserName = username.toUpperCase();
       const normalizedEmail = email.toUpperCase();
 
-      // Tạo user mới
       const userDoc = {
         username,
         normalizedUserName,
@@ -144,7 +128,6 @@ class AuthService {
       const userResult = await this.userRepo.insertUser(userDoc);
       const userId = userResult.insertedId;
 
-      // Đảm bảo role "user" tồn tại và gán cho user mới
       const defaultRole = await this.ensureDefaultRole();
       await this.userRoleRepo.insertUserRole({
         userId: userId,
@@ -171,23 +154,19 @@ class AuthService {
 
       await this.userRepo.updateLastLogin(user._id);
 
-      // Lấy roles của user (many-to-many)
       const roles = await this.getUserRoles(user._id);
       const roleNames = roles.map((r) => r.name);
-      // Nếu không có role nào, mặc định là "user" (backward compatible)
       const primaryRole = roleNames.length > 0 ? roleNames[0] : "user";
 
-      // Lấy permissions của user
       const permissions = await this.getUserPermissions(user._id);
 
-      // Tạo JWT với thông tin user, roles và permissions
       const token = jwt.sign(
         {
           userId: String(user._id),
           username: user.username,
-          role: primaryRole, // Role chính để backward compatible
-          roles: roleNames, // Tất cả roles
-          permissions, // Tất cả permissions (claims)
+          role: primaryRole,
+          roles: roleNames,
+          permissions,
         },
         JWT_SECRET,
         { expiresIn: JWT_EXPIRES_IN }
@@ -209,6 +188,3 @@ class AuthService {
 }
 
 module.exports = AuthService;
-
-
-

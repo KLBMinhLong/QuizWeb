@@ -25,12 +25,10 @@ router.get("/:slug", optionalAuth, async function (req, res) {
     const subject = await service.getBySlugWithStats(req.params.slug);
     if (!subject) return res.status(404).send("Không tìm thấy môn học");
 
-    // Chỉ cho xem subjects active (trừ khi là admin)
     if (!subject.isActive && (!req.user || req.user.role !== "admin")) {
       return res.status(404).send("Không tìm thấy môn học");
     }
 
-    // Load comments
     const commentService = new SubjectCommentService();
     const comments = await commentService.getCommentsBySubjectId(
       String(subject._id)
@@ -47,7 +45,6 @@ router.get("/:slug", optionalAuth, async function (req, res) {
   }
 });
 
-// POST comment
 router.post(
   "/:slug/comments",
   requireAuth,
@@ -60,7 +57,6 @@ router.post(
       const subject = await service.getBySlug(req.params.slug);
       if (!subject) return res.status(404).send("Không tìm thấy môn học");
 
-      // Load comments for re-render if error
       const commentService = new SubjectCommentService();
       const comments = await commentService.getCommentsBySubjectId(
         String(subject._id)
@@ -99,7 +95,6 @@ router.post(
   }
 );
 
-// DELETE comment
 router.post(
   "/:slug/comments/:commentId/delete",
   requireAuth,

@@ -7,7 +7,6 @@ var ExamService = require(global.__basedir + "/apps/Services/ExamService");
 var SubjectService = require(global.__basedir +
   "/apps/Services/SubjectService");
 
-// Trang chọn môn để bắt đầu
 router.get("/start/:subjectSlug", optionalAuth, async function (req, res) {
   try {
     const subjectService = new SubjectService();
@@ -16,7 +15,6 @@ router.get("/start/:subjectSlug", optionalAuth, async function (req, res) {
     );
     if (!subject) return res.status(404).send("Không tìm thấy môn");
 
-    // Chỉ cho xem subjects active (trừ khi là admin)
     if (!subject.isActive && (!req.user || req.user.role !== "admin")) {
       return res.status(404).send("Không tìm thấy môn học");
     }
@@ -27,14 +25,11 @@ router.get("/start/:subjectSlug", optionalAuth, async function (req, res) {
   }
 });
 
-// Generate đề (US-40: tạo attempt snapshot + check permission exams.read/exams.take)
 router.post("/generate", optionalAuth, async function (req, res) {
   try {
     const { subjectId } = req.body;
-
     const user = req.user || null;
 
-    // Permission: cần exams.read hoặc exams.take (US-40)
     const canRead = hasPermission(user, "exams.read");
     const canTake = hasPermission(user, "exams.take");
 
@@ -49,7 +44,6 @@ router.post("/generate", optionalAuth, async function (req, res) {
     const exam = await service.generateExam(subjectId, user);
     if (!exam.ok) return res.status(400).send(exam.message);
 
-    // Load subject info để hiển thị breadcrumb (US-41)
     const subjectService = new SubjectService();
     const subject = await subjectService.getById(subjectId);
 
@@ -58,9 +52,9 @@ router.post("/generate", optionalAuth, async function (req, res) {
       subject: subject || { _id: subjectId, name: "Môn học", slug: "" },
       questions: exam.questions,
       durationMinutes: exam.durationMinutes,
-      remainingSeconds: exam.remainingSeconds, // Pass remaining seconds
-      userAnswers: exam.userAnswers || {}, // Pass previous answers
-      isResume: exam.isResume || false, // Flag needed for UI toast
+      remainingSeconds: exam.remainingSeconds,
+      userAnswers: exam.userAnswers || {},
+      isResume: exam.isResume || false,
       attemptId: exam.attemptId,
       hasShortage: exam.hasShortage,
       shortages: exam.shortages,
@@ -71,12 +65,10 @@ router.post("/generate", optionalAuth, async function (req, res) {
   }
 });
 
-// Submit bài (US-42: chấm điểm server-side theo snapshot)
 router.post("/submit", optionalAuth, async function (req, res) {
   try {
     const user = req.user || null;
 
-    // Permission: cần exams.take (US-42)
     const canTake = hasPermission(user, "exams.take");
     if (!canTake) {
       if (!user) {
@@ -95,7 +87,6 @@ router.post("/submit", optionalAuth, async function (req, res) {
   }
 });
 
-// Save progress (Auto-save)
 router.post("/save-progress", optionalAuth, async function (req, res) {
   try {
     const user = req.user || null;
@@ -114,50 +105,42 @@ router.post("/save-progress", optionalAuth, async function (req, res) {
   }
 });
 
-// US-43: Lịch sử thi (requireAuth + permission exams.read)
 router.get("/history", requireAuth, async function (req, res) {
   try {
     const user = req.user;
 
-    // Permission: cần exams.read (US-43)
     const canRead = hasPermission(user, "exams.read");
     if (!canRead) {
       return res.status(403).send("Bạn không có quyền xem lịch sử thi");
     }
 
-    // Get filter params
     const subjectFilter = req.query.subject || '';
     const dateFrom = req.query.dateFrom || '';
     const dateTo = req.query.dateTo || '';
 
-    // Pagination
     const page = parseInt(req.query.page) || 1;
     const limit = 20;
 
     const service = new ExamService();
     const result = await service.getAttemptHistory(user, {
-      limit: 1000, // Get all for pagination
+      limit: 1000,
     });
 
     if (!result.ok) {
       return res.status(400).send(result.message);
     }
 
-    // Get all subjects for filter dropdown
     const subjectService = new SubjectService();
     const allSubjects = await subjectService.getAllSubjects();
 
-    // Apply filters
     let filteredAttempts = result.attempts || [];
     
-    // Filter by subject
     if (subjectFilter) {
       filteredAttempts = filteredAttempts.filter(a => 
         a.subject && String(a.subject._id) === subjectFilter
       );
     }
     
-    // Filter by date range
     if (dateFrom) {
       const fromDate = new Date(dateFrom);
       fromDate.setHours(0, 0, 0, 0);
@@ -173,14 +156,12 @@ router.get("/history", requireAuth, async function (req, res) {
       );
     }
 
-    // Apply pagination
     const totalItems = filteredAttempts.length;
     const totalPages = Math.ceil(totalItems / limit);
     const currentPage = Math.max(1, Math.min(page, totalPages || 1));
     const startIndex = (currentPage - 1) * limit;
     const attempts = filteredAttempts.slice(startIndex, startIndex + limit);
 
-    // Build baseUrl with filters
     let baseUrl = '/exam/history?';
     if (subjectFilter) baseUrl += `subject=${subjectFilter}&`;
     if (dateFrom) baseUrl += `dateFrom=${dateFrom}&`;
@@ -191,11 +172,9 @@ router.get("/history", requireAuth, async function (req, res) {
       attempts: attempts,
       isAdminOrModerator: result.isAdminOrModerator,
       subjects: allSubjects || [],
-      // Filter values
       subjectFilter,
       dateFrom,
       dateTo,
-      // Pagination data
       currentPage: currentPage,
       totalPages: totalPages,
       totalItems: totalItems,
@@ -209,13 +188,11 @@ router.get("/history", requireAuth, async function (req, res) {
   }
 });
 
-// US-43: Chi tiết attempt (requireAuth + permission exams.read)
 router.get("/attempt/:id", requireAuth, async function (req, res) {
   try {
     const user = req.user;
     const attemptId = req.params.id;
 
-    // Permission: cần exams.read (US-43)
     const canRead = hasPermission(user, "exams.read");
     if (!canRead) {
       return res.status(403).send("Bạn không có quyền xem chi tiết attempt");

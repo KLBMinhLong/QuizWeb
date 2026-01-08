@@ -15,7 +15,7 @@ class QuestionService {
     this.subjectRepo = new SubjectRepository(this.db);
   }
 
-  // Static methods - không cần database connection
+
   static stripCorrectAnswers(type, answers) {
     if (!answers) {
       return null;
@@ -24,29 +24,29 @@ class QuestionService {
     switch (type) {
       case "single_choice":
       case "multiple_choice":
-        // Chỉ trả về text, bỏ isCorrect
+
         if (Array.isArray(answers)) {
           return answers.map((a) => ({ text: a.text }));
         }
         return answers;
 
       case "true_false":
-        // Chỉ trả về value, bỏ isCorrect
+
         if (Array.isArray(answers)) {
           return answers.map((a) => ({ value: a.value }));
         }
         return answers;
 
       case "fill_in_blank":
-        // Không gửi accepted values, chỉ gửi structure để hiển thị input
+
         return { placeholder: "Nhập đáp án của bạn" };
 
       case "matching":
-        // Chỉ gửi danh sách left và right riêng biệt để hiển thị, không gửi mapping
+
         if (answers && answers.pairs && Array.isArray(answers.pairs)) {
           const leftItems = answers.pairs.map((p) => p.left);
           const rightItems = answers.pairs.map((p) => p.right);
-          // Shuffle để không lộ thứ tự đúng
+
           const shuffledRight = [...rightItems].sort(() => Math.random() - 0.5);
           return {
             leftItems: leftItems,
@@ -208,35 +208,23 @@ class QuestionService {
     return { ok: true };
   }
 
-  /**
-   * Normalize answers trước khi lưu vào DB
-   * - fill_in_blank: trim và lowercase các accepted values
-   */
   static normalizeAnswers(type, answers) {
     if (type === "fill_in_blank" && answers && answers.accepted && Array.isArray(answers.accepted)) {
       return {
         accepted: answers.accepted.map((a) => String(a).trim().toLowerCase()).filter((a) => a.length > 0),
       };
     }
-    // Các type khác giữ nguyên
     return answers;
   }
 
-  /**
-   * So sánh đáp án user với đáp án đúng để chấm điểm
-   * @param {string} type - Loại câu hỏi
-   * @param {any} correctAnswers - Đáp án đúng từ snapshot
-   * @param {any} userAnswer - Đáp án của user (có thể là undefined nếu user không trả lời)
-   * @returns {boolean} - true nếu đúng, false nếu sai
-   */
+  // Compare user answer with correct answer for grading
   static compareAnswer(type, correctAnswers, userAnswer) {
     if (!correctAnswers) return false;
-    // Nếu user không trả lời (undefined/null), coi như sai
     if (userAnswer === undefined || userAnswer === null) return false;
 
     switch (type) {
       case "single_choice":
-        // userAnswer là index (số hoặc string)
+
         const index = Number(userAnswer);
         if (isNaN(index) || !Array.isArray(correctAnswers) || index < 0 || index >= correctAnswers.length) {
           return false;
@@ -244,7 +232,7 @@ class QuestionService {
         return correctAnswers[index]?.isCorrect === true;
 
       case "multiple_choice":
-        // userAnswer là array indices (string[] hoặc number[])
+
         if (!Array.isArray(userAnswer)) return false;
         if (!Array.isArray(correctAnswers)) return false;
         
@@ -253,18 +241,18 @@ class QuestionService {
           .map((a, idx) => (a.isCorrect === true ? idx : -1))
           .filter((idx) => idx !== -1);
         
-        // Phải chọn đúng tất cả đáp án đúng và không chọn thêm đáp án sai
+
         if (userIndices.length !== correctIndices.length) return false;
         return userIndices.every((idx) => correctIndices.includes(idx)) &&
                correctIndices.every((idx) => userIndices.includes(idx));
 
       case "true_false":
-        // userAnswer là boolean (true/false), có thể là string "true"/"false"
+
         let booleanAnswer;
         if (typeof userAnswer === "boolean") {
           booleanAnswer = userAnswer;
         } else if (typeof userAnswer === "string") {
-          // Convert string "true"/"false"/"1"/"0" thành boolean
+
           if (userAnswer === "true" || userAnswer === "1") {
             booleanAnswer = true;
           } else if (userAnswer === "false" || userAnswer === "0") {
@@ -280,33 +268,33 @@ class QuestionService {
         return correctAnswer && correctAnswer.value === booleanAnswer;
 
       case "fill_in_blank":
-        // userAnswer là string, normalize và check trong accepted[]
+
         if (typeof userAnswer !== "string") return false;
         if (!correctAnswers.accepted || !Array.isArray(correctAnswers.accepted)) return false;
         const normalizedUserAnswer = userAnswer.trim().toLowerCase();
         return correctAnswers.accepted.includes(normalizedUserAnswer);
 
       case "matching":
-        // userAnswer là object map {left: right} hoặc array [{left, right}]
+
         if (!correctAnswers.pairs || !Array.isArray(correctAnswers.pairs)) return false;
         if (!userAnswer || typeof userAnswer !== "object") return false;
         
-        // Convert userAnswer thành array nếu là object map
+
         let userPairs = [];
         if (Array.isArray(userAnswer)) {
           userPairs = userAnswer;
         } else {
-          // Convert object map {left1: right1, left2: right2} thành array
+
           userPairs = Object.keys(userAnswer).map((left) => ({
             left: left,
             right: userAnswer[left],
           }));
         }
         
-        // Phải có đúng số lượng cặp
+
         if (userPairs.length !== correctAnswers.pairs.length) return false;
         
-        // Check từng cặp phải khớp
+
         for (const correctPair of correctAnswers.pairs) {
           const userPair = userPairs.find((p) => p.left === correctPair.left);
           if (!userPair || userPair.right !== correctPair.right) {
@@ -320,17 +308,12 @@ class QuestionService {
     }
   }
 
-  /**
-   * Validate toàn bộ question object (cho create/update)
-   * @param {object} question - Question object cần validate
-   * @returns {{ ok: boolean, message?: string }}
-   */
   static validateQuestion(question) {
     if (!question) {
       return { ok: false, message: "Question không được để trống" };
     }
 
-    // Validate subjectId
+
     if (!question.subjectId) {
       return { ok: false, message: "SubjectId không được để trống" };
     }
@@ -340,24 +323,24 @@ class QuestionService {
       return { ok: false, message: "SubjectId không hợp lệ" };
     }
 
-    // Validate difficulty
+
     const validDifficulties = ["easy", "medium", "hard"];
     if (!question.difficulty || !validDifficulties.includes(question.difficulty)) {
       return { ok: false, message: "Difficulty phải là 'easy', 'medium' hoặc 'hard'" };
     }
 
-    // Validate type
+
     const validTypes = ["single_choice", "multiple_choice", "true_false", "fill_in_blank", "matching"];
     if (!question.type || !validTypes.includes(question.type)) {
       return { ok: false, message: "Type không hợp lệ" };
     }
 
-    // Validate content
+
     if (!question.content || typeof question.content !== "string" || question.content.trim() === "") {
       return { ok: false, message: "Content không được để trống" };
     }
 
-    // Validate answers
+
     const answersValidation = QuestionService.validateAnswers(question.type, question.answers);
     if (!answersValidation.ok) {
       return answersValidation;
@@ -366,7 +349,7 @@ class QuestionService {
     return { ok: true };
   }
 
-  // Instance methods - cần database connection
+
   async createQuestion(question) {
     await this.client.connect();
     try {
@@ -379,7 +362,7 @@ class QuestionService {
       // Normalize answers
       const normalizedAnswers = QuestionService.normalizeAnswers(question.type, question.answers);
 
-      // Tạo question object
+
       const questionDoc = {
         subjectId: new ObjectId(String(question.subjectId)),
         difficulty: question.difficulty,
@@ -401,16 +384,16 @@ class QuestionService {
   async updateQuestion(id, question) {
     await this.client.connect();
     try {
-      // Validate
+
       const validation = QuestionService.validateQuestion(question);
       if (!validation.ok) {
         return { ok: false, message: validation.message };
       }
 
-      // Normalize answers
+
       const normalizedAnswers = QuestionService.normalizeAnswers(question.type, question.answers);
 
-      // Update question object
+
       const updateDoc = {
         subjectId: new ObjectId(String(question.subjectId)),
         difficulty: question.difficulty,
@@ -470,12 +453,12 @@ class QuestionService {
       
       const questions = await this.questionRepo.getAll(query);
       
-      // Populate subject name nếu cần (tối ưu: chỉ query 1 lần)
+
       if (questions.length > 0) {
         const subjectIds = [...new Set(questions.map(q => String(q.subjectId)))];
         const subjectsMap = {};
         
-        // Query tất cả subjects một lần
+
         if (subjectIds.length > 0) {
           const subjectDocs = await this.subjectRepo.collection().find({
             _id: { $in: subjectIds.map(id => new ObjectId(id)) }
@@ -486,7 +469,7 @@ class QuestionService {
           });
         }
         
-        // Attach subject info to questions
+
         questions.forEach(q => {
           q.subject = subjectsMap[String(q.subjectId)] || null;
         });
@@ -498,13 +481,8 @@ class QuestionService {
     }
   }
 
-  /**
-   * Check xem file đã được import chưa (dựa vào hash)
-   * @param {string} fileHash - Hash của file
-   * @returns {boolean}
-   */
   async isFileImported(fileHash) {
-    // Tạo client riêng để không ảnh hưởng đến client chính
+
     const checkClient = DatabaseConnection.getMongoClient();
     await checkClient.connect();
     try {
@@ -517,16 +495,8 @@ class QuestionService {
     }
   }
 
-  /**
-   * Lưu thông tin file đã import
-   * @param {string} fileHash - Hash của file
-   * @param {string} fileName - Tên file gốc
-   * @param {string} savedPath - Đường dẫn file đã lưu
-   * @param {number} successCount - Số câu hỏi import thành công
-   * @param {number} failedCount - Số câu hỏi import thất bại
-   */
   async saveImportedFileInfo(fileHash, fileName, savedPath, successCount, failedCount) {
-    // Tạo client riêng để không ảnh hưởng đến client chính
+
     const saveClient = DatabaseConnection.getMongoClient();
     await saveClient.connect();
     try {
@@ -539,18 +509,13 @@ class QuestionService {
         successCount: successCount,
         failedCount: failedCount,
         importedAt: new Date(),
-        importedBy: null, // Có thể lưu userId nếu có
+        importedBy: null,
       });
     } finally {
       await saveClient.close();
     }
   }
 
-  /**
-   * Tính hash của file
-   * @param {string} filePath - Đường dẫn đến file
-   * @returns {string} - Hash SHA256 của file
-   */
   static calculateFileHash(filePath) {
     const fileBuffer = fs.readFileSync(filePath);
     const hashSum = crypto.createHash("sha256");
@@ -558,22 +523,15 @@ class QuestionService {
     return hashSum.digest("hex");
   }
 
-  /**
-   * Import questions từ Excel/CSV file
-   * @param {string} filePath - Đường dẫn đến file Excel/CSV
-   * @param {string} originalName - Tên file gốc (để lấy extension)
-   * @param {string} fileHash - Hash của file (để check duplicate)
-   * @returns {{ ok: boolean, message?: string, result?: { success: number, failed: number, errors: Array }, isDuplicate?: boolean }}
-   */
   async importQuestions(filePath, originalName = null, fileHash = null) {
     await this.client.connect();
     try {
-      // Tính hash nếu chưa có
+
       if (!fileHash) {
         fileHash = QuestionService.calculateFileHash(filePath);
       }
 
-      // Check duplicate
+
       const isDuplicate = await this.isFileImported(fileHash);
       if (isDuplicate) {
         return {
@@ -586,51 +544,39 @@ class QuestionService {
       const results = {
         success: 0,
         failed: 0,
-        errors: [], // Array of { row: number, message: string }
+        errors: [],
       };
 
-      // Đọc file
       let rows = [];
-      // Lấy extension từ originalName nếu có, nếu không thì từ filePath
       let fileExtension = "";
       if (originalName) {
         fileExtension = path.extname(originalName).toLowerCase().replace(".", "");
       } else {
         fileExtension = filePath.toLowerCase().split(".").pop();
       }
-      console.log("ImportQuestions - filePath:", filePath, "originalName:", originalName, "extension:", fileExtension);
 
       if (fileExtension === "csv") {
-        console.log("Parsing CSV file...");
         rows = this._parseCSV(filePath);
-        console.log("CSV parsed, rows count:", rows.length);
       } else if (fileExtension === "xlsx" || fileExtension === "xls") {
-        console.log("Parsing Excel file...");
         rows = this._parseExcel(filePath);
-        console.log("Excel parsed, rows count:", rows.length);
       } else {
-        console.log("Unsupported file extension:", fileExtension);
         return { ok: false, message: "File không được hỗ trợ. Chỉ hỗ trợ .xlsx, .xls, .csv" };
       }
 
       if (rows.length === 0) {
-        console.log("File is empty or cannot be parsed");
         return { ok: false, message: "File không có dữ liệu" };
       }
 
-      // Xử lý từng dòng (bỏ qua header row nếu có)
       const headerRow = rows[0];
       const isHeaderRow = this._isHeaderRow(headerRow);
       const dataRows = isHeaderRow ? rows.slice(1) : rows;
       const columnMap = isHeaderRow ? this._mapColumns(headerRow) : null;
-      console.log("Header row detected:", isHeaderRow, "Data rows:", dataRows.length);
 
       for (let i = 0; i < dataRows.length; i++) {
-        const rowIndex = i + (isHeaderRow ? 2 : 1); // Excel row number (1-based, +1 for header)
+        const rowIndex = i + (isHeaderRow ? 2 : 1);
         const row = dataRows[i];
 
         try {
-          // Parse row data
           const questionData = columnMap
             ? this._parseRowWithColumnMap(row, columnMap)
             : this._parseRowDefault(row);
@@ -641,7 +587,7 @@ class QuestionService {
             continue;
           }
 
-          // Validate subject slug
+
           const subject = await this.subjectRepo.getBySlug(questionData.subjectSlug);
           if (!subject) {
             results.failed++;
@@ -652,19 +598,17 @@ class QuestionService {
             continue;
           }
 
-          // Parse answers JSON
+
           let answers;
           try {
             let jsonStr = typeof questionData.answersJson === "string" ? questionData.answersJson : JSON.stringify(questionData.answersJson);
-            
-            // Fix: Nếu là matching type và JSON thiếu dấu đóng ngoặc ], thêm vào
+
             if (questionData.type === "matching" && jsonStr.trim().startsWith("[") && !jsonStr.trim().endsWith("]")) {
               jsonStr = jsonStr.trim() + "]";
             }
             
             answers = JSON.parse(jsonStr);
-            
-            // Fix: Nếu là matching type và answers là array chứa object có pairs, extract object đó
+
             if (questionData.type === "matching" && Array.isArray(answers) && answers.length > 0 && answers[0].pairs) {
               answers = answers[0];
             }
@@ -674,7 +618,7 @@ class QuestionService {
             continue;
           }
 
-          // Build question object
+
           const question = {
             subjectId: String(subject._id),
             difficulty: questionData.difficulty,
@@ -684,7 +628,7 @@ class QuestionService {
             answers: answers,
           };
 
-          // Validate question
+
           const validation = QuestionService.validateQuestion(question);
           if (!validation.ok) {
             results.failed++;
@@ -692,10 +636,10 @@ class QuestionService {
             continue;
           }
 
-          // Normalize answers
+
           const normalizedAnswers = QuestionService.normalizeAnswers(question.type, question.answers);
 
-          // Create question
+
           const questionDoc = {
             subjectId: new ObjectId(String(question.subjectId)),
             difficulty: question.difficulty,
@@ -715,7 +659,6 @@ class QuestionService {
         }
       }
 
-      console.log("Import completed - Success:", results.success, "Failed:", results.failed);
       
       return {
         ok: true,
@@ -731,19 +674,14 @@ class QuestionService {
     }
   }
 
-  /**
-   * Parse CSV file
-   */
   _parseCSV(filePath) {
     try {
-      // Đọc file CSV với encoding UTF-8
-      // XLSX có thể parse CSV nhưng tốt hơn là đọc thủ công với UTF-8 encoding
       const content = fs.readFileSync(filePath, { encoding: "utf-8" });
       const lines = content.split(/\r?\n/).filter((line) => line.trim() !== "");
       const rows = [];
 
       for (const line of lines) {
-        // CSV parser với hỗ trợ quoted fields
+
         const fields = [];
         let currentField = "";
         let inQuotes = false;
@@ -752,11 +690,11 @@ class QuestionService {
           const char = line[i];
           if (char === '"') {
             if (inQuotes && line[i + 1] === '"') {
-              // Escaped quote
+
               currentField += '"';
               i++;
             } else {
-              // Toggle quote state
+
               inQuotes = !inQuotes;
             }
           } else if (char === "," && !inQuotes) {
@@ -766,7 +704,7 @@ class QuestionService {
             currentField += char;
           }
         }
-        fields.push(currentField); // Field cuối cùng
+        fields.push(currentField);
         rows.push(fields);
       }
 
@@ -777,20 +715,14 @@ class QuestionService {
     }
   }
 
-  /**
-   * Parse Excel file
-   */
   _parseExcel(filePath) {
     const workbook = XLSX.readFile(filePath);
-    // Lấy sheet đầu tiên hoặc sheet có tên "Questions"
     const sheetName = workbook.SheetNames.includes("Questions") ? "Questions" : workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     return XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
   }
 
-  /**
-   * Kiểm tra xem dòng có phải là header không
-   */
+
   _isHeaderRow(row) {
     if (!Array.isArray(row) || row.length === 0) return false;
     const firstCell = String(row[0]).toLowerCase().trim();
@@ -802,9 +734,7 @@ class QuestionService {
     );
   }
 
-  /**
-   * Map column names to indices
-   */
+
   _mapColumns(headerRow) {
     const map = {};
     for (let i = 0; i < headerRow.length; i++) {
@@ -826,9 +756,7 @@ class QuestionService {
     return map;
   }
 
-  /**
-   * Parse row với column map
-   */
+
   _parseRowWithColumnMap(row, columnMap) {
     return {
       subjectSlug: columnMap.subjectSlug !== undefined ? String(row[columnMap.subjectSlug] || "").trim() : "",
@@ -840,9 +768,7 @@ class QuestionService {
     };
   }
 
-  /**
-   * Parse row theo thứ tự mặc định: subjectSlug, difficulty, type, content, answersJson, mediaUrl
-   */
+
   _parseRowDefault(row) {
     if (!Array.isArray(row) || row.length < 5) return null;
     return {

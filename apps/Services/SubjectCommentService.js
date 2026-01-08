@@ -27,7 +27,6 @@ class SubjectCommentService {
   async createComment(subjectId, userId, username, content) {
     await this.client.connect();
     try {
-      // Validate user exists and is active
       const user = await this.userRepo.findById(userId);
       if (!user) {
         return { ok: false, message: "Không tìm thấy người dùng" };
@@ -39,13 +38,11 @@ class SubjectCommentService {
         };
       }
 
-      // Validate subject exists
       const subject = await this.subjectRepo.getById(subjectId);
       if (!subject) {
         return { ok: false, message: "Không tìm thấy môn học" };
       }
 
-      // Validate content
       const trimmedContent = (content || "").trim();
       if (!trimmedContent) {
         return { ok: false, message: "Nội dung bình luận không được để trống" };
@@ -58,7 +55,6 @@ class SubjectCommentService {
         };
       }
 
-      // Create comment
       var ObjectId = require("mongodb").ObjectId;
       const doc = {
         subjectId: subject._id,
@@ -85,8 +81,6 @@ class SubjectCommentService {
         return { ok: false, message: "Không tìm thấy bình luận" };
       }
 
-      // Check permission: owner or moderator
-      // Compare ObjectIds properly
       var ObjectId = require("mongodb").ObjectId;
       const commentUserId = String(comment.userId);
       const requestUserId = String(userId);
@@ -107,7 +101,6 @@ class SubjectCommentService {
   async hideComment(commentId, userRole) {
     await this.client.connect();
     try {
-      // Only admin/moderator can hide
       if (userRole !== "admin" && userRole !== "moderator") {
         return { ok: false, message: "Bạn không có quyền ẩn bình luận" };
       }

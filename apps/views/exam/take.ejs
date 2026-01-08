@@ -290,9 +290,23 @@
             <% }) %>
         </div>
       </form>
+      <!-- Question Navigation (Bottom) -->
+      <div class="question-nav" id="questionNavBottom" style="margin-top: 2rem;">
+        <div class="question-nav__label">Câu hỏi:</div>
+        <div class="question-nav__items">
+          <% questions.forEach(function(q, idx){ const hasAnswer=userAnswers && userAnswers[q._id]; %>
+            <button type="button" class="question-nav__item <%= hasAnswer ? 'question-nav__item--answered' : '' %>"
+              data-index="<%= idx %>" onclick="scrollToQuestion(<%= idx %>)">
+              <%= idx + 1 %>
+            </button>
+            <% }) %>
+        </div>
+      </div>
 
       <script src="/static/js/exam-take.js"></script>
 
       <% } %>
+        </div>
+        </body>
 
-        <%- include("../partical/footer") %>
+        </html>

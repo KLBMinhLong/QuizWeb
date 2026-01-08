@@ -5,8 +5,6 @@ var { requirePermission } = require(global.__basedir + "/apps/Util/VerifyToken")
 
 var RoleService = require(global.__basedir + "/apps/Services/RoleService");
 
-// GET /admin/roles - Danh sách roles
-// Permission: roles.read (theo US-12)
 router.get("/", requirePermission("roles.read"), async function (req, res) {
   try {
     const service = new RoleService();
@@ -24,8 +22,6 @@ router.get("/", requirePermission("roles.read"), async function (req, res) {
   }
 });
 
-// POST /admin/roles/create - Tạo role mới
-// Permission: roles.write (theo US-12)
 router.post(
   "/create",
   requirePermission("roles.write"),
@@ -81,8 +77,6 @@ router.post(
   }
 );
 
-// POST /admin/roles/:id/update - Cập nhật role
-// Permission: roles.write (theo US-12)
 router.post(
   "/:id/update",
   requirePermission("roles.write"),
@@ -138,8 +132,6 @@ router.post(
   }
 );
 
-// POST /admin/roles/:id/delete - Xoá role
-// Permission: roles.delete (theo US-12)
 router.post("/:id/delete", requirePermission("roles.delete"), async function (req, res) {
   const service = new RoleService();
   
@@ -169,8 +161,6 @@ router.post("/:id/delete", requirePermission("roles.delete"), async function (re
   }
 });
 
-// GET /admin/roles/:id/claims - Xem claims của role (AJAX hoặc render)
-// Permission: roles.read (theo US-12 - cần đọc để quản lý permissions)
 router.get("/:id/claims", requirePermission("roles.read"), async function (req, res) {
   try {
     const service = new RoleService();
@@ -182,7 +172,6 @@ router.get("/:id/claims", requirePermission("roles.read"), async function (req, 
     const claims = await service.getRoleClaims(req.params.id);
     const availablePermissions = RoleService.getAvailablePermissions();
     
-    // Group permissions by category
     const permissionsByCategory = {};
     availablePermissions.forEach(perm => {
       if (!permissionsByCategory[perm.category]) {
@@ -207,8 +196,6 @@ router.get("/:id/claims", requirePermission("roles.read"), async function (req, 
   }
 });
 
-// POST /admin/roles/:id/claims/add - Thêm claim cho role
-// Permission: roles.write (theo US-12)
 router.post(
   "/:id/claims/add",
   requirePermission("roles.write"),
@@ -245,8 +232,6 @@ router.post(
   }
 );
 
-// POST /admin/roles/:id/claims/:claimId/remove - Xóa claim khỏi role
-// Permission: roles.write (theo US-12)
 router.post("/:id/claims/:claimId/remove", requirePermission("roles.write"), async function (req, res) {
   try {
     const service = new RoleService();
@@ -264,4 +249,3 @@ router.post("/:id/claims/:claimId/remove", requirePermission("roles.write"), asy
 });
 
 module.exports = router;
-

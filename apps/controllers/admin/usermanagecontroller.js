@@ -5,8 +5,6 @@ var { requirePermission } = require(global.__basedir + "/apps/Util/VerifyToken")
 
 var UserService = require(global.__basedir + "/apps/Services/UserService");
 
-// GET /admin/users - Danh sách users với filter và search
-// Permission: users.read (theo US-13)
 router.get("/", requirePermission("users.read"), async function (req, res) {
   try {
     const service = new UserService();
@@ -15,32 +13,28 @@ router.get("/", requirePermission("users.read"), async function (req, res) {
       search: req.query.search || "",
     };
     
-    // Pagination
     const page = parseInt(req.query.page) || 1;
     const limit = 20;
     
     const allUsers = await service.getUsers(filters);
     const allRoles = await service.getAllRoles();
     
-    // Apply pagination
     const totalItems = allUsers.length;
     const totalPages = Math.ceil(totalItems / limit);
     const currentPage = Math.max(1, Math.min(page, totalPages || 1));
     const startIndex = (currentPage - 1) * limit;
     const users = allUsers.slice(startIndex, startIndex + limit);
     
-    // Build base URL for pagination
     let baseUrl = '/admin/users?';
     if (filters.trangThai && filters.trangThai !== 'all') baseUrl += `trangThai=${filters.trangThai}&`;
     if (filters.search) baseUrl += `search=${encodeURIComponent(filters.search)}&`;
-    baseUrl = baseUrl.slice(0, -1); // Remove trailing &
+    baseUrl = baseUrl.slice(0, -1);
     
     const success = req.query.success || null;
     res.render("admin/users.ejs", { 
       users, 
       allRoles,
       filters,
-      // Pagination data
       currentPage: currentPage,
       totalPages: totalPages,
       totalItems: totalItems,
@@ -68,8 +62,6 @@ router.get("/", requirePermission("users.read"), async function (req, res) {
   }
 });
 
-// POST /admin/users/:id/block - Block user
-// Permission: users.write (theo US-13)
 router.post("/:id/block", requirePermission("users.write"), async function (req, res) {
   const service = new UserService();
   
@@ -105,8 +97,6 @@ router.post("/:id/block", requirePermission("users.write"), async function (req,
   }
 });
 
-// POST /admin/users/:id/unblock - Unblock user
-// Permission: users.write (theo US-13)
 router.post("/:id/unblock", requirePermission("users.write"), async function (req, res) {
   const service = new UserService();
   
@@ -142,8 +132,6 @@ router.post("/:id/unblock", requirePermission("users.write"), async function (re
   }
 });
 
-// POST /admin/users/:id/roles/add - Gán role cho user
-// Permission: users.write (theo US-13)
 router.post(
   "/:id/roles/add",
   requirePermission("users.write"),
@@ -199,8 +187,6 @@ router.post(
   }
 );
 
-// POST /admin/users/:id/roles/:roleId/remove - Bỏ role khỏi user
-// Permission: users.write (theo US-13)
 router.post("/:id/roles/:roleId/remove", requirePermission("users.write"), async function (req, res) {
   const service = new UserService();
   
@@ -237,4 +223,3 @@ router.post("/:id/roles/:roleId/remove", requirePermission("users.write"), async
 });
 
 module.exports = router;
-

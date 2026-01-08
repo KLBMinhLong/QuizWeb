@@ -50,7 +50,7 @@ class ExamAttemptRepository {
   async getByUserId(userId, options = {}) {
     const filter = { userId: new ObjectId(String(userId)) };
 
-    const query = this.collection().find(filter).sort({ startedAt: -1 }); // Mới nhất trước
+    const query = this.collection().find(filter).sort({ startedAt: -1 });
 
     if (options.limit) {
       query.limit(options.limit);
@@ -63,7 +63,7 @@ class ExamAttemptRepository {
   }
 
   async getAllAttempts(options = {}) {
-    const query = this.collection().find({}).sort({ startedAt: -1 }); // Mới nhất trước
+    const query = this.collection().find({}).sort({ startedAt: -1 });
 
     if (options.limit) {
       query.limit(options.limit);
@@ -85,7 +85,6 @@ class ExamAttemptRepository {
     return await this.collection().countDocuments({});
   }
 
-  // Tìm bài thi đang làm dở (chưa finish)
   async findActiveAttempt(userId, subjectId) {
     return await this.collection().findOne({
       userId: new ObjectId(String(userId)),

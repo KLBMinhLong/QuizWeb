@@ -17,7 +17,6 @@ class RoleService {
     await this.client.connect();
     try {
       const roles = await this.roleRepo.getAllRoles();
-      // Lấy số lượng users cho mỗi role
       const rolesWithCounts = await Promise.all(
         roles.map(async (role) => {
           const userCount = await this.userRoleRepo.findByRoleId(role._id);
@@ -39,7 +38,6 @@ class RoleService {
       const role = await this.roleRepo.findById(id);
       if (!role) return null;
 
-      // Lấy claims của role
       const claims = await this.roleClaimRepo.findByRoleId(id);
       const userCount = await this.userRoleRepo.findByRoleId(id);
 
@@ -61,7 +59,6 @@ class RoleService {
         return { ok: false, message: "Tên role không được để trống" };
       }
 
-      // Kiểm tra trùng (case-insensitive)
       const existing = await this.roleRepo.findByNormalizedName(normalizedName);
       if (existing) {
         return { ok: false, message: `Role "${roleData.name}" đã tồn tại` };
@@ -91,14 +88,12 @@ class RoleService {
         return { ok: false, message: "Không tìm thấy role" };
       }
 
-      // Không cho đổi tên role "admin" (bảo vệ role quan trọng)
       if (role.normalizedName === "ADMIN" && roleData.name && roleData.name.toUpperCase() !== "ADMIN") {
         return { ok: false, message: "Không thể đổi tên role admin" };
       }
 
       const normalizedName = (roleData.name || role.name).toUpperCase().trim();
       
-      // Nếu đổi tên, kiểm tra trùng
       if (roleData.name && normalizedName !== role.normalizedName) {
         const existing = await this.roleRepo.findByNormalizedName(normalizedName);
         if (existing && String(existing._id) !== String(id)) {
@@ -134,12 +129,10 @@ class RoleService {
         return { ok: false, message: "Không tìm thấy role" };
       }
 
-      // Không cho xoá role "admin"
       if (role.normalizedName === "ADMIN") {
         return { ok: false, message: "Không thể xoá role admin" };
       }
 
-      // Kiểm tra xem role có đang được sử dụng không
       const userRoles = await this.userRoleRepo.findByRoleId(id);
       if (userRoles.length > 0) {
         return { 
@@ -148,7 +141,6 @@ class RoleService {
         };
       }
 
-      // Xoá role và tất cả claims của nó
       await this.roleClaimRepo.deleteByRoleId(id);
       await this.roleRepo.deleteRole(id);
       return { ok: true };
@@ -157,51 +149,30 @@ class RoleService {
     }
   }
 
-  // ===== Claims Management =====
-
-  /**
-   * Lấy danh sách tất cả permissions có sẵn trong hệ thống
-   */
   static getAvailablePermissions() {
     return [
-      // Users
       { value: "users.read", label: "Xem danh sách users", category: "Users" },
       { value: "users.write", label: "Tạo/sửa users", category: "Users" },
       { value: "users.delete", label: "Xóa users", category: "Users" },
-      
-      // Roles
       { value: "roles.read", label: "Xem danh sách roles", category: "Roles" },
       { value: "roles.write", label: "Tạo/sửa roles", category: "Roles" },
       { value: "roles.delete", label: "Xóa roles", category: "Roles" },
-      
-      // Subjects
       { value: "subjects.read", label: "Xem danh sách môn học", category: "Subjects" },
       { value: "subjects.write", label: "Tạo/sửa môn học", category: "Subjects" },
       { value: "subjects.delete", label: "Xóa môn học", category: "Subjects" },
-      
-      // Questions
       { value: "questions.read", label: "Xem câu hỏi", category: "Questions" },
       { value: "questions.write", label: "Tạo/sửa câu hỏi", category: "Questions" },
       { value: "questions.delete", label: "Xóa câu hỏi", category: "Questions" },
-      
-      // Exams
       { value: "exams.read", label: "Xem bài thi", category: "Exams" },
       { value: "exams.write", label: "Tạo/sửa bài thi", category: "Exams" },
       { value: "exams.delete", label: "Xóa bài thi", category: "Exams" },
       { value: "exams.take", label: "Làm bài thi", category: "Exams" },
-      
-      // Comments
       { value: "comments.write", label: "Viết bình luận", category: "Comments" },
       { value: "comments.moderate", label: "Kiểm duyệt bình luận", category: "Comments" },
-      
-      // System
       { value: "system.config", label: "Cấu hình hệ thống", category: "System" },
     ];
   }
 
-  /**
-   * Thêm claim cho role
-   */
   async addClaimToRole(roleId, claimType, claimValue) {
     await this.client.connect();
     try {
@@ -210,7 +181,6 @@ class RoleService {
         return { ok: false, message: "Không tìm thấy role" };
       }
 
-      // Kiểm tra claim đã tồn tại chưa
       const existingClaims = await this.roleClaimRepo.findByRoleId(roleId);
       const exists = existingClaims.some(
         (c) => c.claimType === claimType && c.claimValue === claimValue
@@ -232,9 +202,6 @@ class RoleService {
     }
   }
 
-  /**
-   * Xóa claim khỏi role
-   */
   async removeClaimFromRole(claimId) {
     await this.client.connect();
     try {
@@ -245,9 +212,6 @@ class RoleService {
     }
   }
 
-  /**
-   * Lấy claims của role (permissions)
-   */
   async getRoleClaims(roleId) {
     await this.client.connect();
     try {
@@ -260,4 +224,3 @@ class RoleService {
 }
 
 module.exports = RoleService;
-

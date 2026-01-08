@@ -7,26 +7,22 @@ var crypto = require("crypto");
 var QuestionService = require(global.__basedir + "/apps/Services/QuestionService");
 var SubjectService = require(global.__basedir + "/apps/Services/SubjectService");
 
-// Cấu hình multer để lưu file import tạm
 var uploadImport = multer({
   dest: path.join(__dirname, "../../../uploads/temp"),
   fileFilter: function (req, file, cb) {
     const allowedExtensions = [".xlsx", ".xls", ".csv"];
     const ext = path.extname(file.originalname).toLowerCase();
-    console.log("File upload check - originalname:", file.originalname, "ext:", ext);
     if (allowedExtensions.includes(ext)) {
       cb(null, true);
     } else {
-      console.log("File rejected - extension not allowed:", ext);
       cb(new Error("File không được hỗ trợ. Chỉ hỗ trợ .xlsx, .xls, .csv"), false);
     }
   },
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 10 * 1024 * 1024,
   },
 });
 
-// Cấu hình multer để lưu ảnh câu hỏi
 const questionImagesDir = path.join(__dirname, "../../../public/uploads/questions");
 if (!fs.existsSync(questionImagesDir)) {
   fs.mkdirSync(questionImagesDir, { recursive: true });
@@ -38,7 +34,6 @@ var uploadQuestionImage = multer({
       cb(null, questionImagesDir);
     },
     filename: function(req, file, cb) {
-      // Generate unique filename: question_timestamp_random.ext
       const ext = path.extname(file.originalname).toLowerCase();
       const timestamp = Date.now();
       const random = crypto.randomBytes(4).toString('hex');
@@ -56,11 +51,10 @@ var uploadQuestionImage = multer({
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB max for images
+    fileSize: 5 * 1024 * 1024,
   }
 });
 
-// Đảm bảo thư mục uploads/temp và uploads/imported tồn tại
 const uploadDir = path.join(__dirname, "../../../uploads/temp");
 const importedDir = path.join(__dirname, "../../../uploads/imported");
 if (!fs.existsSync(uploadDir)) {
@@ -70,28 +64,21 @@ if (!fs.existsSync(importedDir)) {
   fs.mkdirSync(importedDir, { recursive: true });
 }
 
-// Sử dụng QuestionService.calculateFileHash thay vì tạo function riêng
-
-// GET /admin/questions - Danh sách câu hỏi với filter
 router.get("/", async function (req, res) {
   try {
     const questionService = new QuestionService();
     const subjectService = new SubjectService();
     
-    // Lấy danh sách subjects để hiển thị trong filter
     const subjects = await subjectService.getAllSubjects();
     
-    // Lấy filter từ query
     const subjectId = req.query.subjectId || null;
     const difficulty = req.query.difficulty || "";
     const type = req.query.type || "";
     const keyword = req.query.keyword || "";
     
-    // Pagination
     const page = parseInt(req.query.page) || 1;
     const limit = 20;
     
-    // Lấy danh sách questions với filter
     const allQuestions = await questionService.getQuestions({
       subjectId: subjectId,
       difficulty: difficulty || null,
@@ -99,22 +86,19 @@ router.get("/", async function (req, res) {
       keyword: keyword || null,
     });
     
-    // Apply pagination
     const totalItems = allQuestions.length;
     const totalPages = Math.ceil(totalItems / limit);
     const currentPage = Math.max(1, Math.min(page, totalPages || 1));
     const startIndex = (currentPage - 1) * limit;
     const questions = allQuestions.slice(startIndex, startIndex + limit);
     
-    // Build base URL for pagination
     let baseUrl = '/admin/questions?';
     if (subjectId) baseUrl += `subjectId=${subjectId}&`;
     if (difficulty) baseUrl += `difficulty=${difficulty}&`;
     if (type) baseUrl += `type=${type}&`;
     if (keyword) baseUrl += `keyword=${encodeURIComponent(keyword)}&`;
-    baseUrl = baseUrl.slice(0, -1); // Remove trailing & or ?
+    baseUrl = baseUrl.slice(0, -1);
     
-    // Đọc success/error message từ query
     let success = null;
     let error = null;
     if (req.query.success === "created") {
@@ -136,7 +120,6 @@ router.get("/", async function (req, res) {
         type: type,
         keyword: keyword,
       },
-      // Pagination data
       currentPage: currentPage,
       totalPages: totalPages,
       totalItems: totalItems,
@@ -152,7 +135,6 @@ router.get("/", async function (req, res) {
   }
 });
 
-// GET /admin/questions/import - Trang import câu hỏi
 router.get("/import", function (req, res) {
   res.render("admin/question-import.ejs", {
     success: null,
@@ -162,11 +144,9 @@ router.get("/import", function (req, res) {
   });
 });
 
-// POST /admin/questions/import - Import questions từ file Excel/CSV
 router.post("/import", function (req, res, next) {
   uploadImport.single("file")(req, res, function (err) {
     if (err) {
-      // Xử lý lỗi từ multer (fileFilter, fileSize, etc.)
       return res.render("admin/question-import.ejs", {
         success: null,
         error: err.message || "Lỗi khi upload file",
@@ -191,28 +171,11 @@ router.post("/import", function (req, res, next) {
 
   try {
     const service = new QuestionService();
-    // Tính hash của file để check duplicate
     const fileHash = QuestionService.calculateFileHash(filePath);
     
-    console.log("Importing file:", originalName, "Path:", filePath, "Hash:", fileHash);
     const result = await service.importQuestions(filePath, originalName, fileHash);
 
-    // Nếu là duplicate file, không cần xử lý thêm
-    // if (result.isDuplicate) {
-    //   // Xóa file tạm
-    //   if (fs.existsSync(filePath)) {
-    //     fs.unlinkSync(filePath);
-    //   }
-    //   return res.render("admin/question-import.ejs", {
-    //     success: null,
-    //     error: result.message,
-    //     importErrors: null,
-    //     user: req.user,
-    //   });
-    // }
-
     if (!result.ok) {
-      // Xóa file tạm nếu có lỗi
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
@@ -224,12 +187,10 @@ router.post("/import", function (req, res, next) {
       });
     }
 
-    // Lưu file vào thư mục imported thay vì xóa (chỉ khi có ít nhất 1 câu hỏi thành công)
     const importResult = result.result;
     let savedPath = null;
     
     if (importResult.success > 0) {
-      // Chỉ lưu file nếu có ít nhất 1 câu hỏi import thành công
       const timestamp = Date.now();
       const ext = path.extname(originalName);
       const baseName = path.basename(originalName, ext);
@@ -237,10 +198,8 @@ router.post("/import", function (req, res, next) {
       savedPath = path.join(importedDir, savedFileName);
       
       try {
-        // Copy file từ temp sang imported
         fs.copyFileSync(filePath, savedPath);
         
-        // Lưu thông tin file đã import
         await service.saveImportedFileInfo(
           result.fileHash,
           originalName,
@@ -250,25 +209,21 @@ router.post("/import", function (req, res, next) {
         );
       } catch (copyError) {
         console.error("Error copying file to imported folder:", copyError);
-        // Nếu lỗi copy, vẫn tiếp tục nhưng không lưu file info
       }
     }
     
-    // Xóa file tạm sau khi copy (hoặc nếu không cần lưu)
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
-    // Hiển thị kết quả import
     let message = `Import hoàn tất: ${importResult.success} câu hỏi thành công`;
     if (importResult.failed > 0) {
       message += `, ${importResult.failed} câu hỏi thất bại`;
     }
 
-    // Nếu có lỗi, hiển thị chi tiết
     let errorDetails = null;
     if (importResult.errors && importResult.errors.length > 0) {
-      errorDetails = importResult.errors.slice(0, 20); // Hiển thị tối đa 20 lỗi đầu tiên
+      errorDetails = importResult.errors.slice(0, 20);
       if (importResult.errors.length > 20) {
         message += ` (hiển thị 20 lỗi đầu tiên trong ${importResult.errors.length} lỗi)`;
       }
@@ -281,7 +236,6 @@ router.post("/import", function (req, res, next) {
       user: req.user,
     });
   } catch (error) {
-    // Xóa file tạm nếu có lỗi
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
@@ -296,7 +250,6 @@ router.post("/import", function (req, res, next) {
   }
 });
 
-// GET /admin/questions/create - Trang tạo câu hỏi mới
 router.get("/create", async function (req, res) {
   try {
     const subjectService = new SubjectService();
@@ -312,7 +265,6 @@ router.get("/create", async function (req, res) {
   }
 });
 
-// POST /admin/questions/create - Tạo câu hỏi mới (với upload ảnh)
 router.post("/create", function(req, res, next) {
   uploadQuestionImage.single("questionImage")(req, res, function(err) {
     if (err) {
@@ -326,7 +278,6 @@ router.post("/create", function(req, res, next) {
     const subjectService = new SubjectService();
     const subjects = await subjectService.getAllSubjects();
     
-    // Check for upload error
     if (req.uploadError) {
       return res.render("admin/question-create.ejs", {
         subjects: subjects,
@@ -335,7 +286,6 @@ router.post("/create", function(req, res, next) {
       });
     }
     
-    // Get the uploaded image URL if exists
     let mediaUrl = null;
     if (req.file) {
       mediaUrl = "/static/uploads/questions/" + req.file.filename;
@@ -352,7 +302,6 @@ router.post("/create", function(req, res, next) {
     });
     
     if (!result.ok) {
-      // Delete uploaded file if question creation failed
       if (req.file && fs.existsSync(req.file.path)) {
         fs.unlinkSync(req.file.path);
       }
@@ -366,7 +315,6 @@ router.post("/create", function(req, res, next) {
     return res.redirect("/admin/questions?success=created");
   } catch (e) {
     console.error("Error creating question:", e);
-    // Delete uploaded file on error
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
@@ -380,7 +328,6 @@ router.post("/create", function(req, res, next) {
   }
 });
 
-// GET /admin/questions/:id/edit - Trang sửa câu hỏi
 router.get("/:id/edit", async function (req, res) {
   try {
     const questionService = new QuestionService();
@@ -404,7 +351,6 @@ router.get("/:id/edit", async function (req, res) {
   }
 });
 
-// POST /admin/questions/:id/update - Cập nhật câu hỏi (với upload ảnh)
 router.post("/:id/update", function(req, res, next) {
   uploadQuestionImage.single("questionImage")(req, res, function(err) {
     if (err) {
@@ -418,7 +364,6 @@ router.post("/:id/update", function(req, res, next) {
     const questionService = new QuestionService();
     const subjectService = new SubjectService();
     
-    // Check for upload error
     if (req.uploadError) {
       const question = await questionService.getQuestionById(req.params.id);
       const subjects = await subjectService.getAllSubjects();
@@ -430,17 +375,13 @@ router.post("/:id/update", function(req, res, next) {
       });
     }
     
-    // Get existing question to check old image
     const existingQuestion = await questionService.getQuestionById(req.params.id);
     
-    // Determine mediaUrl
     let mediaUrl = existingQuestion ? existingQuestion.mediaUrl : null;
     
-    // If new image uploaded
     if (req.file) {
       mediaUrl = "/static/uploads/questions/" + req.file.filename;
       
-      // Delete old image if exists
       if (existingQuestion && existingQuestion.mediaUrl && existingQuestion.mediaUrl.startsWith("/static/uploads/questions/")) {
         const oldImagePath = path.join(__dirname, "../../../public", existingQuestion.mediaUrl.replace("/static/", ""));
         if (fs.existsSync(oldImagePath)) {
@@ -453,9 +394,7 @@ router.post("/:id/update", function(req, res, next) {
       }
     }
     
-    // If user wants to remove image (checkbox checked)
     if (req.body.removeImage === "true") {
-      // Delete existing image
       if (existingQuestion && existingQuestion.mediaUrl && existingQuestion.mediaUrl.startsWith("/static/uploads/questions/")) {
         const oldImagePath = path.join(__dirname, "../../../public", existingQuestion.mediaUrl.replace("/static/", ""));
         if (fs.existsSync(oldImagePath)) {
@@ -479,7 +418,6 @@ router.post("/:id/update", function(req, res, next) {
     });
     
     if (!result.ok) {
-      // Delete newly uploaded file if update failed
       if (req.file && fs.existsSync(req.file.path)) {
         fs.unlinkSync(req.file.path);
       }
@@ -496,7 +434,6 @@ router.post("/:id/update", function(req, res, next) {
     return res.redirect("/admin/questions?success=updated");
   } catch (e) {
     console.error("Error updating question:", e);
-    // Delete uploaded file on error
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
@@ -504,7 +441,6 @@ router.post("/:id/update", function(req, res, next) {
   }
 });
 
-// POST /admin/questions/:id/delete - Xóa câu hỏi
 router.post("/:id/delete", async function (req, res) {
   try {
     const questionService = new QuestionService();
@@ -522,6 +458,3 @@ router.post("/:id/delete", async function (req, res) {
 });
 
 module.exports = router;
-
-
-

@@ -28,7 +28,6 @@ router.post(
       if (!result.ok) {
         return res.status(401).render("auth/login.ejs", { error: result.message, success: null, user: null });
       }
-      // MVP: lưu token trong cookie
       res.cookie("token", result.token, { httpOnly: true });
       return res.redirect("/");
     } catch (e) {
@@ -85,6 +84,3 @@ router.get("/logout", function (req, res) {
 });
 
 module.exports = router;
-
-
-

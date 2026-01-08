@@ -71,7 +71,6 @@ class SubjectService {
   async createSubject(subject) {
     await this.client.connect();
     try {
-      // Sinh slug tự động từ name
       const baseSlug = slugify(subject.name || "", {
         lower: true,
         strict: true,
@@ -80,12 +79,9 @@ class SubjectService {
         return { ok: false, message: "Tên môn học không hợp lệ" };
       }
 
-      // Đảm bảo slug là duy nhất: nếu trùng thì thêm -2, -3, ...
+      // Ensure unique slug by appending counter if needed
       let slug = baseSlug;
       let counter = 1;
-      // Lặp tối đa 50 lần để tránh loop vô hạn
-      // Nếu vẫn trùng thì báo lỗi
-      // (Trường hợp này gần như không xảy ra)
       while (await this.subjectRepo.getBySlug(slug)) {
         counter += 1;
         if (counter > 50) {
@@ -153,7 +149,6 @@ class SubjectService {
         return { ok: false, message: "Không tìm thấy môn học" };
       }
 
-      // Validation
       const easyCount = parseInt(examConfig.easyCount) || 0;
       const mediumCount = parseInt(examConfig.mediumCount) || 0;
       const hardCount = parseInt(examConfig.hardCount) || 0;
