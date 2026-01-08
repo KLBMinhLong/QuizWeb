@@ -67,6 +67,8 @@ class ExamService {
               questions: publicQuestions,
               durationMinutes: activeAttempt.durationMinutes,
               remainingSeconds: Math.floor(remainingMs / 1000),
+              endTime: endTime.getTime(),
+              serverTime: Date.now(),
               userAnswers: activeAttempt.userAnswers || {},
               hasShortage: false,
             };
@@ -138,11 +140,15 @@ class ExamService {
 
       const attemptId = await this.examAttemptRepo.createAttempt(attemptData);
 
+      const newEndTime = new Date(attemptData.startedAt.getTime() + cfg.durationMinutes * 60 * 1000);
+
       return {
         ok: true,
         isResume: false,
         durationMinutes: cfg.durationMinutes,
         remainingSeconds: cfg.durationMinutes * 60,
+        endTime: newEndTime.getTime(),
+        serverTime: Date.now(),
         questions: publicQuestions,
         attemptId: String(attemptId),
         shortages,

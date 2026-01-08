@@ -9,11 +9,11 @@
   const attemptId = examForm.dataset.attemptId;
   const totalQuestions = parseInt(examForm.dataset.totalQuestions || "0");
   
-  let remainingSeconds = parseInt(
-    examForm.dataset.remainingSeconds || 
-    (parseInt(examForm.dataset.durationMinutes || "0") * 60)
-  );
-
+  const endTime = parseInt(examForm.dataset.endTime || "0");
+  const serverTime = parseInt(examForm.dataset.serverTime || "0");
+  
+  const timeOffset = serverTime ? (serverTime - Date.now()) : 0;
+  
   const timerElement = document.getElementById("examTimer");
   const timerTextElement = document.getElementById("timerText");
   const timerWarningElement = document.getElementById("exam-timer-warning");
@@ -25,16 +25,25 @@
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   }
 
+  function getRemainingSeconds() {
+    if (endTime && serverTime) {
+      const correctedNow = Date.now() + timeOffset;
+      const remainingMs = endTime - correctedNow;
+      return Math.floor(remainingMs / 1000);
+    }
+  }
+
   function updateTimer() {
     if (!timerTextElement) return;
     
+    const remainingSeconds = getRemainingSeconds();
     timerTextElement.textContent = formatTime(remainingSeconds);
 
-    if (remainingSeconds <= 300) { // 5 mins
+    if (remainingSeconds <= 300) {
       if (timerElement) timerElement.classList.add("exam-timer--warning");
     }
 
-    if (remainingSeconds <= 60) { // 1 min
+    if (remainingSeconds <= 60) {
       if (timerElement) {
         timerElement.classList.remove("exam-timer--warning");
         timerElement.classList.add("exam-timer--critical");
@@ -46,7 +55,6 @@
       autoSubmitExam();
       return;
     }
-    remainingSeconds--;
   }
 
   const timerInterval = setInterval(updateTimer, 1000);

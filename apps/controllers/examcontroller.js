@@ -53,6 +53,8 @@ router.post("/generate", optionalAuth, async function (req, res) {
       questions: exam.questions,
       durationMinutes: exam.durationMinutes,
       remainingSeconds: exam.remainingSeconds,
+      endTime: exam.endTime,
+      serverTime: exam.serverTime,
       userAnswers: exam.userAnswers || {},
       isResume: exam.isResume || false,
       attemptId: exam.attemptId,

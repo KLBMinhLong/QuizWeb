@@ -1,0 +1,232 @@
+<%- include('./partials/header', { pageTitle: 'Chi tiết câu hỏi' , activePage: 'questions' ,
+    breadcrumb: 'Chi tiết câu hỏi' , user: typeof user !=='undefined' ? user : null }) %>
+
+    <% const difficultyLabels={ easy: 'Dễ' , medium: 'Trung bình' , hard: 'Khó' }; const difficultyClasses={
+        easy: 'admin-badge--success' , medium: 'admin-badge--warning' , hard: 'admin-badge--danger' }; const
+        typeLabels={ single_choice: 'Một lựa chọn' , multiple_choice: 'Nhiều lựa chọn' , true_false: 'Đúng/Sai' ,
+        fill_in_blank: 'Điền từ' , matching: 'Nối cặp' }; %>
+
+        <div class="admin-content__header">
+            <div>
+                <h1 class="admin-content__title">Chi tiết câu hỏi</h1>
+                <p class="admin-content__subtitle">Xem thông tin đầy đủ của câu hỏi</p>
+            </div>
+            <div class="admin-content__actions">
+                <a href="/admin/questions/<%= question._id %>/edit" class="admin-btn admin-btn--primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Sửa câu hỏi
+                </a>
+                <a href="/admin/questions" class="admin-btn admin-btn--secondary">
+                    Quay lại danh sách
+                </a>
+            </div>
+        </div>
+
+        <!-- Question Info Card -->
+        <div class="admin-panel" style="margin-bottom: var(--spacing-lg);">
+            <div class="admin-panel__header">
+                <h3 class="admin-panel__title">Thông tin câu hỏi</h3>
+            </div>
+            <div class="admin-panel__body">
+                <div class="question-detail-info">
+                    <div class="question-detail-info__item">
+                        <span class="question-detail-info__label">Môn học</span>
+                        <span class="admin-badge admin-badge--info">
+                            <%= subject ? subject.name : 'N/A' %>
+                        </span>
+                    </div>
+                    <div class="question-detail-info__item">
+                        <span class="question-detail-info__label">Độ khó</span>
+                        <span class="admin-badge <%= difficultyClasses[question.difficulty] || 'admin-badge--muted' %>">
+                            <%= difficultyLabels[question.difficulty] || question.difficulty %>
+                        </span>
+                    </div>
+                    <div class="question-detail-info__item">
+                        <span class="question-detail-info__label">Loại câu hỏi</span>
+                        <span>
+                            <%= typeLabels[question.type] || question.type %>
+                        </span>
+                    </div>
+                    <div class="question-detail-info__item">
+                        <span class="question-detail-info__label">ID</span>
+                        <code
+                            style="font-size: 12px; background: #f1f5f9; padding: 4px 8px; border-radius: 4px;"><%= question._id %></code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Content -->
+        <div class="admin-panel" style="margin-bottom: var(--spacing-lg);">
+            <div class="admin-panel__header">
+                <h3 class="admin-panel__title">Nội dung câu hỏi</h3>
+            </div>
+            <div class="admin-panel__body">
+                <div class="question-content-box">
+                    <%= question.content %>
+                </div>
+
+                <% if (question.mediaUrl) { %>
+                    <div class="question-image-box">
+                        <img src="<%= question.mediaUrl %>" alt="Hình ảnh câu hỏi">
+                    </div>
+                    <% } %>
+            </div>
+        </div>
+
+        <!-- Answers Section -->
+        <div class="admin-panel">
+            <div class="admin-panel__header">
+                <h3 class="admin-panel__title">Đáp án</h3>
+            </div>
+            <div class="admin-panel__body">
+
+                <% if (question.type==='single_choice' || question.type==='multiple_choice' ) { %>
+                    <!-- Choice answers -->
+                    <div class="answer-options-list">
+                        <% const optionLetters=['A', 'B' , 'C' , 'D' , 'E' , 'F' , 'G' , 'H' ]; (question.answers ||
+                            []).forEach(function(answer, idx) { %>
+                            <div class="answer-option <%= answer.isCorrect ? 'answer-option--correct' : '' %>">
+                                <span class="answer-option__letter">
+                                    <%= optionLetters[idx] || (idx + 1) %>
+                                </span>
+                                <span class="answer-option__text">
+                                    <%= answer.text %>
+                                </span>
+                                <% if (answer.isCorrect) { %>
+                                    <span class="answer-option__badge">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                        Đáp án đúng
+                                    </span>
+                                    <% } %>
+                            </div>
+                            <% }) %>
+                    </div>
+
+                    <% } else if (question.type==='true_false' ) { %>
+                        <!-- True/False answers -->
+                        <div class="tf-options">
+                            <% (question.answers || []).forEach(function(answer) { %>
+                                <div class="tf-option <%= answer.isCorrect ? 'tf-option--correct' : '' %>">
+                                    <div
+                                        class="tf-option__icon <%= answer.value ? 'tf-option__icon--true' : 'tf-option__icon--false' %>">
+                                        <% if (answer.value) { %>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                            </svg>
+                                            <% } else { %>
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2">
+                                                    <circle cx="12" cy="12" r="10"></circle>
+                                                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                                                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                                                </svg>
+                                                <% } %>
+                                    </div>
+                                    <div class="tf-option__label">
+                                        <%= answer.value ? 'Đúng' : 'Sai' %>
+                                    </div>
+                                    <% if (answer.isCorrect) { %>
+                                        <div class="tf-option__badge">Đáp án đúng</div>
+                                        <% } %>
+                                </div>
+                                <% }) %>
+                        </div>
+
+                        <% } else if (question.type==='fill_in_blank' ) { %>
+                            <!-- Fill in blank answers -->
+                            <div>
+                                <p class="question-detail-info__label" style="margin-bottom: var(--spacing-md);">Các đáp
+                                    án được chấp nhận:</p>
+                                <div class="fill-blank-list">
+                                    <% if (question.answers && question.answers.accepted &&
+                                        question.answers.accepted.length> 0) { %>
+                                        <% question.answers.accepted.forEach(function(accepted) { %>
+                                            <span class="fill-blank-item">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="3">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                                <%= accepted %>
+                                            </span>
+                                            <% }) %>
+                                                <% } else { %>
+                                                    <span
+                                                        style="color: var(--color-text-muted); font-style: italic;">Chưa
+                                                        có đáp án</span>
+                                                    <% } %>
+                                </div>
+                            </div>
+
+                            <% } else if (question.type==='matching' ) { %>
+                                <!-- Matching answers -->
+                                <div>
+                                    <p class="question-detail-info__label" style="margin-bottom: var(--spacing-md);">Các
+                                        cặp nối đúng:</p>
+                                    <% if (question.answers && question.answers.pairs && question.answers.pairs.length>
+                                        0) { %>
+                                        <div class="matching-pairs-list">
+                                            <% question.answers.pairs.forEach(function(pair, idx) { %>
+                                                <div class="matching-pair">
+                                                    <span class="matching-pair__number">
+                                                        <%= idx + 1 %>
+                                                    </span>
+                                                    <div class="matching-pair__item">
+                                                        <%= pair.left %>
+                                                    </div>
+                                                    <span class="matching-pair__arrow">↔</span>
+                                                    <div class="matching-pair__item">
+                                                        <%= pair.right %>
+                                                    </div>
+                                                </div>
+                                                <% }) %>
+                                        </div>
+                                        <% } else { %>
+                                            <span style="color: var(--color-text-muted); font-style: italic;">Chưa có
+                                                cặp nối</span>
+                                            <% } %>
+                                </div>
+
+                                <% } else { %>
+                                    <div style="color: var(--color-text-muted); font-style: italic;">
+                                        Loại câu hỏi này chưa được hỗ trợ hiển thị.
+                                    </div>
+                                    <% } %>
+
+            </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="admin-panel" style="margin-top: var(--spacing-lg);">
+            <div class="admin-panel__header">
+                <h3 class="admin-panel__title">Thông tin khác</h3>
+            </div>
+            <div class="admin-panel__body">
+                <div class="question-meta-grid">
+                    <% if (question.createdAt) { %>
+                        <div>
+                            <div class="question-meta-item__label">Ngày tạo</div>
+                            <div class="question-meta-item__value">
+                                <%= new Date(question.createdAt).toLocaleString('vi-VN') %>
+                            </div>
+                        </div>
+                        <% } %>
+                            <% if (question.updatedAt) { %>
+                                <div>
+                                    <div class="question-meta-item__label">Cập nhật lần cuối</div>
+                                    <div class="question-meta-item__value">
+                                        <%= new Date(question.updatedAt).toLocaleString('vi-VN') %>
+                                    </div>
+                                </div>
+                                <% } %>
+                </div>
+            </div>
+        </div>
+
+        <%- include('./partials/footer') %>

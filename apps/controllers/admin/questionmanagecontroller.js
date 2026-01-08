@@ -135,6 +135,29 @@ router.get("/", async function (req, res) {
   }
 });
 
+router.get("/:id/view", async function (req, res) {
+  try {
+    const questionService = new QuestionService();
+    const subjectService = new SubjectService();
+    
+    const question = await questionService.getQuestionById(req.params.id);
+    if (!question) {
+      return res.redirect("/admin/questions?error=" + encodeURIComponent("Không tìm thấy câu hỏi"));
+    }
+    
+    const subject = await subjectService.getById(question.subjectId);
+    
+    res.render("admin/question-detail.ejs", {
+      question: question,
+      subject: subject,
+      user: req.user,
+    });
+  } catch (e) {
+    console.error("Error loading question detail:", e);
+    res.redirect("/admin/questions?error=" + encodeURIComponent("Lỗi khi tải chi tiết câu hỏi"));
+  }
+});
+
 router.get("/import", function (req, res) {
   res.render("admin/question-import.ejs", {
     success: null,
