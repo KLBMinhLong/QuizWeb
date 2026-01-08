@@ -1,10 +1,8 @@
 <%- include("../partical/header", { title: "Đăng ký - OnThiTracNghiem" , user: typeof user !=='undefined' ? user : null
   }) %>
 
-  <!-- Auth Container -->
   <div class="auth-container">
     <div class="auth-card">
-      <!-- Auth Header -->
       <div class="auth-header">
         <div class="auth-icon auth-icon--register">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -19,7 +17,6 @@
         <p class="auth-subtitle">Tạo tài khoản để bắt đầu hành trình học tập.</p>
       </div>
 
-      <!-- Alerts -->
       <% if (error) { %>
         <div class="alert alert-error">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -41,7 +38,6 @@
             </div>
             <% } %>
 
-              <!-- Register Form -->
               <form method="post" action="/auth/register" class="auth-form" id="registerForm">
                 <div class="form-group">
                   <label class="form-label" for="username">Tên đăng nhập</label>
@@ -133,13 +129,11 @@
                 </button>
               </form>
 
-              <!-- Auth Footer -->
               <div class="auth-footer">
                 <p>Đã có tài khoản? <a href="/auth/login">Đăng nhập ngay</a></p>
               </div>
     </div>
 
-    <!-- Back to Home -->
     <a href="/" class="auth-back">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -166,7 +160,6 @@
       }
     }
 
-    // Password confirmation validation
     document.getElementById('registerForm').addEventListener('submit', function (e) {
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
@@ -181,7 +174,6 @@
       }
     });
 
-    // Real-time password match check
     document.getElementById('confirmPassword').addEventListener('input', function () {
       const password = document.getElementById('password').value;
       const confirmPassword = this.value;

@@ -1,7 +1,6 @@
 <%- include("../partical/header", { title: "Môn học - OnThiTracNghiem" , user: typeof user !=='undefined' ? user : null
   }) %>
 
-  <!-- Breadcrumb -->
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <ol class="breadcrumb__list">
       <li class="breadcrumb__item">
@@ -24,14 +23,12 @@
     </ol>
   </nav>
 
-  <!-- Page Header -->
   <div class="page-header">
     <h1 class="page-header__title">Danh sách môn học</h1>
     <p class="page-header__subtitle">Chọn môn học để bắt đầu luyện tập</p>
   </div>
 
   <% if (!subjects || subjects.length===0) { %>
-    <!-- Empty State -->
     <div class="empty-state">
       <div class="empty-state__icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -50,7 +47,6 @@
       </p>
     </div>
     <% } else { %>
-      <!-- Subject Grid -->
       <div class="subject-grid">
         <% subjects.forEach(function(s, index){ %>
           <a href="/subjects/<%= s.slug %>" class="subject-card" style="animation-delay: <%= index * 0.05 %>s">
@@ -69,7 +65,8 @@
               </p>
               <div class="subject-card__meta">
                 <span class="subject-card__stat">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                     <line x1="12" y1="17" x2="12.01" y2="17"></line>

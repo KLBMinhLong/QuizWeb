@@ -30,7 +30,6 @@
             </div>
           </div>
 
-          <!-- Stats -->
           <div class="admin-stats-grid"
             style="grid-template-columns: repeat(3, 1fr); margin-bottom: var(--spacing-2xl);">
             <div class="admin-stat-card">
@@ -81,7 +80,6 @@
             </div>
           </div>
 
-          <!-- Filter Bar -->
           <div class="admin-filter-bar">
             <form method="get" action="/admin/users" style="display: contents;">
               <div class="admin-filter-group" style="flex: 2;">
@@ -113,7 +111,6 @@
             </form>
           </div>
 
-          <!-- Users List -->
           <div class="admin-panel">
             <div class="admin-panel__header">
               <h3 class="admin-panel__title">
@@ -251,7 +248,6 @@
                   <% } %>
           </div>
 
-          <!-- Modal: Assign Role -->
           <div id="assignRoleModal" class="admin-modal">
             <div class="admin-modal__content" style="max-width: 500px;">
               <div class="admin-modal__header">
@@ -298,7 +294,6 @@
               document.getElementById('assignRoleModal').classList.remove('admin-modal--active');
             }
 
-            // Close modal when clicking outside
             document.getElementById('assignRoleModal').addEventListener('click', function (e) {
               if (e.target === this) {
                 closeAssignRoleModal();

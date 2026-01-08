@@ -1,8 +1,4 @@
-// Subject Comments - Form Handling
-// Handles character counter and loading state for comment form
-
 document.addEventListener("DOMContentLoaded", function () {
-  // Character counter for comment textarea
   const commentContent = document.getElementById("commentContent");
   const charCount = document.getElementById("charCount");
 
@@ -20,10 +16,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     commentContent.addEventListener("input", updateCharCount);
-    updateCharCount(); // Initial count
+    updateCharCount();
   }
 
-  // Loading state when submitting comment
   const commentForm = document.getElementById("commentForm");
   const submitCommentBtn = document.getElementById("submitCommentBtn");
 
@@ -31,7 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
     commentForm.addEventListener("submit", function (e) {
       submitCommentBtn.disabled = true;
       submitCommentBtn.textContent = "Đang gửi...";
-      // Form will submit normally
     });
   }
 });

@@ -28,7 +28,6 @@
             </div>
           </div>
 
-          <!-- Stats -->
           <div class="admin-stats-grid" style="margin-bottom: var(--spacing-2xl);">
             <div class="admin-stat-card">
               <div class="admin-stat-card__icon admin-stat-card__icon--green">
@@ -60,7 +59,6 @@
             </div>
           </div>
 
-          <!-- Subjects List -->
           <div class="admin-panel">
             <div class="admin-panel__header">
               <h3 class="admin-panel__title">
@@ -197,7 +195,6 @@
                 <% } %>
           </div>
 
-          <!-- Modal: Tạo môn học mới -->
           <div id="createModal" class="admin-modal">
             <div class="admin-modal__content">
               <div class="admin-modal__header">
@@ -230,7 +227,6 @@
             </div>
           </div>
 
-          <!-- Modal: Sửa môn học -->
           <div id="editModal" class="admin-modal">
             <div class="admin-modal__content">
               <div class="admin-modal__header">
@@ -261,7 +257,6 @@
             </div>
           </div>
 
-          <!-- Modal: Cấu hình đề thi -->
           <div id="configModal" class="admin-modal">
             <div class="admin-modal__content">
               <div class="admin-modal__header">
@@ -340,7 +335,6 @@
               document.getElementById('configModal').classList.remove('admin-modal--active');
             }
 
-            // Close modals when clicking outside
             document.querySelectorAll('.admin-modal').forEach(modal => {
               modal.addEventListener('click', function (e) {
                 if (e.target === this) {

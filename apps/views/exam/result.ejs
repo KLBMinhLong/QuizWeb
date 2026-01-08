@@ -1,6 +1,5 @@
 <%- include("../partical/header", { title: "Kết quả bài thi" }) %>
 
-  <!-- Breadcrumb -->
   <nav class="breadcrumb">
     <a href="/" class="breadcrumb__item">Trang chủ</a>
     <span class="breadcrumb__separator">›</span>
@@ -10,15 +9,12 @@
   </nav>
 
   <div class="result-page">
-    <!-- Header -->
     <div class="result-header">
       <h1 class="result-title">Kết quả bài thi</h1>
       <p class="result-subtitle">Chúc mừng bạn đã hoàn thành bài thi!</p>
     </div>
 
-    <!-- Main Score Card -->
     <div class="result-card">
-      <!-- Circular Progress -->
       <div class="result-score-section">
         <div class="result-score-circle"
           data-score="<%= result.total > 0 ? Math.round((result.correctCount / result.total) * 100) : 0 %>">
@@ -34,7 +30,6 @@
           </div>
         </div>
 
-        <!-- Pass/Fail Badge -->
         <% if (result.score>= 50) { %>
           <div class="result-badge result-badge--pass">
             <svg class="result-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -55,7 +50,6 @@
             <% } %>
       </div>
 
-      <!-- Statistics Grid -->
       <div class="result-stats">
         <div class="result-stat result-stat--correct">
           <div class="result-stat-icon">
@@ -114,7 +108,6 @@
         </div>
       </div>
 
-      <!-- Progress Bar -->
       <div class="result-progress-section">
         <div class="result-progress-header">
           <span>Tiến độ</span>
@@ -129,7 +122,6 @@
       </div>
     </div>
 
-    <!-- Action Buttons -->
     <div class="result-actions">
       <% if (result.attemptId) { %>
         <a href="/exam/attempt/<%= result.attemptId %>" class="btn btn-primary btn--lg">
@@ -163,7 +155,6 @@
   </div>
 
   <style>
-    /* Result Page Styles */
     .result-page {
       max-width: 700px;
       margin: 0 auto;
@@ -196,7 +187,6 @@
       margin-bottom: var(--spacing-xl);
     }
 
-    /* Score Section */
     .result-score-section {
       display: flex;
       flex-direction: column;
@@ -252,7 +242,6 @@
       margin-top: var(--spacing-xs);
     }
 
-    /* Badge */
     .result-badge {
       display: inline-flex;
       align-items: center;
@@ -278,7 +267,6 @@
       color: #dc2626;
     }
 
-    /* Statistics Grid */
     .result-stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -369,7 +357,6 @@
       color: var(--color-text-muted);
     }
 
-    /* Progress Section */
     .result-progress-section {
       background: #f8fafc;
       padding: var(--spacing-lg);
@@ -399,7 +386,6 @@
       transition: width 1s ease-out;
     }
 
-    /* Action Buttons */
     .result-actions {
       display: flex;
       flex-direction: column;
@@ -422,7 +408,6 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // Animate circular progress
       const circle = document.querySelector('.result-score-circle');
       const progressBar = document.querySelector('.result-progress-bar');
 
@@ -431,7 +416,6 @@
         const circumference = 2 * Math.PI * 85; // r = 85
         const offset = circumference - (score / 100) * circumference;
 
-        // Trigger animation after a small delay
         setTimeout(() => {
           progressBar.style.strokeDashoffset = offset;
         }, 100);

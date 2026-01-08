@@ -1,7 +1,6 @@
 <%- include("../partical/header", { title: subject.name + " - OnThiTracNghiem" , user: typeof user !=='undefined' ? user
   : null }) %>
 
-  <!-- Breadcrumb -->
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <ol class="breadcrumb__list">
       <li class="breadcrumb__item">
@@ -32,7 +31,6 @@
     </ol>
   </nav>
 
-  <!-- Subject Hero Section -->
   <section class="subject-hero">
     <div class="subject-hero__content">
       <div class="subject-hero__icon">
@@ -65,7 +63,6 @@
       <% } %>
   </section>
 
-  <!-- Stats Cards -->
   <section class="subject-stats">
     <div class="stat-card-grid">
       <div class="stat-card stat-card--time">
@@ -132,7 +129,6 @@
     </div>
   </section>
 
-  <!-- Exam Config Info -->
   <section class="exam-config">
     <div class="exam-config__card">
       <h3 class="exam-config__title">
@@ -186,7 +182,6 @@
     </div>
   </section>
 
-  <!-- Comments Section -->
   <section class="comments-section" id="comments">
     <div class="comments-section__header">
       <h3 class="comments-section__title">
@@ -208,7 +203,6 @@
       </div>
       <% } %>
 
-        <!-- Comment Form -->
         <% if (user) { %>
           <div class="comment-form-wrapper">
             <div class="comment-form__avatar">
@@ -241,7 +235,6 @@
             </div>
             <% } %>
 
-              <!-- Comment List -->
               <div class="comment-list">
                 <% if (!comments || comments.length===0) { %>
                   <div class="comment-empty">

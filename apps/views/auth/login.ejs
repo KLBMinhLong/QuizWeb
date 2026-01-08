@@ -1,10 +1,8 @@
 <%- include("../partical/header", { title: "Đăng nhập - OnThiTracNghiem" , user: typeof user !=='undefined' ? user :
   null }) %>
 
-  <!-- Auth Container -->
   <div class="auth-container">
     <div class="auth-card">
-      <!-- Auth Header -->
       <div class="auth-header">
         <div class="auth-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -18,7 +16,6 @@
         <p class="auth-subtitle">Chào mừng trở lại! Đăng nhập để tiếp tục học tập.</p>
       </div>
 
-      <!-- Alerts -->
       <% if (error) { %>
         <div class="alert alert-error">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -40,7 +37,6 @@
             </div>
             <% } %>
 
-              <!-- Login Form -->
               <form method="post" action="/auth/login" class="auth-form">
                 <div class="form-group">
                   <label class="form-label" for="username">Tên đăng nhập</label>
@@ -91,13 +87,11 @@
                 </button>
               </form>
 
-              <!-- Auth Footer -->
               <div class="auth-footer">
                 <p>Chưa có tài khoản? <a href="/auth/register">Đăng ký ngay</a></p>
               </div>
     </div>
 
-    <!-- Back to Home -->
     <a href="/" class="auth-back">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="19" y1="12" x2="5" y2="12"></line>

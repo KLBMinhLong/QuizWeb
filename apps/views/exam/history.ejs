@@ -1,6 +1,5 @@
 <%- include("../partical/header", { title: "Lịch sử thi" }) %>
 
-  <!-- Breadcrumb -->
   <nav class="breadcrumb">
     <a href="/" class="breadcrumb__item">Trang chủ</a>
     <span class="breadcrumb__separator">›</span>
@@ -12,7 +11,6 @@
     <p class="page-subtitle">Xem lại các bài thi đã làm</p>
   </div>
 
-  <!-- Filter Section -->
   <div class="history-filter">
     <form method="get" action="/exam/history" class="filter-form">
       <div class="filter-row">
@@ -120,7 +118,6 @@
         <% } %>
     </div>
     <% } else { %>
-      <!-- Results Summary -->
       <div class="results-summary">
         <span class="results-count">
           Hiển thị <strong>
@@ -131,29 +128,34 @@
         </span>
       </div>
 
-      <!-- History List -->
       <div class="history-list">
-        <% attempts.forEach(function(attempt, index) { 
-          const startDate = new Date(attempt.startedAt);
-          const formattedDate = startDate.toLocaleDateString('vi-VN');
-          const formattedTime = startDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-          const isFinished = !!attempt.finishedAt;
-          const score = attempt.score !== null && attempt.score !== undefined ? attempt.score : null;
-          const isPassed = score !== null && score >= 50;
-        %>
+        <% attempts.forEach(function(attempt, index) { const startDate=new Date(attempt.startedAt); const
+          formattedDate=startDate.toLocaleDateString('vi-VN'); const formattedTime=startDate.toLocaleTimeString('vi-VN',
+          { hour: '2-digit' , minute: '2-digit' }); const isFinished=!!attempt.finishedAt; const score=attempt.score
+          !==null && attempt.score !==undefined ? attempt.score : null; const isPassed=score !==null && score>= 50;
+          %>
           <div class="history-item">
-            <div class="history-item__index"><%= index + 1 %></div>
+            <div class="history-item__index">
+              <%= index + 1 %>
+            </div>
             <div class="history-item__content">
               <div class="history-item__main">
-                <span class="history-item__subject"><%= attempt.subject.name %></span>
+                <span class="history-item__subject">
+                  <%= attempt.subject.name %>
+                </span>
                 <% if (isAdminOrModerator && attempt.user) { %>
                   <span class="history-item__user">- <%= attempt.user.username %></span>
-                <% } %>
+                  <% } %>
               </div>
               <div class="history-item__meta">
-                <span><%= formattedDate %> <%= formattedTime %></span>
+                <span>
+                  <%= formattedDate %>
+                    <%= formattedTime %>
+                </span>
                 <span>•</span>
-                <span><%= attempt.totalQuestions %> câu</span>
+                <span>
+                  <%= attempt.totalQuestions %> câu
+                </span>
               </div>
             </div>
             <div class="history-item__score">
@@ -161,26 +163,25 @@
                 <span class="score-text <%= isPassed ? 'score-text--pass' : 'score-text--fail' %>">
                   <%= score %> điểm
                 </span>
-              <% } else { %>
-                <span class="score-text score-text--pending">Chưa nộp</span>
-              <% } %>
+                <% } else { %>
+                  <span class="score-text score-text--pending">Chưa nộp</span>
+                  <% } %>
             </div>
             <div class="history-item__action">
               <% if (isFinished) { %>
                 <a href="/exam/attempt/<%= attempt._id %>" class="link-view">Xem</a>
-              <% } else { %>
-                <span class="link-disabled">—</span>
-              <% } %>
+                <% } else { %>
+                  <span class="link-disabled">—</span>
+                  <% } %>
             </div>
           </div>
-        <% }) %>
+          <% }) %>
       </div>
 
       <%- include("../partical/pagination", { currentPage, totalPages, totalItems, itemsPerPage, baseUrl }) %>
         <% } %>
 
           <style>
-            /* History Filter */
             .history-filter {
               background: var(--color-bg-card);
               border-radius: var(--radius-lg);
@@ -258,14 +259,12 @@
               height: 16px;
             }
 
-            /* Results Summary */
             .results-summary {
               margin-bottom: var(--spacing-md);
               font-size: 14px;
               color: var(--color-text-muted);
             }
 
-            /* Empty State */
             .empty-state {
               text-align: center;
               padding: var(--spacing-3xl) var(--spacing-xl);
@@ -299,7 +298,6 @@
               margin: 0 0 var(--spacing-xl);
             }
 
-            /* History List */
             .history-list {
               display: flex;
               flex-direction: column;
@@ -419,7 +417,6 @@
               padding: 8px 16px;
             }
 
-            /* Responsive */
             @media (max-width: 768px) {
               .filter-row {
                 flex-direction: column;

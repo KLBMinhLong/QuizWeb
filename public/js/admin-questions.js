@@ -1,5 +1,3 @@
-// Admin Questions Form Handler
-
 document.addEventListener("DOMContentLoaded", function() {
   const typeSelect = document.getElementById("type");
   const answersContainer = document.getElementById("answers-container");
@@ -9,7 +7,6 @@ document.addEventListener("DOMContentLoaded", function() {
       updateAnswersFields(this.value);
     });
     
-    // Initialize on page load if type is already selected
     if (typeSelect.value) {
       updateAnswersFields(typeSelect.value);
     }
@@ -52,8 +49,6 @@ function renderChoiceAnswers(container, multiple) {
     </button>
   `;
   
-  // Only add default empty options for new question (not in edit mode)
-  // Edit mode will call loadExistingAnswers which will populate the answers
   if (!window.isEditMode) {
     addChoiceAnswer('', false);
     addChoiceAnswer('', false);
@@ -145,7 +140,6 @@ function renderMatchingAnswers(container) {
     </p>
   `;
   
-  // Only add default empty pairs for new question (not in edit mode)
   if (!window.isEditMode) {
     addMatchingPair('', '');
     addMatchingPair('', '');
@@ -181,7 +175,6 @@ function addMatchingPair(left, right) {
   list.appendChild(div);
 }
 
-// Build answers JSON before form submit
 function buildAnswersJSON() {
   const typeSelect = document.getElementById("type");
   if (!typeSelect) return true;
@@ -276,7 +269,6 @@ function buildAnswersJSON() {
   return true;
 }
 
-// Attach to form submit
 document.addEventListener("DOMContentLoaded", function() {
   const form = document.querySelector("form[action*='/questions']");
   if (form) {

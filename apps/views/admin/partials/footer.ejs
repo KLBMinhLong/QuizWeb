@@ -1,9 +1,8 @@
-</div><!-- /.admin-content -->
+</div>
 </main>
 </div>
 
 <script>
-    // Mobile sidebar toggle
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
@@ -11,24 +10,19 @@
         overlay.classList.toggle('admin-sidebar-overlay--active');
     }
 
-    // Desktop sidebar collapse toggle
     function toggleCollapse() {
         const sidebar = document.getElementById('sidebar');
         const main = document.getElementById('adminMain');
         const isCollapsed = sidebar.classList.toggle('admin-sidebar--collapsed');
-
-        // Update main content margin
         if (isCollapsed) {
             main.classList.add('admin-main--expanded');
         } else {
             main.classList.remove('admin-main--expanded');
         }
 
-        // Save preference to localStorage
         localStorage.setItem('admin-sidebar-collapsed', isCollapsed ? 'true' : 'false');
     }
 
-    // Restore sidebar state on page load
     document.addEventListener('DOMContentLoaded', function () {
         const sidebar = document.getElementById('sidebar');
         const main = document.getElementById('adminMain');

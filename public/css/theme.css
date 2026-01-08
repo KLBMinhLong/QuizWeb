@@ -1,9 +1,3 @@
-/* ========================================
-   THEME CSS - UI System
-   Theo tài liệu: docs/UI_DESIGN.md
-   ======================================== */
-
-/* ===== 1. CSS Variables - Color System ===== */
 :root {
   /* Primary colors */
   --color-primary: #22c55e;

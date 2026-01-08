@@ -129,21 +129,17 @@
       </div>
 
       <script>
-        // Set edit mode flag BEFORE loading admin-questions.js
         window.isEditMode = true;
       </script>
       <script src="/static/js/admin-questions.js"></script>
       <script>
-        // Load existing answers when page loads
         document.addEventListener("DOMContentLoaded", function () {
           const question = JSON.parse('<%- JSON.stringify(question) %>');
           const typeSelect = document.getElementById("type");
 
           if (typeSelect && question.type) {
-            // Trigger change to render the answer fields container
             typeSelect.dispatchEvent(new Event("change"));
 
-            // Fill in existing answers after a short delay to ensure fields are rendered
             setTimeout(function () {
               loadExistingAnswers(question.type, question.answers);
             }, 100);
@@ -158,7 +154,7 @@
             case "multiple_choice": {
               const list = document.getElementById("choice-answers-list");
               if (!list) return;
-              list.innerHTML = ""; // Clear default answers
+              list.innerHTML = "";
 
               if (Array.isArray(answers)) {
                 answers.forEach(function (ans) {
@@ -166,7 +162,6 @@
                 });
               }
 
-              // Add default empty answers if none exist
               if (list.children.length === 0) {
                 addChoiceAnswer('', false);
                 addChoiceAnswer('', false);
@@ -194,7 +189,7 @@
             case "matching": {
               const list = document.getElementById("matching-pairs-list");
               if (!list) return;
-              list.innerHTML = ""; // Clear default pairs
+              list.innerHTML = "";
 
               if (answers.pairs && Array.isArray(answers.pairs)) {
                 answers.pairs.forEach(function (pair) {
@@ -202,7 +197,6 @@
                 });
               }
 
-              // Add default empty pairs if none exist
               if (list.children.length === 0) {
                 addMatchingPair('', '');
                 addMatchingPair('', '');
@@ -212,7 +206,6 @@
           }
         }
 
-        // Image preview functions
         function previewImage(input) {
           const preview = document.getElementById('imagePreview');
           const previewImg = document.getElementById('previewImg');

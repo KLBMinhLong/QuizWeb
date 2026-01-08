@@ -1,15 +1,9 @@
-/* ===========================================
-   ADMIN DASHBOARD CSS - Modern Admin UI
-   =========================================== */
-
-/* ===== Admin Layout ===== */
 .admin-layout {
   display: flex;
   min-height: 100vh;
   background: var(--color-bg-page);
 }
 
-/* ===== Admin Sidebar ===== */
 .admin-sidebar {
   width: 280px;
   background: linear-gradient(180deg, #14532d 0%, #166534 100%);
@@ -208,7 +202,7 @@
   height: 18px;
 }
 
-/* ===== Admin Main Content ===== */
+/* Admin Main Content */
 .admin-main {
   flex: 1;
   margin-left: 280px;
@@ -336,7 +330,7 @@
   gap: var(--spacing-md);
 }
 
-/* ===== Stats Cards Grid ===== */
+/* Stats Cards Grid */
 .admin-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -436,7 +430,7 @@
   color: #dc2626;
 }
 
-/* ===== Admin Panel Cards ===== */
+/* Admin Panel Cards */
 .admin-panel {
   background: white;
   border-radius: var(--radius-lg);
@@ -487,7 +481,7 @@
   padding: 0;
 }
 
-/* ===== Enhanced Table ===== */
+/* Enhanced Table */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -531,7 +525,7 @@
   margin-top: 2px;
 }
 
-/* ===== Status Badges ===== */
+/* Status Badges */
 .admin-badge {
   display: inline-flex;
   align-items: center;
@@ -567,7 +561,7 @@
   color: #64748b;
 }
 
-/* ===== Action Buttons ===== */
+/* Action Buttons */
 .admin-btn {
   display: inline-flex;
   align-items: center;
@@ -636,7 +630,7 @@
   height: 16px;
 }
 
-/* ===== Form Elements ===== */
+/* Form Elements */
 .admin-form-group {
   margin-bottom: var(--spacing-lg);
 }
@@ -688,7 +682,7 @@
   gap: var(--spacing-lg);
 }
 
-/* ===== Filter Bar ===== */
+/* Filter Bar */
 .admin-filter-bar {
   display: flex;
   align-items: flex-end;
@@ -718,7 +712,7 @@
   gap: var(--spacing-sm);
 }
 
-/* ===== Empty State ===== */
+/* Empty State */
 .admin-empty {
   text-align: center;
   padding: var(--spacing-3xl) var(--spacing-xl);
@@ -754,7 +748,7 @@
   color: var(--color-text-muted);
 }
 
-/* ===== Modal ===== */
+/* Modal */
 .admin-modal {
   display: none;
   position: fixed;
@@ -847,7 +841,7 @@
   background: var(--color-bg-page);
 }
 
-/* ===== Quick Actions Grid ===== */
+/* Quick Actions Grid */
 .admin-quick-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -905,7 +899,7 @@
   color: var(--color-text-muted);
 }
 
-/* ===== Pagination ===== */
+/* Pagination */
 .admin-pagination {
   display: flex;
   align-items: center;
@@ -983,7 +977,7 @@
   font-size: 14px;
 }
 
-/* ===== Responsive Design ===== */
+/* Responsive Design */
 @media (max-width: 1200px) {
   .admin-stats-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1042,7 +1036,7 @@
   }
 }
 
-/* ===== Sidebar Overlay (Mobile) ===== */
+/* Sidebar Overlay (Mobile) */
 .admin-sidebar-overlay {
   display: none;
   position: fixed;
@@ -1058,7 +1052,7 @@
   display: block;
 }
 
-/* ===== Scrollbar Styling ===== */
+/* Scrollbar Styling */
 .admin-sidebar__nav::-webkit-scrollbar {
   width: 6px;
 }
@@ -1076,7 +1070,7 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* ===== Collapsible Sidebar ===== */
+/* Collapsible Sidebar */
 .admin-sidebar {
   transition: width 0.3s ease, transform 0.3s ease;
 }

@@ -18,7 +18,6 @@
     </div>
     <% } else { %>
 
-      <!-- Exam Header - Fixed Top -->
       <div class="exam-header" id="examHeader">
         <div class="exam-header__left">
           <a href="/subjects/<%= subject ? subject.slug : '' %>" class="exam-header__back" title="Thoát (mất tiến độ)">
@@ -56,7 +55,6 @@
         </div>
       </div>
 
-      <!-- Alerts -->
       <div class="exam-alerts">
         <% if (hasShortage) { %>
           <div class="alert alert-warning">
@@ -80,7 +78,6 @@
               <% } %>
       </div>
 
-      <!-- Question Navigation -->
       <div class="question-nav" id="questionNav">
         <div class="question-nav__label">Câu hỏi:</div>
         <div class="question-nav__items">
@@ -93,7 +90,6 @@
         </div>
       </div>
 
-      <!-- Main Exam Form -->
       <form id="examForm" method="post" action="/exam/submit" data-duration-minutes="<%= durationMinutes %>"
         data-remaining-seconds="<%= typeof remainingSeconds !== 'undefined' ? remainingSeconds : (durationMinutes * 60) %>"
         data-attempt-id="<%= attemptId %>" data-total-questions="<%= questions.length %>">
@@ -132,7 +128,6 @@
                 </div>
                 <% } %>
 
-                  <!-- Single Choice -->
                   <% if (q.type==='single_choice' && Array.isArray(q.answers)) { %>
                     <div class="answer-options">
                       <% q.answers.forEach(function(a, answerIndex){ const isChecked=savedAns==answerIndex; const
@@ -156,7 +151,6 @@
                     </div>
                     <% } %>
 
-                      <!-- Multiple Choice -->
                       <% if (q.type==='multiple_choice' && Array.isArray(q.answers)) { %>
                         <div class="answer-options answer-options--multiple">
                           <% q.answers.forEach(function(a, answerIndex){ const isChecked=savedAns &&
@@ -182,7 +176,6 @@
                         </div>
                         <% } %>
 
-                          <!-- True/False -->
                           <% if (q.type==='true_false' && Array.isArray(q.answers)) { %>
                             <div class="answer-truefalse">
                               <% q.answers.forEach(function(a, answerIndex){ const valStr=a.value===true ? 'true'
@@ -213,7 +206,6 @@
                             </div>
                             <% } %>
 
-                              <!-- Fill in Blank -->
                               <% if (q.type==='fill_in_blank' ) { %>
                                 <div class="answer-fillblank">
                                   <div class="fillblank-input">
@@ -229,7 +221,6 @@
                                 </div>
                                 <% } %>
 
-                                  <!-- Matching (Drag & Drop) -->
                                   <% if (q.type==='matching' && q.answers && q.answers.leftItems &&
                                     q.answers.rightItems) { %>
                                     <div class="answer-matching" data-question-id="<%= q._id %>">
@@ -290,7 +281,7 @@
             <% }) %>
         </div>
       </form>
-      <!-- Question Navigation (Bottom) -->
+
       <div class="question-nav" id="questionNavBottom" style="margin-top: 2rem;">
         <div class="question-nav__label">Câu hỏi:</div>
         <div class="question-nav__items">

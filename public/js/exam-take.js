@@ -1,13 +1,3 @@
-/**
- * Exam Take Page
- * Features:
- * - Server-side synchronized timer (Resume support)
- * - Auto-save progress to Server (Background sync)
- * - Auto-submit on timeout
- * - Drag and Drop for Matching questions (Native API)
- * - Question Navigation (Smooth scroll)
- */
-
 (function () {
   "use strict";
 
@@ -19,9 +9,6 @@
   const attemptId = examForm.dataset.attemptId;
   const totalQuestions = parseInt(examForm.dataset.totalQuestions || "0");
   
-  // ==========================================
-  // 1. Timer Logic
-  // ==========================================
   let remainingSeconds = parseInt(
     examForm.dataset.remainingSeconds || 
     (parseInt(examForm.dataset.durationMinutes || "0") * 60)
@@ -29,7 +16,7 @@
 
   const timerElement = document.getElementById("examTimer");
   const timerTextElement = document.getElementById("timerText");
-  const timerWarningElement = document.getElementById("exam-timer-warning"); // Ensure this ID exists in HTML if used, otherwise remove ref
+  const timerWarningElement = document.getElementById("exam-timer-warning");
 
   function formatTime(seconds) {
     if (seconds < 0) return "00:00";
@@ -43,7 +30,6 @@
     
     timerTextElement.textContent = formatTime(remainingSeconds);
 
-    // Warning states
     if (remainingSeconds <= 300) { // 5 mins
       if (timerElement) timerElement.classList.add("exam-timer--warning");
     }
@@ -64,18 +50,14 @@
   }
 
   const timerInterval = setInterval(updateTimer, 1000);
-  updateTimer(); // Initial call
+  updateTimer();
 
-  // ==========================================
-  // 2. Navigation & Progress
-  // ==========================================
   const progressText = document.getElementById("progressText");
   const navItems = document.querySelectorAll(".question-nav__item");
 
   window.scrollToQuestion = function(index) {
     const questionEl = document.getElementById(`question-${index}`);
     if (questionEl) {
-      // Add offset for fixed header
       const headerOffset = 100;
       const elementPosition = questionEl.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
@@ -85,7 +67,6 @@
         behavior: "smooth"
       });
 
-      // Update current state in nav
       navItems.forEach(item => item.classList.remove('question-nav__item--current'));
       const navItem = document.querySelector(`.question-nav__item[data-index="${index}"]`);
       if (navItem) navItem.classList.add('question-nav__item--current');
@@ -98,11 +79,9 @@
       progressText.textContent = `${answeredCount}/${totalQuestions} câu`;
     }
     
-    // Update nav items status
     const data = transformFormData();
     navItems.forEach(item => {
       const idx = item.dataset.index;
-      // Get question ID from the dom, safely
       const qCard = document.getElementById(`question-${idx}`);
       if (qCard) {
         const qId = qCard.dataset.questionId;
@@ -115,9 +94,6 @@
     });
   }
 
-  // ==========================================
-  // 3. Auto Save
-  // ==========================================
   let saveTimeout;
   
   function triggerAutoSave() {
@@ -140,9 +116,6 @@
     }
   }
 
-  // ==========================================
-  // 4. Drag and Drop Interaction (Matching)
-  // ==========================================
   const draggables = document.querySelectorAll('.matching-chip');
   const dropSlots = document.querySelectorAll('.matching-item__slot');
   const pools = document.querySelectorAll('.matching-pool');
@@ -158,12 +131,11 @@
     });
   });
 
-  // Combine slots and pools as drop targets
   const allDropZones = [...dropSlots, ...pools];
 
   allDropZones.forEach(zone => {
     zone.addEventListener('dragover', e => {
-      e.preventDefault(); // Enable drop
+      e.preventDefault();
       if (!zone.classList.contains('matching-pool')) {
          zone.classList.add('drag-over');
       }
@@ -180,41 +152,29 @@
       const draggable = document.querySelector('.dragging');
       if (!draggable) return;
 
-      // Ensure we are dropping into the same question context
       const draggedFromPool = draggable.closest('.answer-matching');
       const droppedToZone = zone.closest('.answer-matching');
       
-      // If cross-question drop, ignore
       if (draggedFromPool !== droppedToZone) return;
-
-      // If dropped to a slot
       if (zone.classList.contains('matching-item__slot')) {
-        // If slot already has a chip, move it back to pool or swap?
-        // Let's move existing to pool for simplicity
         const existingChip = zone.querySelector('.matching-chip');
         if (existingChip) {
            const pool = droppedToZone.querySelector('.matching-pool');
            pool.appendChild(existingChip);
         }
         
-        // Move dragged chip to slot
         zone.appendChild(draggable);
         
-        // Remove placeholder text if present
         const placeholder = zone.querySelector('.matching-item__placeholder');
         if (placeholder) placeholder.style.display = 'none';
-
-        // Update hidden input
         const leftItem = zone.dataset.left;
         const input = droppedToZone.querySelector(`input[name="answers[${droppedToZone.dataset.questionId}][${leftItem}]"]`);
         if (input) input.value = draggable.dataset.value;
 
       } else if (zone.classList.contains('matching-pool')) {
-        // Dropped back to pool
         zone.appendChild(draggable);
       }
       
-      // Re-sync all inputs for this question to be safe and clean placeholders
       const slots = droppedToZone.querySelectorAll('.matching-item__slot');
       slots.forEach(slot => {
          const chip = slot.querySelector('.matching-chip');
@@ -233,18 +193,13 @@
     });
   });
 
-
-  // ==========================================
-  // 5. Submit Logic
-  // ==========================================
   if (submitBtn) {
     submitBtn.addEventListener("click", function (e) {
       e.preventDefault();
       
-      // Perform validation check
       const unanswered = getUnansweredCount();
       let msg = "Bạn có chắc chắn muốn nộp bài?";
-      if (unanswered > 0) msg += `\n\n⚠️ Còn ${unanswered} câu chưa làm.`;
+      if (unanswered > 0) msg += `\n\n Cảnh báo!!! Còn ${unanswered} câu chưa làm.`;
 
       if (!confirm(msg)) return;
       doSubmit();
@@ -253,7 +208,6 @@
 
   function autoSubmitExam() {
     alert("Hết giờ làm bài! Hệ thống đang tự động nộp bài của bạn.");
-    // Disable inputs
     const inputs = examForm.querySelectorAll("input, button");
     inputs.forEach((i) => (i.disabled = true));
     doSubmit();
@@ -297,20 +251,13 @@
       });
   }
 
-  // ==========================================
-  // 6. Data Helpers
-  // ==========================================
-  
-  // Listen for changes and update visual state
   examForm.addEventListener("change", (e) => {
-    // Only trigger for form inputs
     if (e.target.matches('input[type="radio"], input[type="checkbox"]')) {
        updateAnswerVisualState(e.target);
        triggerAutoSave();
     }
   });
 
-  // Update visual state when answer is selected
   function updateAnswerVisualState(input) {
     const questionCard = input.closest('.question-card');
     if (!questionCard) return;
@@ -318,18 +265,15 @@
     const questionType = questionCard.dataset.questionType;
 
     if (questionType === 'single_choice' || questionType === 'true_false') {
-      // For radio buttons - only one can be selected
       const allOptions = questionCard.querySelectorAll('.answer-option, .truefalse-option');
       allOptions.forEach(opt => opt.classList.remove('answer-option--selected', 'truefalse-option--selected'));
       
-      // Add selected class to parent label
       const parentLabel = input.closest('.answer-option, .truefalse-option');
       if (parentLabel) {
         parentLabel.classList.add(parentLabel.classList.contains('truefalse-option') ? 'truefalse-option--selected' : 'answer-option--selected');
       }
     } 
     else if (questionType === 'multiple_choice') {
-      // For checkboxes - toggle selected state
       const parentLabel = input.closest('.answer-option');
       if (parentLabel) {
         if (input.checked) {
@@ -342,7 +286,6 @@
   }
 
   examForm.addEventListener("input", (e) => {
-    // Only trigger for text inputs
     if (e.target.matches('input[type="text"]')) {
        triggerAutoSave();
     }
@@ -350,7 +293,7 @@
 
   function transformFormData() {
     const answers = {};
-    const questions = document.querySelectorAll('.question-card'); // Use DOM query
+    const questions = document.querySelectorAll('.question-card');
 
     questions.forEach((questionEl) => {
       const questionId = questionEl.dataset.questionId;
@@ -377,11 +320,9 @@
         }
       } 
       else if (questionType === 'matching') {
-        // Collect from hidden inputs
         const mapping = {};
         const inputs = questionEl.querySelectorAll(`input[type="hidden"][name^="answers[${questionId}]"]`);
         inputs.forEach(input => {
-           // name format: answers[qId][leftItem]
            const match = input.name.match(/answers\[.*?\]\[(.*?)\]/);
            if (match && input.value) {
              mapping[match[1]] = input.value;

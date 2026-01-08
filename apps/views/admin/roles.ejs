@@ -37,7 +37,6 @@
             </div>
           </div>
 
-          <!-- Stats -->
           <div class="admin-stats-grid"
             style="grid-template-columns: repeat(2, 1fr); margin-bottom: var(--spacing-2xl);">
             <div class="admin-stat-card">
@@ -72,7 +71,6 @@
             </div>
           </div>
 
-          <!-- Roles List -->
           <div class="admin-panel">
             <div class="admin-panel__header">
               <h3 class="admin-panel__title">
@@ -198,7 +196,6 @@
                 <% } %>
           </div>
 
-          <!-- Modal: Tạo role mới -->
           <div id="createModal" class="admin-modal">
             <div class="admin-modal__content" style="max-width: 500px;">
               <div class="admin-modal__header">
@@ -234,7 +231,6 @@
             </div>
           </div>
 
-          <!-- Modal: Sửa role -->
           <div id="editModal" class="admin-modal">
             <div class="admin-modal__content" style="max-width: 500px;">
               <div class="admin-modal__header">
@@ -267,7 +263,6 @@
             </div>
           </div>
 
-          <!-- Modal: Manage Permissions -->
           <div id="permissionsModal" class="admin-modal">
             <div class="admin-modal__content" style="max-width: 700px;">
               <div class="admin-modal__header">
@@ -286,7 +281,6 @@
                 </div>
 
                 <div id="permissionsContent" style="display: none;">
-                  <!-- Current Permissions -->
                   <div style="margin-bottom: var(--spacing-xl);">
                     <h4
                       style="margin-bottom: var(--spacing-md); color: var(--color-text-main); font-size: 14px; font-weight: 600;">
@@ -296,7 +290,6 @@
                     </div>
                   </div>
 
-                  <!-- Add Permission -->
                   <div style="margin-bottom: var(--spacing-xl);">
                     <h4
                       style="margin-bottom: var(--spacing-md); color: var(--color-text-main); font-size: 14px; font-weight: 600;">
@@ -312,14 +305,12 @@
                     </div>
                   </div>
 
-                  <!-- Available Permissions by Category -->
                   <div>
                     <h4
                       style="margin-bottom: var(--spacing-md); color: var(--color-text-main); font-size: 14px; font-weight: 600;">
                       Danh sách permissions</h4>
                     <div id="availablePermissions"
                       style="display: flex; flex-direction: column; gap: var(--spacing-lg);">
-                      <!-- Will be populated by JavaScript -->
                     </div>
                   </div>
                 </div>
@@ -490,7 +481,6 @@
               currentClaims = [];
             }
 
-            // Close modals when clicking outside
             document.querySelectorAll('.admin-modal').forEach(modal => {
               modal.addEventListener('click', function (e) {
                 if (e.target === this) {
