@@ -264,8 +264,8 @@
           gap: var(--spacing-sm);
           margin-bottom: var(--spacing-md);
         ">
-                    <% // Lấy userAnswer - có thể là object {left: right} hoặc array const userPairs={}; if (userAnswer
-                      && typeof userAnswer==='object' ) { if (Array.isArray(userAnswer)) { userAnswer.forEach(pair=> {
+                    <% const userPairs={}; if (userAnswer && typeof userAnswer==='object' ) { if
+                      (Array.isArray(userAnswer)) { userAnswer.forEach(pair=> {
                       if (pair.left
                       && pair.right) { userPairs[pair.left] = pair.right; } }); } else {
                       Object.assign(userPairs, userAnswer); } } // Lấy correct pairs const

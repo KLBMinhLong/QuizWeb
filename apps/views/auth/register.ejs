@@ -143,48 +143,6 @@
     </a>
   </div>
 
-  <script>
-    function togglePassword(inputId, button) {
-      const input = document.getElementById(inputId);
-      const eyeIcon = button.querySelector('.icon-eye');
-      const eyeOffIcon = button.querySelector('.icon-eye-off');
-
-      if (input.type === 'password') {
-        input.type = 'text';
-        eyeIcon.style.display = 'none';
-        eyeOffIcon.style.display = 'block';
-      } else {
-        input.type = 'password';
-        eyeIcon.style.display = 'block';
-        eyeOffIcon.style.display = 'none';
-      }
-    }
-
-    document.getElementById('registerForm').addEventListener('submit', function (e) {
-      const password = document.getElementById('password').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-      const errorElement = document.getElementById('passwordError');
-
-      if (password !== confirmPassword) {
-        e.preventDefault();
-        errorElement.style.display = 'block';
-        document.getElementById('confirmPassword').focus();
-      } else {
-        errorElement.style.display = 'none';
-      }
-    });
-
-    document.getElementById('confirmPassword').addEventListener('input', function () {
-      const password = document.getElementById('password').value;
-      const confirmPassword = this.value;
-      const errorElement = document.getElementById('passwordError');
-
-      if (confirmPassword && password !== confirmPassword) {
-        errorElement.style.display = 'block';
-      } else {
-        errorElement.style.display = 'none';
-      }
-    });
-  </script>
+  <script src="/static/js/auth-register.js"></script>
 
   <%- include("../partical/footer") %>
