@@ -63,6 +63,7 @@ router.post("/generate", optionalAuth, async function (req, res) {
       user,
     });
   } catch (e) {
+    console.error("Error generating exam:", e);
     res.status(500).send("Lỗi server");
   }
 });

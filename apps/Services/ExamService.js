@@ -42,13 +42,18 @@ class ExamService {
           const remainingMs = endTime.getTime() - now.getTime();
 
           if (remainingMs <= 0) {
-            await this.submitExam(
-              {
-                attemptId: String(activeAttempt._id),
-                answers: activeAttempt.userAnswers || {},
-              },
-              user
-            );
+            try {
+              await this.submitExam(
+                {
+                  attemptId: String(activeAttempt._id),
+                  answers: activeAttempt.userAnswers || {},
+                },
+                user
+              );
+              console.log(`Auto-submitted expired attempt ${activeAttempt._id}`);
+            } catch (submitError) {
+              console.error("Error auto-submitting expired attempt:", submitError);
+            }
           } else {
             const questions = activeAttempt.questionsSnapshot || [];
             const publicQuestions = questions.map((q) => ({
