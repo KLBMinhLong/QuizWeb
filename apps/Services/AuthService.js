@@ -173,13 +173,7 @@ class AuthService {
       );
       return { 
         ok: true, 
-        token, 
-        user: { 
-          id: String(user._id), 
-          username: user.username, 
-          roles: roleNames,
-          permissions 
-        } 
+        token 
       };
     } finally {
       await this.client.close();
